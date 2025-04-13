@@ -112,7 +112,13 @@ export default function Moderation() {
     setIsLoadingAi(true);
     try {
       const response = await apiRequest(`/api/moderation/flags/${flagId}/ai-assistance`);
-      setAiRecommendation(response as AIRecommendation);
+      // Convert the response to the expected AIRecommendation format
+      const aiRecommendationData = response as any;
+      setAiRecommendation({
+        recommendation: aiRecommendationData.recommendation || "reject",
+        reasoning: aiRecommendationData.reasoning || "No reasoning provided.",
+        confidence: aiRecommendationData.confidence || 0
+      });
     } catch (error) {
       console.error("Error getting AI assistance:", error);
       toast({
@@ -181,14 +187,15 @@ export default function Moderation() {
       outcome: string;
       flagId: number;
     }) => {
-      return apiRequest(`/api/moderation/appeals/${appealId}/review`, {
+      const requestData = {
         method: "POST",
         body: {
           reviewerId: 1, // Normally would use current user ID
           outcome,
           flagId,
         },
-      });
+      };
+      return apiRequest(`/api/moderation/appeals/${appealId}/review`, requestData as any);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/moderation/appeals"] });
@@ -212,19 +219,18 @@ export default function Moderation() {
   // Auto-analyze content
   const analyzeContent = useMutation({
     mutationFn: async ({ content }: { content: string }) => {
-      return apiRequest<{ flagged: boolean; categories: any; categoryScores: any; flagScore: number; reasoning: string }>(
-        "/api/moderation/analyze",
-        {
-          method: "POST",
-          body: { content },
-        }
-      );
+      const requestData = {
+        method: "POST",
+        body: { content },
+      };
+      return apiRequest("/api/moderation/analyze", requestData as any);
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
+      const result = data as { flagged: boolean; categories: any; categoryScores: any; flagScore: number; reasoning: string };
       toast({
-        title: data.flagged ? "Content flagged" : "Content approved",
-        description: `Analysis score: ${data.flagScore}/100. ${data.reasoning}`,
-        variant: data.flagged ? "destructive" : "default",
+        title: result.flagged ? "Content flagged" : "Content approved",
+        description: `Analysis score: ${result.flagScore}/100. ${result.reasoning}`,
+        variant: result.flagged ? "destructive" : "default",
       });
     },
   });

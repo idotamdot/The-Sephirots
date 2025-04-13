@@ -93,10 +93,11 @@ export default function ContentFlagButton({
       content: string;
       userId: number;
     }) => {
-      return apiRequest("/api/moderation/auto-moderate", {
+      const requestData = {
         method: "POST",
         body: data,
-      });
+      };
+      return apiRequest("/api/moderation/auto-moderate", requestData as any);
     },
   });
 

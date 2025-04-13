@@ -7,20 +7,70 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
-): Promise<Response> {
+// Type for the options object
+type RequestOptions = {
+  method?: string;
+  body?: any;
+  headers?: Record<string, string>;
+};
+
+// Function overloads to support different call patterns
+export async function apiRequest<T = any>(url: string): Promise<T>;
+export async function apiRequest<T = any>(url: string, options: RequestOptions): Promise<T>;
+export async function apiRequest<T = any>(method: string, url: string, data?: unknown): Promise<T>;
+
+// Implementation
+export async function apiRequest<T = any>(
+  urlOrMethod: string,
+  urlOrOptions?: string | RequestOptions,
+  data?: unknown
+): Promise<T> {
+  let url: string;
+  let method: string = 'GET';
+  let requestData: unknown | undefined;
+  let headers: Record<string, string> = {};
+
+  // Handle different parameter patterns
+  if (typeof urlOrOptions === 'undefined') {
+    // apiRequest(url)
+    url = urlOrMethod;
+  } else if (typeof urlOrOptions === 'string') {
+    // apiRequest(method, url, data?)
+    method = urlOrMethod;
+    url = urlOrOptions;
+    requestData = data;
+  } else {
+    // apiRequest(url, options)
+    url = urlOrMethod;
+    method = urlOrOptions.method || 'GET';
+    requestData = urlOrOptions.body;
+    headers = urlOrOptions.headers || {};
+  }
+
+  // Add content-type header for JSON data
+  if (requestData && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    headers,
+    body: requestData ? JSON.stringify(requestData) : undefined,
+    credentials: 'include',
   });
 
   await throwIfResNotOk(res);
-  return res;
+  
+  // Return the parsed JSON response if content exists, otherwise an empty object
+  try {
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await res.json();
+    }
+    return {} as T;
+  } catch (e) {
+    return {} as T;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

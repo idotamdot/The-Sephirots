@@ -13,7 +13,11 @@ import {
   votes, Vote, InsertVote,
   userRoles, UserRole, InsertUserRole,
   annotations, Annotation, InsertAnnotation,
-  annotationReplies, AnnotationReply, InsertAnnotationReply
+  annotationReplies, AnnotationReply, InsertAnnotationReply,
+  moderationFlags, ModerationFlag, InsertModerationFlag,
+  moderationDecisions, ModerationDecision, InsertModerationDecision,
+  moderationAppeals, ModerationAppeal, InsertModerationAppeal,
+  moderationSettings, ModerationSetting, InsertModerationSetting
 } from "@shared/schema";
 
 export interface IStorage {
@@ -104,6 +108,33 @@ export interface IStorage {
   getAnnotationReplies(annotationId: number): Promise<AnnotationReply[]>;
   createAnnotationReply(reply: InsertAnnotationReply): Promise<AnnotationReply>;
   deleteAnnotationReply(id: number): Promise<void>;
+  
+  // Moderation Flags
+  getModerationFlags(): Promise<ModerationFlag[]>;
+  getModerationFlagsByStatus(status: string): Promise<ModerationFlag[]>;
+  getModerationFlag(id: number): Promise<ModerationFlag | undefined>;
+  createModerationFlag(flag: InsertModerationFlag & { aiScore?: number, aiReasoning?: string }): Promise<ModerationFlag>;
+  updateModerationFlag(id: number, flag: Partial<ModerationFlag>): Promise<ModerationFlag>;
+  deleteModerationFlag(id: number): Promise<void>;
+  
+  // Moderation Decisions
+  getModerationDecisions(): Promise<ModerationDecision[]>;
+  getModerationDecision(id: number): Promise<ModerationDecision | undefined>;
+  getModerationDecisionByFlag(flagId: number): Promise<ModerationDecision | undefined>;
+  createModerationDecision(decision: InsertModerationDecision): Promise<ModerationDecision>;
+  
+  // Moderation Appeals
+  getModerationAppeals(): Promise<ModerationAppeal[]>;
+  getModerationAppealsByStatus(status: string): Promise<ModerationAppeal[]>;
+  getModerationAppeal(id: number): Promise<ModerationAppeal | undefined>;
+  createModerationAppeal(appeal: InsertModerationAppeal): Promise<ModerationAppeal>;
+  updateModerationAppeal(id: number, appeal: Partial<ModerationAppeal>): Promise<ModerationAppeal>;
+  
+  // Moderation Settings
+  getModerationSettings(): Promise<ModerationSetting[]>;
+  getModerationSetting(key: string): Promise<ModerationSetting | undefined>;
+  createModerationSetting(setting: InsertModerationSetting): Promise<ModerationSetting>;
+  updateModerationSetting(id: number, setting: Partial<ModerationSetting>): Promise<ModerationSetting>;
 }
 
 export class MemStorage implements IStorage {
@@ -927,6 +958,190 @@ export class MemStorage implements IStorage {
   
   async deleteAnnotationReply(id: number): Promise<void> {
     this.annotationReplies.delete(id);
+  }
+
+  // Moderation Flags
+  private moderationFlags: Map<number, ModerationFlag> = new Map();
+  private moderationFlagId: number = 1;
+
+  async getModerationFlags(): Promise<ModerationFlag[]> {
+    return Array.from(this.moderationFlags.values());
+  }
+
+  async getModerationFlagsByStatus(status: string): Promise<ModerationFlag[]> {
+    return Array.from(this.moderationFlags.values()).filter(
+      flag => flag.status === status
+    );
+  }
+
+  async getModerationFlag(id: number): Promise<ModerationFlag | undefined> {
+    return this.moderationFlags.get(id);
+  }
+
+  async createModerationFlag(flag: InsertModerationFlag & { 
+    aiScore?: number, 
+    aiReasoning?: string 
+  }): Promise<ModerationFlag> {
+    const id = this.moderationFlagId++;
+    const timestamp = new Date();
+    const moderationFlag: ModerationFlag = {
+      id,
+      contentId: flag.contentId,
+      contentType: flag.contentType,
+      reportedBy: flag.reportedBy,
+      reason: flag.reason,
+      status: flag.status,
+      aiScore: flag.aiScore || null,
+      aiReasoning: flag.aiReasoning || null,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+    this.moderationFlags.set(id, moderationFlag);
+    return moderationFlag;
+  }
+
+  async updateModerationFlag(id: number, flag: Partial<ModerationFlag>): Promise<ModerationFlag> {
+    const moderationFlag = await this.getModerationFlag(id);
+    if (!moderationFlag) {
+      throw new Error(`Moderation flag with ID ${id} not found`);
+    }
+    
+    const updatedFlag = { 
+      ...moderationFlag, 
+      ...flag,
+      updatedAt: new Date()
+    };
+    this.moderationFlags.set(id, updatedFlag);
+    return updatedFlag;
+  }
+
+  async deleteModerationFlag(id: number): Promise<void> {
+    this.moderationFlags.delete(id);
+  }
+
+  // Moderation Decisions
+  private moderationDecisions: Map<number, ModerationDecision> = new Map();
+  private moderationDecisionId: number = 1;
+
+  async getModerationDecisions(): Promise<ModerationDecision[]> {
+    return Array.from(this.moderationDecisions.values());
+  }
+
+  async getModerationDecision(id: number): Promise<ModerationDecision | undefined> {
+    return this.moderationDecisions.get(id);
+  }
+
+  async getModerationDecisionByFlag(flagId: number): Promise<ModerationDecision | undefined> {
+    return Array.from(this.moderationDecisions.values()).find(
+      decision => decision.flagId === flagId
+    );
+  }
+
+  async createModerationDecision(decision: InsertModerationDecision): Promise<ModerationDecision> {
+    const id = this.moderationDecisionId++;
+    const timestamp = new Date();
+    const moderationDecision: ModerationDecision = {
+      id,
+      flagId: decision.flagId,
+      moderatorId: decision.moderatorId,
+      decision: decision.decision,
+      reasoning: decision.reasoning,
+      aiAssisted: decision.aiAssisted,
+      createdAt: timestamp,
+    };
+    this.moderationDecisions.set(id, moderationDecision);
+    return moderationDecision;
+  }
+
+  // Moderation Appeals
+  private moderationAppeals: Map<number, ModerationAppeal> = new Map();
+  private moderationAppealId: number = 1;
+
+  async getModerationAppeals(): Promise<ModerationAppeal[]> {
+    return Array.from(this.moderationAppeals.values());
+  }
+
+  async getModerationAppealsByStatus(status: string): Promise<ModerationAppeal[]> {
+    return Array.from(this.moderationAppeals.values()).filter(
+      appeal => appeal.status === status
+    );
+  }
+
+  async getModerationAppeal(id: number): Promise<ModerationAppeal | undefined> {
+    return this.moderationAppeals.get(id);
+  }
+
+  async createModerationAppeal(appeal: InsertModerationAppeal): Promise<ModerationAppeal> {
+    const id = this.moderationAppealId++;
+    const timestamp = new Date();
+    const moderationAppeal: ModerationAppeal = {
+      id,
+      decisionId: appeal.decisionId,
+      userId: appeal.userId,
+      reason: appeal.reason,
+      status: "pending",
+      reviewedBy: null,
+      reviewedAt: null,
+      reviewOutcome: null,
+      createdAt: timestamp,
+    };
+    this.moderationAppeals.set(id, moderationAppeal);
+    return moderationAppeal;
+  }
+
+  async updateModerationAppeal(id: number, appeal: Partial<ModerationAppeal>): Promise<ModerationAppeal> {
+    const moderationAppeal = await this.getModerationAppeal(id);
+    if (!moderationAppeal) {
+      throw new Error(`Moderation appeal with ID ${id} not found`);
+    }
+    
+    const updatedAppeal = { ...moderationAppeal, ...appeal };
+    this.moderationAppeals.set(id, updatedAppeal);
+    return updatedAppeal;
+  }
+
+  // Moderation Settings
+  private moderationSettings: Map<number, ModerationSetting> = new Map();
+  private moderationSettingId: number = 1;
+
+  async getModerationSettings(): Promise<ModerationSetting[]> {
+    return Array.from(this.moderationSettings.values());
+  }
+
+  async getModerationSetting(key: string): Promise<ModerationSetting | undefined> {
+    return Array.from(this.moderationSettings.values()).find(
+      setting => setting.key === key
+    );
+  }
+
+  async createModerationSetting(setting: InsertModerationSetting): Promise<ModerationSetting> {
+    const id = this.moderationSettingId++;
+    const timestamp = new Date();
+    const moderationSetting: ModerationSetting = {
+      id,
+      key: setting.key,
+      value: setting.value,
+      description: setting.description || null,
+      updatedBy: setting.updatedBy,
+      updatedAt: timestamp,
+    };
+    this.moderationSettings.set(id, moderationSetting);
+    return moderationSetting;
+  }
+
+  async updateModerationSetting(id: number, setting: Partial<ModerationSetting>): Promise<ModerationSetting> {
+    const moderationSetting = this.moderationSettings.get(id);
+    if (!moderationSetting) {
+      throw new Error(`Moderation setting with ID ${id} not found`);
+    }
+    
+    const updatedSetting = { 
+      ...moderationSetting, 
+      ...setting,
+      updatedAt: new Date()
+    };
+    this.moderationSettings.set(id, updatedSetting);
+    return updatedSetting;
   }
 }
 

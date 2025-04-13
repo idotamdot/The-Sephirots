@@ -11,7 +11,9 @@ import {
   events, Event, InsertEvent,
   proposals, Proposal, InsertProposal,
   votes, Vote, InsertVote,
-  userRoles, UserRole, InsertUserRole
+  userRoles, UserRole, InsertUserRole,
+  annotations, Annotation, InsertAnnotation,
+  annotationReplies, AnnotationReply, InsertAnnotationReply
 } from "@shared/schema";
 
 export interface IStorage {
@@ -89,6 +91,19 @@ export interface IStorage {
   getUserRoles(userId: number): Promise<UserRole[]>;
   assignRoleToUser(userRole: InsertUserRole): Promise<UserRole>;
   removeRoleFromUser(userId: number, role: string): Promise<void>;
+  
+  // Annotations for collaborative drafting
+  getAnnotationsByProposal(proposalId: number): Promise<Annotation[]>;
+  getAnnotation(id: number): Promise<Annotation | undefined>;
+  createAnnotation(annotation: InsertAnnotation): Promise<Annotation>;
+  updateAnnotation(id: number, annotation: Partial<Annotation>): Promise<Annotation>;
+  resolveAnnotation(id: number, userId: number): Promise<Annotation>;
+  deleteAnnotation(id: number): Promise<void>;
+  
+  // Annotation Replies
+  getAnnotationReplies(annotationId: number): Promise<AnnotationReply[]>;
+  createAnnotationReply(reply: InsertAnnotationReply): Promise<AnnotationReply>;
+  deleteAnnotationReply(id: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -105,6 +120,8 @@ export class MemStorage implements IStorage {
   private proposals: Map<number, Proposal>;
   private votes: Map<number, Vote>;
   private userRoles: Map<number, UserRole>;
+  private annotations: Map<number, Annotation>;
+  private annotationReplies: Map<number, AnnotationReply>;
   
   private userId: number;
   private discussionId: number;
@@ -119,6 +136,8 @@ export class MemStorage implements IStorage {
   private proposalId: number;
   private voteId: number;
   private userRoleId: number;
+  private annotationId: number;
+  private annotationReplyId: number;
 
   constructor() {
     this.users = new Map();
@@ -134,6 +153,8 @@ export class MemStorage implements IStorage {
     this.proposals = new Map();
     this.votes = new Map();
     this.userRoles = new Map();
+    this.annotations = new Map();
+    this.annotationReplies = new Map();
     
     this.userId = 1;
     this.discussionId = 1;
@@ -148,6 +169,8 @@ export class MemStorage implements IStorage {
     this.proposalId = 1;
     this.voteId = 1;
     this.userRoleId = 1;
+    this.annotationId = 1;
+    this.annotationReplyId = 1;
     
     // Initialize with sample data
     this.initializeData();
@@ -802,6 +825,108 @@ export class MemStorage implements IStorage {
         break;
       }
     }
+  }
+  
+  // Annotation methods for collaborative drafting
+  async getAnnotationsByProposal(proposalId: number): Promise<Annotation[]> {
+    return Array.from(this.annotations.values()).filter(
+      annotation => annotation.proposalId === proposalId
+    ).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  }
+  
+  async getAnnotation(id: number): Promise<Annotation | undefined> {
+    return this.annotations.get(id);
+  }
+  
+  async createAnnotation(insertAnnotation: InsertAnnotation): Promise<Annotation> {
+    const id = this.annotationId++;
+    const timestamp = new Date();
+    const annotation: Annotation = {
+      id,
+      proposalId: insertAnnotation.proposalId,
+      userId: insertAnnotation.userId,
+      content: insertAnnotation.content,
+      type: insertAnnotation.type || 'comment',
+      selectionStart: insertAnnotation.selectionStart || null,
+      selectionEnd: insertAnnotation.selectionEnd || null,
+      resolved: false,
+      resolvedBy: null,
+      resolvedAt: null,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    this.annotations.set(id, annotation);
+    return annotation;
+  }
+  
+  async updateAnnotation(id: number, partialAnnotation: Partial<Annotation>): Promise<Annotation> {
+    const annotation = await this.getAnnotation(id);
+    if (!annotation) {
+      throw new Error(`Annotation with ID ${id} not found`);
+    }
+    
+    const updatedAnnotation = {
+      ...annotation,
+      ...partialAnnotation,
+      updatedAt: new Date()
+    };
+    
+    this.annotations.set(id, updatedAnnotation);
+    return updatedAnnotation;
+  }
+  
+  async resolveAnnotation(id: number, userId: number): Promise<Annotation> {
+    const annotation = await this.getAnnotation(id);
+    if (!annotation) {
+      throw new Error(`Annotation with ID ${id} not found`);
+    }
+    
+    const resolvedAnnotation = {
+      ...annotation,
+      resolved: true,
+      resolvedBy: userId,
+      resolvedAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    this.annotations.set(id, resolvedAnnotation);
+    return resolvedAnnotation;
+  }
+  
+  async deleteAnnotation(id: number): Promise<void> {
+    // First delete any replies to this annotation
+    const replies = await this.getAnnotationReplies(id);
+    for (const reply of replies) {
+      this.annotationReplies.delete(reply.id);
+    }
+    
+    // Then delete the annotation itself
+    this.annotations.delete(id);
+  }
+  
+  // Annotation Reply methods
+  async getAnnotationReplies(annotationId: number): Promise<AnnotationReply[]> {
+    return Array.from(this.annotationReplies.values())
+      .filter(reply => reply.annotationId === annotationId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  }
+  
+  async createAnnotationReply(insertReply: InsertAnnotationReply): Promise<AnnotationReply> {
+    const id = this.annotationReplyId++;
+    const timestamp = new Date();
+    const reply: AnnotationReply = {
+      id,
+      annotationId: insertReply.annotationId,
+      userId: insertReply.userId,
+      content: insertReply.content,
+      createdAt: timestamp
+    };
+    this.annotationReplies.set(id, reply);
+    return reply;
+  }
+  
+  async deleteAnnotationReply(id: number): Promise<void> {
+    this.annotationReplies.delete(id);
   }
 }
 

@@ -13,10 +13,14 @@ import {
   insertProposalSchema,
   insertVoteSchema,
   insertUserRoleSchema,
+  insertAnnotationSchema,
+  insertAnnotationReplySchema,
   type User,
   type Proposal,
   type Vote,
-  type UserRole
+  type UserRole,
+  type Annotation,
+  type AnnotationReply
 } from "@shared/schema";
 import { z, ZodError } from "zod";
 

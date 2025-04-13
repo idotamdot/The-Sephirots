@@ -256,6 +256,52 @@ export const insertUserRoleSchema = createInsertSchema(userRoles).omit({
   assignedAt: true,
 });
 
+// Annotations schema for proposal drafting and collaborative markup
+export const annotationTypeEnum = pgEnum("annotation_type", [
+  "comment",
+  "suggestion",
+  "question",
+  "approval"
+]);
+
+export const annotations = pgTable("annotations", {
+  id: serial("id").primaryKey(),
+  proposalId: integer("proposal_id").notNull(),
+  userId: integer("user_id").notNull(),
+  content: text("content").notNull(),
+  type: annotationTypeEnum("type").notNull().default("comment"),
+  selectionStart: integer("selection_start"), // Character position in proposal text where annotation starts
+  selectionEnd: integer("selection_end"),     // Character position in proposal text where annotation ends
+  resolved: boolean("resolved").notNull().default(false),
+  resolvedBy: integer("resolved_by"),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertAnnotationSchema = createInsertSchema(annotations).omit({
+  id: true,
+  resolved: true,
+  resolvedBy: true,
+  resolvedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Annotation replies for threaded discussions on annotations
+export const annotationReplies = pgTable("annotation_replies", {
+  id: serial("id").primaryKey(),
+  annotationId: integer("annotation_id").notNull(),
+  userId: integer("user_id").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertAnnotationReplySchema = createInsertSchema(annotationReplies).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -295,6 +341,12 @@ export type InsertVote = z.infer<typeof insertVoteSchema>;
 
 export type UserRole = typeof userRoles.$inferSelect;
 export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
+
+export type Annotation = typeof annotations.$inferSelect;
+export type InsertAnnotation = z.infer<typeof insertAnnotationSchema>;
+
+export type AnnotationReply = typeof annotationReplies.$inferSelect;
+export type InsertAnnotationReply = z.infer<typeof insertAnnotationReplySchema>;
 
 // We'll define relationships between tables later when needed
 // For now, this basic schema is sufficient for creating the tables

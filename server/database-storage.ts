@@ -11,7 +11,9 @@ import {
   events, type Event, type InsertEvent,
   proposals, type Proposal, type InsertProposal,
   votes, type Vote, type InsertVote,
-  userRoles, type UserRole, type InsertUserRole
+  userRoles, type UserRole, type InsertUserRole,
+  annotations, type Annotation, type InsertAnnotation,
+  annotationReplies, type AnnotationReply, type InsertAnnotationReply
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -502,5 +504,104 @@ export class DatabaseStorage implements IStorage {
           eq(userRoles.role, role as any) // Cast to any for enum typing
         )
       );
+  }
+  
+  // Annotation methods for proposal collaborative drafting
+  async getAnnotationsByProposal(proposalId: number): Promise<Annotation[]> {
+    return await db
+      .select()
+      .from(annotations)
+      .where(eq(annotations.proposalId, proposalId))
+      .orderBy(annotations.createdAt);
+  }
+  
+  async getAnnotation(id: number): Promise<Annotation | undefined> {
+    const [annotation] = await db
+      .select()
+      .from(annotations)
+      .where(eq(annotations.id, id));
+    return annotation || undefined;
+  }
+  
+  async createAnnotation(insertAnnotation: InsertAnnotation): Promise<Annotation> {
+    const [annotation] = await db
+      .insert(annotations)
+      .values({
+        ...insertAnnotation,
+        updatedAt: new Date()
+      })
+      .returning();
+    return annotation;
+  }
+  
+  async updateAnnotation(id: number, partialAnnotation: Partial<Annotation>): Promise<Annotation> {
+    const [updatedAnnotation] = await db
+      .update(annotations)
+      .set({
+        ...partialAnnotation,
+        updatedAt: new Date()
+      })
+      .where(eq(annotations.id, id))
+      .returning();
+      
+    if (!updatedAnnotation) {
+      throw new Error(`Annotation with ID ${id} not found`);
+    }
+    
+    return updatedAnnotation;
+  }
+  
+  async resolveAnnotation(id: number, userId: number): Promise<Annotation> {
+    const [resolvedAnnotation] = await db
+      .update(annotations)
+      .set({
+        resolved: true,
+        resolvedBy: userId,
+        resolvedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(annotations.id, id))
+      .returning();
+      
+    if (!resolvedAnnotation) {
+      throw new Error(`Annotation with ID ${id} not found`);
+    }
+    
+    return resolvedAnnotation;
+  }
+  
+  async deleteAnnotation(id: number): Promise<void> {
+    // First delete any replies to this annotation
+    await db
+      .delete(annotationReplies)
+      .where(eq(annotationReplies.annotationId, id));
+      
+    // Then delete the annotation itself
+    await db
+      .delete(annotations)
+      .where(eq(annotations.id, id));
+  }
+  
+  // Annotation Reply methods
+  async getAnnotationReplies(annotationId: number): Promise<AnnotationReply[]> {
+    return await db
+      .select()
+      .from(annotationReplies)
+      .where(eq(annotationReplies.annotationId, annotationId))
+      .orderBy(annotationReplies.createdAt);
+  }
+  
+  async createAnnotationReply(insertReply: InsertAnnotationReply): Promise<AnnotationReply> {
+    const [reply] = await db
+      .insert(annotationReplies)
+      .values(insertReply)
+      .returning();
+    return reply;
+  }
+  
+  async deleteAnnotationReply(id: number): Promise<void> {
+    await db
+      .delete(annotationReplies)
+      .where(eq(annotationReplies.id, id));
   }
 }

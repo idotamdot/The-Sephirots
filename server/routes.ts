@@ -781,6 +781,172 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== ANNOTATION ROUTES =====
+
+  // Get annotations for a proposal
+  app.get("/api/proposals/:id/annotations", async (req, res) => {
+    try {
+      const proposalId = parseInt(req.params.id);
+      const annotations = await storage.getAnnotationsByProposal(proposalId);
+      
+      // Get user data for each annotation and replies
+      const enrichedAnnotations = await Promise.all(
+        annotations.map(async (annotation) => {
+          const user = await storage.getUser(annotation.userId);
+          const userInfo = user 
+            ? { id: user.id, displayName: user.displayName, avatar: user.avatar } 
+            : null;
+          
+          // Get replies for this annotation
+          const replies = await storage.getAnnotationReplies(annotation.id);
+          
+          // Get user data for each reply
+          const enrichedReplies = await Promise.all(
+            replies.map(async (reply) => {
+              const replyUser = await storage.getUser(reply.userId);
+              const replyUserInfo = replyUser 
+                ? { id: replyUser.id, displayName: replyUser.displayName, avatar: replyUser.avatar } 
+                : null;
+              
+              return {
+                ...reply,
+                user: replyUserInfo
+              };
+            })
+          );
+          
+          return {
+            ...annotation,
+            user: userInfo,
+            replies: enrichedReplies
+          };
+        })
+      );
+      
+      res.json(enrichedAnnotations);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create annotation
+  app.post("/api/annotations", async (req, res) => {
+    try {
+      const annotationData = insertAnnotationSchema.parse(req.body);
+      
+      // Create the annotation
+      const annotation = await storage.createAnnotation(annotationData);
+      
+      // Award points to the user for creating an annotation
+      await storage.updateUserPoints(annotationData.userId, 5);
+      
+      res.status(201).json(annotation);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Update annotation
+  app.patch("/api/annotations/:id", async (req, res) => {
+    try {
+      const annotationId = parseInt(req.params.id);
+      const annotation = await storage.getAnnotation(annotationId);
+      
+      if (!annotation) {
+        return res.status(404).json({ error: "Annotation not found" });
+      }
+      
+      // Define a validation schema for annotation updates
+      const updateAnnotationSchema = z.object({
+        content: z.string().optional(),
+        status: z.enum(['open', 'resolved']).optional(),
+        resolvedBy: z.number().nullable().optional()
+      });
+      
+      // Validate request body
+      const updateData = updateAnnotationSchema.parse(req.body);
+      
+      // Update annotation
+      const updatedAnnotation = await storage.updateAnnotation(annotationId, updateData);
+      
+      res.json(updatedAnnotation);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Resolve annotation
+  app.post("/api/annotations/:id/resolve", async (req, res) => {
+    try {
+      const annotationId = parseInt(req.params.id);
+      const userId = z.object({ userId: z.number() }).parse(req.body).userId;
+      
+      // Resolve the annotation
+      const resolvedAnnotation = await storage.resolveAnnotation(annotationId, userId);
+      
+      // Award points to the user for resolving an annotation
+      await storage.updateUserPoints(userId, 3);
+      
+      res.json(resolvedAnnotation);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Delete annotation
+  app.delete("/api/annotations/:id", async (req, res) => {
+    try {
+      const annotationId = parseInt(req.params.id);
+      await storage.deleteAnnotation(annotationId);
+      res.status(204).send();
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Add reply to annotation
+  app.post("/api/annotations/:id/replies", async (req, res) => {
+    try {
+      const annotationId = parseInt(req.params.id);
+      const annotation = await storage.getAnnotation(annotationId);
+      
+      if (!annotation) {
+        return res.status(404).json({ error: "Annotation not found" });
+      }
+      
+      // Modify the request body to include the annotation ID
+      const replyData = {
+        ...req.body,
+        annotationId
+      };
+      
+      // Validate and create the reply
+      const validatedReplyData = insertAnnotationReplySchema.parse(replyData);
+      const reply = await storage.createAnnotationReply(validatedReplyData);
+      
+      // Award points to the user for contributing to the discussion
+      await storage.updateUserPoints(validatedReplyData.userId, 2);
+      
+      res.status(201).json(reply);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Delete annotation reply
+  app.delete("/api/annotation-replies/:id", async (req, res) => {
+    try {
+      const replyId = parseInt(req.params.id);
+      await storage.deleteAnnotationReply(replyId);
+      res.status(204).send();
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
   return httpServer;

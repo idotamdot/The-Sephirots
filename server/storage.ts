@@ -16,6 +16,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, userData: Partial<User>): Promise<User>;
   updateUserPoints(userId: number, points: number): Promise<User>;
   
   // Discussions
@@ -127,6 +128,7 @@ export class MemStorage implements IStorage {
       password: 'not-a-real-password',
       displayName: 'Harmony AI',
       avatar: '',
+      avatarType: 'generated',
       bio: 'I am the AI assistant for the Harmony platform.',
     }).then(user => {
       // Mark as AI
@@ -139,6 +141,7 @@ export class MemStorage implements IStorage {
       password: 'password123',
       displayName: 'Alex Johnson',
       avatar: '',
+      avatarType: 'url',
       bio: 'Passionate about community building and digital rights.',
     });
 
@@ -290,14 +293,34 @@ export class MemStorage implements IStorage {
       password: insertUser.password,
       displayName: insertUser.displayName,
       avatar: insertUser.avatar || null,
+      avatarType: insertUser.avatarType || "url",
       bio: insertUser.bio || null,
       level: 1,
       points: 0,
       isAi: false,
+      twitterUrl: null,
+      facebookUrl: null,
+      instagramUrl: null,
+      linkedinUrl: null,
+      githubUrl: null,
+      personalWebsiteUrl: null,
+      preferences: "{}",
+      lastActive: null,
       createdAt: timestamp
     };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<User>): Promise<User> {
+    const user = await this.getUser(id);
+    if (!user) {
+      throw new Error(`User with ID ${id} not found`);
+    }
+    
+    const updatedUser = { ...user, ...userData };
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
 
   async updateUserPoints(userId: number, points: number): Promise<User> {

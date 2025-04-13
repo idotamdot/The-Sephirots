@@ -348,5 +348,108 @@ export type InsertAnnotation = z.infer<typeof insertAnnotationSchema>;
 export type AnnotationReply = typeof annotationReplies.$inferSelect;
 export type InsertAnnotationReply = z.infer<typeof insertAnnotationReplySchema>;
 
+// Moderation system schema
+export const contentTypeEnum = pgEnum("content_type", [
+  "discussion",
+  "comment", 
+  "proposal",
+  "amendment",
+  "profile",
+  "event"
+]);
+
+export const moderationStatusEnum = pgEnum("moderation_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "appealed",
+  "auto_flagged",
+  "auto_approved"
+]);
+
+export const moderationFlags = pgTable("moderation_flags", {
+  id: serial("id").primaryKey(),
+  contentId: integer("content_id").notNull(),
+  contentType: contentTypeEnum("content_type").notNull(),
+  reportedBy: integer("reported_by").notNull(), // User ID or null for AI
+  reason: text("reason").notNull(),
+  status: moderationStatusEnum("status").notNull().default("pending"),
+  aiScore: integer("ai_score"), // Score from the AI analysis (0-100)
+  aiReasoning: text("ai_reasoning"), // AI explanation for the flag
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertModerationFlagSchema = createInsertSchema(moderationFlags).omit({
+  id: true,
+  aiScore: true,
+  aiReasoning: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const moderationDecisions = pgTable("moderation_decisions", {
+  id: serial("id").primaryKey(),
+  flagId: integer("flag_id").notNull().references(() => moderationFlags.id),
+  moderatorId: integer("moderator_id").notNull(), // User ID or null for AI
+  decision: moderationStatusEnum("decision").notNull(),
+  reasoning: text("reasoning").notNull(),
+  aiAssisted: boolean("ai_assisted").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertModerationDecisionSchema = createInsertSchema(moderationDecisions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const moderationAppeals = pgTable("moderation_appeals", {
+  id: serial("id").primaryKey(),
+  decisionId: integer("decision_id").notNull().references(() => moderationDecisions.id),
+  userId: integer("user_id").notNull(),
+  reason: text("reason").notNull(),
+  status: moderationStatusEnum("status").notNull().default("pending"),
+  reviewedBy: integer("reviewed_by"),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewOutcome: moderationStatusEnum("review_outcome"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertModerationAppealSchema = createInsertSchema(moderationAppeals).omit({
+  id: true,
+  status: true,
+  reviewedBy: true,
+  reviewedAt: true,
+  reviewOutcome: true,
+  createdAt: true,
+});
+
+export const moderationSettings = pgTable("moderation_settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  description: text("description"),
+  updatedBy: integer("updated_by").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertModerationSettingSchema = createInsertSchema(moderationSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+// Export moderation types
+export type ModerationFlag = typeof moderationFlags.$inferSelect;
+export type InsertModerationFlag = z.infer<typeof insertModerationFlagSchema>;
+
+export type ModerationDecision = typeof moderationDecisions.$inferSelect;
+export type InsertModerationDecision = z.infer<typeof insertModerationDecisionSchema>;
+
+export type ModerationAppeal = typeof moderationAppeals.$inferSelect;
+export type InsertModerationAppeal = z.infer<typeof insertModerationAppealSchema>;
+
+export type ModerationSetting = typeof moderationSettings.$inferSelect;
+export type InsertModerationSetting = z.infer<typeof insertModerationSettingSchema>;
+
 // We'll define relationships between tables later when needed
 // For now, this basic schema is sufficient for creating the tables

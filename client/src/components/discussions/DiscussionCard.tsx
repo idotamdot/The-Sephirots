@@ -19,12 +19,10 @@ export default function DiscussionCard({ discussion }: DiscussionCardProps) {
           <span className="text-sm text-gray-500">{timeAgo}</span>
         </div>
         
-        <Link href={`/discussions/${discussion.id}`}>
-          <a className="block">
-            <h3 className="font-heading font-semibold text-lg mb-2 hover:text-primary-600 transition-colors duration-150">
-              {discussion.title}
-            </h3>
-          </a>
+        <Link href={`/discussions/${discussion.id}`} className="block">
+          <h3 className="font-heading font-semibold text-lg mb-2 hover:text-primary-600 transition-colors duration-150">
+            {discussion.title}
+          </h3>
         </Link>
         
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">

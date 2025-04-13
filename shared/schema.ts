@@ -198,3 +198,6 @@ export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
 
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
+
+// We'll define relationships between tables later when needed
+// For now, this basic schema is sufficient for creating the tables

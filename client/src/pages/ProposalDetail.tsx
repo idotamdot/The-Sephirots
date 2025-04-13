@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { AnnotationList } from "@/components/annotations";
 import {
   AlertCircle,
   ArrowLeft,
@@ -29,6 +30,7 @@ import {
   ThumbsUp,
   Vote as VoteIcon,
   XCircle,
+  MessageSquare,
 } from "lucide-react";
 
 // Helper function to format dates
@@ -338,6 +340,27 @@ export default function ProposalDetail() {
           </div>
         )}
       </div>
+
+      {/* Annotations section */}
+      <Card className="mb-8">
+        <CardHeader>
+          <div className="flex items-center">
+            <MessageSquare className="h-5 w-5 mr-2" />
+            <CardTitle>Collaborative Annotations</CardTitle>
+          </div>
+          <CardDescription>
+            Collaborate with others to improve this proposal through annotations and comments
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {currentUser && (
+            <AnnotationList
+              proposalId={proposalId}
+              currentUserId={currentUser.id}
+            />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -552,6 +552,231 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== GOVERNANCE ROUTES =====
+  
+  // Get all proposals
+  app.get("/api/proposals", async (_req, res) => {
+    try {
+      const proposals = await storage.getProposals();
+      res.json(proposals);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get proposals by category
+  app.get("/api/proposals/category/:category", async (req, res) => {
+    try {
+      const category = req.params.category;
+      const proposals = await storage.getProposalsByCategory(category);
+      res.json(proposals);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get proposals by status
+  app.get("/api/proposals/status/:status", async (req, res) => {
+    try {
+      const status = req.params.status;
+      const proposals = await storage.getProposalsByStatus(status);
+      res.json(proposals);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get single proposal with votes
+  app.get("/api/proposals/:id", async (req, res) => {
+    try {
+      const proposalId = parseInt(req.params.id);
+      const proposal = await storage.getProposal(proposalId);
+      
+      if (!proposal) {
+        return res.status(404).json({ error: "Proposal not found" });
+      }
+      
+      // Get votes
+      const votes = await storage.getVotesByProposal(proposalId);
+      
+      // Get user data for the proposal
+      const user = await storage.getUser(proposal.proposedBy);
+      const userInfo = user ? { id: user.id, displayName: user.displayName, isAi: user.isAi } : null;
+      
+      res.json({
+        ...proposal,
+        user: userInfo,
+        votes
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create proposal
+  app.post("/api/proposals", async (req, res) => {
+    try {
+      const proposalData = insertProposalSchema.parse(req.body);
+      
+      // Use OpenAI to analyze the proposal content
+      const analysis = await openai.analyzeRightsProposal(proposalData.description);
+      
+      // Create the proposal
+      const proposal = await storage.createProposal(proposalData);
+      
+      // Award points to the user for creating a proposal
+      await storage.updateUserPoints(proposalData.proposedBy, 20);
+      
+      res.status(201).json({
+        proposal,
+        analysis
+      });
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Update proposal status
+  app.patch("/api/proposals/:id", async (req, res) => {
+    try {
+      const proposalId = parseInt(req.params.id);
+      const proposal = await storage.getProposal(proposalId);
+      
+      if (!proposal) {
+        return res.status(404).json({ error: "Proposal not found" });
+      }
+      
+      const updateSchema = z.object({
+        status: z.enum(["draft", "active", "passed", "rejected", "implemented"]),
+        implementationDetails: z.string().optional()
+      });
+      
+      const updateData = updateSchema.parse(req.body);
+      const updatedProposal = await storage.updateProposal(proposalId, updateData);
+      
+      // Award points to the user who authored the proposal if it was passed or implemented
+      if (updateData.status === "passed" || updateData.status === "implemented") {
+        await storage.updateUserPoints(proposal.proposedBy, 50);
+      }
+      
+      res.json(updatedProposal);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Vote on proposal
+  app.post("/api/proposals/:id/vote", async (req, res) => {
+    try {
+      const proposalId = parseInt(req.params.id);
+      const proposal = await storage.getProposal(proposalId);
+      
+      if (!proposal) {
+        return res.status(404).json({ error: "Proposal not found" });
+      }
+      
+      // Check if proposal is active
+      if (proposal.status !== "active") {
+        return res.status(400).json({ error: "Voting is only allowed on active proposals" });
+      }
+      
+      const voteSchema = z.object({
+        userId: z.number(),
+        vote: z.boolean(),
+        reason: z.string().optional()
+      });
+      
+      const voteData = voteSchema.parse(req.body);
+      
+      // Create the vote
+      const vote = await storage.createVote({
+        proposalId,
+        userId: voteData.userId,
+        vote: voteData.vote,
+        reason: voteData.reason
+      });
+      
+      // Check if the proposal should be automatically passed or rejected
+      const updatedProposal = await storage.getProposal(proposalId);
+      if (updatedProposal) {
+        if (updatedProposal.votesFor >= updatedProposal.votesRequired) {
+          await storage.updateProposal(proposalId, { status: "passed" });
+        } else if (updatedProposal.votesAgainst >= updatedProposal.votesRequired) {
+          await storage.updateProposal(proposalId, { status: "rejected" });
+        }
+      }
+      
+      // Award points to the user for voting
+      await storage.updateUserPoints(voteData.userId, 5);
+      
+      res.status(201).json(vote);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Get user roles
+  app.get("/api/users/:id/roles", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const roles = await storage.getUserRoles(userId);
+      res.json(roles);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Assign role to user
+  app.post("/api/users/:id/roles", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const roleSchema = z.object({
+        role: z.enum(["member", "moderator", "governance_council", "admin"]),
+        assignedBy: z.number().optional(),
+        expiresAt: z.string().optional()
+      });
+      
+      const roleData = roleSchema.parse(req.body);
+      
+      // Parse expiresAt if provided
+      let expiresAt = undefined;
+      if (roleData.expiresAt) {
+        expiresAt = new Date(roleData.expiresAt);
+      }
+      
+      const userRole = await storage.assignRoleToUser({
+        userId,
+        role: roleData.role,
+        assignedBy: roleData.assignedBy,
+        expiresAt
+      });
+      
+      res.status(201).json(userRole);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Remove role from user
+  app.delete("/api/users/:id/roles/:role", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const role = req.params.role;
+      
+      await storage.removeRoleFromUser(userId, role);
+      
+      res.status(204).send();
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
   return httpServer;

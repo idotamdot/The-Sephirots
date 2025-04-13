@@ -7,6 +7,9 @@ import CommunityNeeds from "@/pages/CommunityNeeds";
 import Wellbeing from "@/pages/Wellbeing";
 import Achievements from "@/pages/Achievements";
 import Profile from "@/pages/Profile";
+import Governance from "@/pages/Governance";
+import ProposalDetail from "@/pages/ProposalDetail";
+import CreateProposal from "@/pages/CreateProposal";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -67,6 +70,11 @@ function App() {
             <Route path="/achievements" component={Achievements} />
             <Route path="/profile">
               <Profile currentUser={currentUser} />
+            </Route>
+            <Route path="/governance" component={Governance} />
+            <Route path="/governance/new" component={CreateProposal} />
+            <Route path="/governance/:id">
+              {params => <ProposalDetail />}
             </Route>
             <Route component={NotFound} />
           </Switch>

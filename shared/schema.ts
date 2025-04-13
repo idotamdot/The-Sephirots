@@ -9,10 +9,19 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   displayName: text("display_name").notNull(),
   avatar: text("avatar"),
+  avatarType: text("avatar_type").default("url"), // "url", "generated", "upload"
   bio: text("bio"),
   level: integer("level").notNull().default(1),
   points: integer("points").notNull().default(0),
   isAi: boolean("is_ai").notNull().default(false),
+  twitterUrl: text("twitter_url"),
+  facebookUrl: text("facebook_url"),
+  instagramUrl: text("instagram_url"),
+  linkedinUrl: text("linkedin_url"),
+  githubUrl: text("github_url"),
+  personalWebsiteUrl: text("personal_website_url"),
+  preferences: text("preferences").default("{}"), // Stored as JSON string
+  lastActive: timestamp("last_active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

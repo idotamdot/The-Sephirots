@@ -91,13 +91,14 @@ export default function CreateProposal() {
         throw new Error("User not authenticated");
       }
       
-      return apiRequest("/api/proposals", "POST", {
+      const response = await apiRequest("POST", "/api/proposals", {
         ...values,
         status: "draft", // Start as draft
         proposedBy: currentUser.id,
       });
+      return response.json();
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       toast({
         title: "Proposal created",
         description: "Your proposal has been created successfully!",
@@ -105,7 +106,7 @@ export default function CreateProposal() {
       
       // Redirect to the proposal page
       setTimeout(() => {
-        setLocation(`/governance/${data.proposal.id}`);
+        setLocation(`/governance/${data.id}`);
       }, 1000);
     },
     onError: (error) => {

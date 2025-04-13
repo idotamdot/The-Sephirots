@@ -22,13 +22,11 @@ export default function Header({ onMenuClick, currentUser, isLoading }: HeaderPr
           >
             <i className="ri-menu-line text-2xl"></i>
           </button>
-          <Link href="/">
-            <a className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-secondary-400 flex items-center justify-center">
-                <i className="ri-community-line text-white text-lg"></i>
-              </div>
-              <span className="font-heading font-bold">Harmony</span>
-            </a>
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-secondary-400 flex items-center justify-center">
+              <i className="ri-community-line text-white text-lg"></i>
+            </div>
+            <span className="font-heading font-bold">Harmony</span>
           </Link>
         </div>
         
@@ -57,22 +55,20 @@ export default function Header({ onMenuClick, currentUser, isLoading }: HeaderPr
             {isLoading ? (
               <Skeleton className="w-8 h-8 rounded-full" />
             ) : currentUser ? (
-              <Link href="/profile">
-                <a>
-                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-                    {currentUser.avatar ? (
-                      <img 
-                        src={currentUser.avatar} 
-                        alt={currentUser.displayName} 
-                        className="w-8 h-8 rounded-full" 
-                      />
-                    ) : (
-                      <span className="text-primary-700 font-medium">
-                        {currentUser.displayName.charAt(0)}
-                      </span>
-                    )}
-                  </div>
-                </a>
+              <Link href="/profile" className="block">
+                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                  {currentUser.avatar ? (
+                    <img 
+                      src={currentUser.avatar} 
+                      alt={currentUser.displayName} 
+                      className="w-8 h-8 rounded-full" 
+                    />
+                  ) : (
+                    <span className="text-primary-700 font-medium">
+                      {currentUser.displayName.charAt(0)}
+                    </span>
+                  )}
+                </div>
               </Link>
             ) : (
               <div className="w-8 h-8 rounded-full bg-gray-200" />

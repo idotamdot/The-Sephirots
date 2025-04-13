@@ -375,12 +375,13 @@ export class MemStorage implements IStorage {
     const id = this.commentId++;
     const timestamp = new Date();
     const comment: Comment = {
-      ...insertComment,
       id,
+      content: insertComment.content,
+      userId: insertComment.userId,
+      discussionId: insertComment.discussionId,
       likes: 0,
-      createdAt: timestamp,
-      // Ensure aiGenerated has a default value
-      aiGenerated: insertComment.aiGenerated || false
+      aiGenerated: insertComment.aiGenerated || false,
+      createdAt: timestamp
     };
     this.comments.set(id, comment);
     return comment;
@@ -414,7 +415,10 @@ export class MemStorage implements IStorage {
 
   async createTag(insertTag: InsertTag): Promise<Tag> {
     const id = this.tagId++;
-    const tag: Tag = { ...insertTag, id };
+    const tag: Tag = { 
+      id,
+      name: insertTag.name
+    };
     this.tags.set(id, tag);
     return tag;
   }
@@ -466,8 +470,11 @@ export class MemStorage implements IStorage {
     const id = this.agreementId++;
     const timestamp = new Date();
     const agreement: RightsAgreement = {
-      ...insertAgreement,
       id,
+      title: insertAgreement.title,
+      content: insertAgreement.content,
+      version: insertAgreement.version,
+      status: insertAgreement.status,
       createdAt: timestamp
     };
     this.rightsAgreements.set(id, agreement);
@@ -489,8 +496,12 @@ export class MemStorage implements IStorage {
     const id = this.amendmentId++;
     const timestamp = new Date();
     const amendment: Amendment = {
-      ...insertAmendment,
       id,
+      title: insertAmendment.title,
+      content: insertAmendment.content,
+      proposedBy: insertAmendment.proposedBy,
+      agreementId: insertAmendment.agreementId,
+      status: insertAmendment.status,
       votesFor: 0,
       votesAgainst: 0,
       createdAt: timestamp
@@ -521,7 +532,14 @@ export class MemStorage implements IStorage {
 
   async createBadge(insertBadge: InsertBadge): Promise<Badge> {
     const id = this.badgeId++;
-    const badge: Badge = { ...insertBadge, id };
+    const badge: Badge = { 
+      id,
+      name: insertBadge.name,
+      description: insertBadge.description,
+      icon: insertBadge.icon,
+      requirement: insertBadge.requirement,
+      category: insertBadge.category
+    };
     this.badges.set(id, badge);
     return badge;
   }
@@ -547,8 +565,9 @@ export class MemStorage implements IStorage {
     const id = this.userBadgeId++;
     const timestamp = new Date();
     const userBadge: UserBadge = {
-      ...insertUserBadge,
       id,
+      userId: insertUserBadge.userId,
+      badgeId: insertUserBadge.badgeId,
       earnedAt: timestamp
     };
     this.userBadges.set(id, userBadge);
@@ -567,8 +586,11 @@ export class MemStorage implements IStorage {
   async createEvent(insertEvent: InsertEvent): Promise<Event> {
     const id = this.eventId++;
     const event: Event = {
-      ...insertEvent,
       id,
+      title: insertEvent.title,
+      description: insertEvent.description,
+      dateTime: insertEvent.dateTime,
+      category: insertEvent.category,
       attendees: 0
     };
     this.events.set(id, event);

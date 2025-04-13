@@ -13,7 +13,11 @@ import {
   votes, type Vote, type InsertVote,
   userRoles, type UserRole, type InsertUserRole,
   annotations, type Annotation, type InsertAnnotation,
-  annotationReplies, type AnnotationReply, type InsertAnnotationReply
+  annotationReplies, type AnnotationReply, type InsertAnnotationReply,
+  moderationFlags, type ModerationFlag, type InsertModerationFlag,
+  moderationDecisions, type ModerationDecision, type InsertModerationDecision,
+  moderationAppeals, type ModerationAppeal, type InsertModerationAppeal, 
+  moderationSettings, type ModerationSetting, type InsertModerationSetting
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";

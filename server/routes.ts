@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import openai from "./openai";
+import { ModerationService } from "./moderation";
 import { 
   insertUserSchema, 
   insertDiscussionSchema, 
@@ -15,12 +16,20 @@ import {
   insertUserRoleSchema,
   insertAnnotationSchema,
   insertAnnotationReplySchema,
+  insertModerationFlagSchema,
+  insertModerationDecisionSchema,
+  insertModerationAppealSchema,
+  insertModerationSettingSchema,
   type User,
   type Proposal,
   type Vote,
   type UserRole,
   type Annotation,
-  type AnnotationReply
+  type AnnotationReply,
+  type ModerationFlag,
+  type ModerationDecision,
+  type ModerationAppeal,
+  type ModerationSetting
 } from "@shared/schema";
 import { z, ZodError } from "zod";
 
@@ -949,5 +958,220 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create HTTP server
   const httpServer = createServer(app);
+  // Initialize the moderation service
+  const moderationService = new ModerationService(storage);
+
+  // ===== MODERATION ROUTES =====
+
+  // Auto-moderate content
+  app.post("/api/moderation/auto-moderate", async (req, res) => {
+    try {
+      const autoModerateSchema = z.object({
+        contentId: z.number(),
+        contentType: z.enum(["discussion", "comment", "proposal", "amendment", "profile", "event"]),
+        content: z.string(),
+        userId: z.number()
+      });
+
+      const { contentId, contentType, content, userId } = autoModerateSchema.parse(req.body);
+      
+      const result = await moderationService.autoModerateContent(
+        contentId,
+        contentType,
+        content,
+        userId
+      );
+      
+      res.json(result);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Get content moderation analysis
+  app.post("/api/moderation/analyze", async (req, res) => {
+    try {
+      const analyzeSchema = z.object({
+        content: z.string()
+      });
+
+      const { content } = analyzeSchema.parse(req.body);
+      
+      const analysis = await moderationService.analyzeContent(content);
+      res.json(analysis);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Get all moderation flags
+  app.get("/api/moderation/flags", async (_req, res) => {
+    try {
+      const flags = await storage.getModerationFlags();
+      res.json(flags);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get moderation flags by status
+  app.get("/api/moderation/flags/status/:status", async (req, res) => {
+    try {
+      const status = req.params.status;
+      const flags = await storage.getModerationFlagsByStatus(status);
+      res.json(flags);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create moderation flag
+  app.post("/api/moderation/flags", async (req, res) => {
+    try {
+      const flagData = insertModerationFlagSchema.parse(req.body);
+      const flag = await storage.createModerationFlag(flagData);
+      res.status(201).json(flag);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Get AI assistance for moderation decision
+  app.get("/api/moderation/flags/:id/ai-assistance", async (req, res) => {
+    try {
+      const flagId = parseInt(req.params.id);
+      const assistance = await moderationService.getAIAssistance(flagId);
+      res.json(assistance);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Make moderation decision
+  app.post("/api/moderation/decisions", async (req, res) => {
+    try {
+      const decisionSchema = z.object({
+        flagId: z.number(),
+        moderatorId: z.number(),
+        decision: z.enum(["approved", "rejected"]),
+        reasoning: z.string(),
+        aiAssisted: z.boolean()
+      });
+
+      const { flagId, moderatorId, decision, reasoning, aiAssisted } = decisionSchema.parse(req.body);
+      
+      const result = await moderationService.makeDecision(
+        flagId,
+        moderatorId,
+        decision,
+        reasoning,
+        aiAssisted
+      );
+      
+      res.status(201).json(result);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Submit appeal for moderation decision
+  app.post("/api/moderation/appeals", async (req, res) => {
+    try {
+      const appealData = insertModerationAppealSchema.parse(req.body);
+      const appeal = await storage.createModerationAppeal(appealData);
+      res.status(201).json(appeal);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Get all appeals
+  app.get("/api/moderation/appeals", async (_req, res) => {
+    try {
+      const appeals = await storage.getModerationAppeals();
+      res.json(appeals);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get appeals by status
+  app.get("/api/moderation/appeals/status/:status", async (req, res) => {
+    try {
+      const status = req.params.status;
+      const appeals = await storage.getModerationAppealsByStatus(status);
+      res.json(appeals);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Review an appeal
+  app.post("/api/moderation/appeals/:id/review", async (req, res) => {
+    try {
+      const reviewSchema = z.object({
+        reviewerId: z.number(),
+        outcome: z.enum(["approved", "rejected"]),
+        flagId: z.number()
+      });
+
+      const appealId = parseInt(req.params.id);
+      const { reviewerId, outcome, flagId } = reviewSchema.parse(req.body);
+      
+      const result = await moderationService.reviewAppeal(
+        appealId,
+        reviewerId,
+        outcome,
+        flagId
+      );
+      
+      res.json(result);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
+  // Get moderation settings
+  app.get("/api/moderation/settings", async (_req, res) => {
+    try {
+      const settings = await storage.getModerationSettings();
+      res.json(settings);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create or update moderation setting
+  app.post("/api/moderation/settings", async (req, res) => {
+    try {
+      const settingData = insertModerationSettingSchema.parse(req.body);
+      
+      // Check if setting already exists
+      const existingSetting = await storage.getModerationSetting(settingData.key);
+      
+      if (existingSetting) {
+        // Update
+        const updated = await storage.updateModerationSetting(existingSetting.id, {
+          value: settingData.value,
+          description: settingData.description,
+          updatedBy: settingData.updatedBy
+        });
+        return res.json(updated);
+      }
+      
+      // Create new
+      const setting = await storage.createModerationSetting(settingData);
+      res.status(201).json(setting);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+
   return httpServer;
 }

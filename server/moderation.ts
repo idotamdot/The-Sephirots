@@ -279,22 +279,22 @@ export class ModerationService {
       }
 
       // Get the content based on the content type and ID
-      let content = "";
+      let flaggedContent = "";
       switch (flag.contentType) {
         case "discussion":
           const discussion = await this.storage.getDiscussion(flag.contentId);
-          content = discussion ? `Title: ${discussion.title}\nContent: ${discussion.content}` : "";
+          flaggedContent = discussion ? `Title: ${discussion.title}\nContent: ${discussion.content}` : "";
           break;
         case "comment":
           const comment = await this.storage.getComment(flag.contentId);
-          content = comment ? comment.content : "";
+          flaggedContent = comment ? comment.content : "";
           break;
         case "proposal":
           const proposal = await this.storage.getProposal(flag.contentId);
-          content = proposal ? `Title: ${proposal.title}\nDescription: ${proposal.description}` : "";
+          flaggedContent = proposal ? `Title: ${proposal.title}\nDescription: ${proposal.description}` : "";
           break;
         default:
-          content = "Content not found";
+          flaggedContent = "Content not found";
       }
 
       // AI analysis
@@ -317,13 +317,14 @@ export class ModerationService {
           },
           {
             role: "user",
-            content: content
+            content: flaggedContent
           }
         ],
         response_format: { type: "json_object" },
       });
 
-      const result = JSON.parse(response.choices[0].message.content);
+      const responseContent = response.choices[0].message.content || '{"recommendation":"review","reasoning":"Unable to analyze content","confidence":0}';
+      const result = JSON.parse(responseContent);
 
       return {
         recommendation: result.recommendation.toLowerCase(),

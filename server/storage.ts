@@ -667,6 +667,142 @@ export class MemStorage implements IStorage {
     this.events.set(id, updatedEvent);
     return updatedEvent;
   }
+
+  // Governance Proposal methods
+  async getProposals(): Promise<Proposal[]> {
+    return Array.from(this.proposals.values());
+  }
+
+  async getProposalsByCategory(category: string): Promise<Proposal[]> {
+    return Array.from(this.proposals.values()).filter(
+      proposal => proposal.category === category
+    );
+  }
+
+  async getProposalsByStatus(status: string): Promise<Proposal[]> {
+    return Array.from(this.proposals.values()).filter(
+      proposal => proposal.status === status
+    );
+  }
+
+  async getProposal(id: number): Promise<Proposal | undefined> {
+    return this.proposals.get(id);
+  }
+
+  async createProposal(insertProposal: InsertProposal): Promise<Proposal> {
+    const id = this.proposalId++;
+    const timestamp = new Date();
+    const proposal: Proposal = {
+      id,
+      title: insertProposal.title,
+      description: insertProposal.description,
+      category: insertProposal.category,
+      status: insertProposal.status || "draft",
+      proposedBy: insertProposal.proposedBy,
+      votesRequired: insertProposal.votesRequired || 10,
+      votesFor: 0,
+      votesAgainst: 0,
+      votingEndsAt: insertProposal.votingEndsAt,
+      implementationDetails: insertProposal.implementationDetails || null,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    this.proposals.set(id, proposal);
+    return proposal;
+  }
+
+  async updateProposal(id: number, partialProposal: Partial<Proposal>): Promise<Proposal> {
+    const proposal = await this.getProposal(id);
+    if (!proposal) {
+      throw new Error(`Proposal with ID ${id} not found`);
+    }
+    
+    const updatedProposal = { 
+      ...proposal, 
+      ...partialProposal,
+      updatedAt: new Date()
+    };
+    this.proposals.set(id, updatedProposal);
+    return updatedProposal;
+  }
+
+  // Vote methods
+  async getVotesByProposal(proposalId: number): Promise<Vote[]> {
+    return Array.from(this.votes.values()).filter(
+      vote => vote.proposalId === proposalId
+    );
+  }
+
+  async getUserVoteOnProposal(userId: number, proposalId: number): Promise<Vote | undefined> {
+    return Array.from(this.votes.values()).find(
+      vote => vote.userId === userId && vote.proposalId === proposalId
+    );
+  }
+
+  async createVote(insertVote: InsertVote): Promise<Vote> {
+    // Check if user already voted on this proposal
+    const existingVote = await this.getUserVoteOnProposal(insertVote.userId, insertVote.proposalId);
+    if (existingVote) {
+      throw new Error(`User ${insertVote.userId} has already voted on proposal ${insertVote.proposalId}`);
+    }
+    
+    const id = this.voteId++;
+    const timestamp = new Date();
+    const vote: Vote = {
+      id,
+      proposalId: insertVote.proposalId,
+      userId: insertVote.userId,
+      vote: insertVote.vote,
+      reason: insertVote.reason || null,
+      createdAt: timestamp
+    };
+    this.votes.set(id, vote);
+    
+    // Update proposal vote counts
+    const proposal = await this.getProposal(insertVote.proposalId);
+    if (proposal) {
+      const updatedProposal = { 
+        ...proposal,
+        votesFor: insertVote.vote ? proposal.votesFor + 1 : proposal.votesFor,
+        votesAgainst: !insertVote.vote ? proposal.votesAgainst + 1 : proposal.votesAgainst
+      };
+      this.proposals.set(proposal.id, updatedProposal);
+    }
+    
+    return vote;
+  }
+
+  // User Role methods
+  async getUserRoles(userId: number): Promise<UserRole[]> {
+    return Array.from(this.userRoles.values()).filter(
+      role => role.userId === userId
+    );
+  }
+
+  async assignRoleToUser(insertUserRole: InsertUserRole): Promise<UserRole> {
+    const id = this.userRoleId++;
+    const timestamp = new Date();
+    const userRole: UserRole = {
+      id,
+      userId: insertUserRole.userId,
+      role: insertUserRole.role,
+      assignedBy: insertUserRole.assignedBy || null,
+      assignedAt: timestamp,
+      expiresAt: insertUserRole.expiresAt || null
+    };
+    this.userRoles.set(id, userRole);
+    return userRole;
+  }
+
+  async removeRoleFromUser(userId: number, role: string): Promise<void> {
+    const userRolesArray = Array.from(this.userRoles.entries());
+    for (const [id, userRole] of userRolesArray) {
+      if (userRole.userId === userId && userRole.role === role) {
+        this.userRoles.delete(id);
+        break;
+      }
+    }
+  }
 }
 
 // Import the DatabaseStorage implementation

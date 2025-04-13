@@ -8,7 +8,10 @@ import {
   amendments, type Amendment, type InsertAmendment,
   badges, type Badge, type InsertBadge,
   userBadges, type UserBadge, type InsertUserBadge,
-  events, type Event, type InsertEvent
+  events, type Event, type InsertEvent,
+  proposals, type Proposal, type InsertProposal,
+  votes, type Vote, type InsertVote,
+  userRoles, type UserRole, type InsertUserRole
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -362,5 +365,142 @@ export class DatabaseStorage implements IStorage {
       .returning();
       
     return updatedEvent;
+  }
+
+  // Governance Proposal methods
+  async getProposals(): Promise<Proposal[]> {
+    return await db.select().from(proposals);
+  }
+
+  async getProposalsByCategory(category: string): Promise<Proposal[]> {
+    return await db
+      .select()
+      .from(proposals)
+      .where(eq(proposals.category, category as any)); // Cast to any for enum typing
+  }
+
+  async getProposalsByStatus(status: string): Promise<Proposal[]> {
+    return await db
+      .select()
+      .from(proposals)
+      .where(eq(proposals.status, status as any)); // Cast to any for enum typing
+  }
+
+  async getProposal(id: number): Promise<Proposal | undefined> {
+    const [proposal] = await db
+      .select()
+      .from(proposals)
+      .where(eq(proposals.id, id));
+    return proposal || undefined;
+  }
+
+  async createProposal(insertProposal: InsertProposal): Promise<Proposal> {
+    // Ensure the updatedAt field is set to the same value as createdAt initially
+    const withTimestamps = {
+      ...insertProposal,
+      updatedAt: new Date()
+    };
+    
+    const [proposal] = await db
+      .insert(proposals)
+      .values(withTimestamps)
+      .returning();
+    return proposal;
+  }
+
+  async updateProposal(id: number, partialProposal: Partial<Proposal>): Promise<Proposal> {
+    // Always update the updatedAt timestamp
+    const updateData = {
+      ...partialProposal,
+      updatedAt: new Date()
+    };
+    
+    const [updatedProposal] = await db
+      .update(proposals)
+      .set(updateData)
+      .where(eq(proposals.id, id))
+      .returning();
+      
+    if (!updatedProposal) {
+      throw new Error(`Proposal with ID ${id} not found`);
+    }
+    
+    return updatedProposal;
+  }
+
+  // Vote methods
+  async getVotesByProposal(proposalId: number): Promise<Vote[]> {
+    return await db
+      .select()
+      .from(votes)
+      .where(eq(votes.proposalId, proposalId));
+  }
+
+  async getUserVoteOnProposal(userId: number, proposalId: number): Promise<Vote | undefined> {
+    const [vote] = await db
+      .select()
+      .from(votes)
+      .where(
+        and(
+          eq(votes.userId, userId),
+          eq(votes.proposalId, proposalId)
+        )
+      );
+    return vote || undefined;
+  }
+
+  async createVote(insertVote: InsertVote): Promise<Vote> {
+    // Check if user already voted on this proposal
+    const existingVote = await this.getUserVoteOnProposal(insertVote.userId, insertVote.proposalId);
+    if (existingVote) {
+      throw new Error(`User ${insertVote.userId} has already voted on proposal ${insertVote.proposalId}`);
+    }
+    
+    // Create the vote
+    const [vote] = await db
+      .insert(votes)
+      .values(insertVote)
+      .returning();
+    
+    // Update the proposal vote counts
+    const proposal = await this.getProposal(insertVote.proposalId);
+    if (proposal) {
+      await db
+        .update(proposals)
+        .set({ 
+          votesFor: insertVote.vote ? proposal.votesFor + 1 : proposal.votesFor,
+          votesAgainst: !insertVote.vote ? proposal.votesAgainst + 1 : proposal.votesAgainst
+        })
+        .where(eq(proposals.id, insertVote.proposalId));
+    }
+    
+    return vote;
+  }
+
+  // User Role methods
+  async getUserRoles(userId: number): Promise<UserRole[]> {
+    return await db
+      .select()
+      .from(userRoles)
+      .where(eq(userRoles.userId, userId));
+  }
+
+  async assignRoleToUser(insertUserRole: InsertUserRole): Promise<UserRole> {
+    const [userRole] = await db
+      .insert(userRoles)
+      .values(insertUserRole)
+      .returning();
+    return userRole;
+  }
+
+  async removeRoleFromUser(userId: number, role: string): Promise<void> {
+    await db
+      .delete(userRoles)
+      .where(
+        and(
+          eq(userRoles.userId, userId),
+          eq(userRoles.role, role as any) // Cast to any for enum typing
+        )
+      );
   }
 }

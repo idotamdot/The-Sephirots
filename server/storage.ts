@@ -442,7 +442,11 @@ export class MemStorage implements IStorage {
 
   async addTagToDiscussion(insertDiscussionTag: InsertDiscussionTag): Promise<DiscussionTag> {
     const id = this.discussionTagId++;
-    const discussionTag: DiscussionTag = { ...insertDiscussionTag, id };
+    const discussionTag: DiscussionTag = { 
+      id,
+      discussionId: insertDiscussionTag.discussionId,
+      tagId: insertDiscussionTag.tagId
+    };
     this.discussionTags.set(id, discussionTag);
     return discussionTag;
   }

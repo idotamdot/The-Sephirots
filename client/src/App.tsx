@@ -10,6 +10,7 @@ import Profile from "@/pages/Profile";
 import Governance from "@/pages/Governance";
 import ProposalDetail from "@/pages/ProposalDetail";
 import CreateProposal from "@/pages/CreateProposal";
+import Moderation from "@/pages/Moderation";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -76,6 +77,7 @@ function App() {
             <Route path="/governance/:id">
               {params => <ProposalDetail />}
             </Route>
+            <Route path="/moderation" component={Moderation} />
             <Route component={NotFound} />
           </Switch>
         </div>

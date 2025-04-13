@@ -34,6 +34,12 @@ export const navigationItems = [
     path: "/achievements",
     label: "Achievements",
     icon: "ri-award-line"
+  },
+  {
+    path: "/moderation",
+    label: "Moderation",
+    icon: "ri-shield-check-line",
+    adminOnly: true
   }
 ];
 

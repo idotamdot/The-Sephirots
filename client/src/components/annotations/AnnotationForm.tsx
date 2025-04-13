@@ -60,7 +60,6 @@ export default function AnnotationForm({ proposalId, userId, onSuccess }: Annota
       type: "comment",
       selectedText: "",
       position: "",
-      status: "open",
     },
   });
   
@@ -193,7 +192,6 @@ export default function AnnotationForm({ proposalId, userId, onSuccess }: Annota
             
             <input type="hidden" {...form.register("proposalId")} />
             <input type="hidden" {...form.register("userId")} />
-            <input type="hidden" {...form.register("status")} />
             
             <DialogFooter>
               <DialogClose asChild>

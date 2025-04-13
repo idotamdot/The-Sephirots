@@ -10,6 +10,7 @@ import { Annotation, AnnotationReply } from "@shared/schema";
 // Import from index to avoid circular dependencies
 import { AnnotationReplyForm, AnnotationForm } from ".";
 
+// Extended type to include user info and replies
 type AnnotationWithUserAndReplies = Annotation & {
   user: {
     id: number;
@@ -23,6 +24,8 @@ type AnnotationWithUserAndReplies = Annotation & {
       avatar?: string | null;
     } | null;
   })[];
+  // Status derived from the resolved field
+  status: 'open' | 'resolved';
 };
 
 interface AnnotationListProps {
@@ -77,7 +80,7 @@ export default function AnnotationList({ proposalId, currentUserId }: Annotation
         <ScrollArea className="h-[500px] pr-4">
           <div className="space-y-4">
             {annotations.map((annotation) => (
-              <Card key={annotation.id} className={annotation.status === 'resolved' ? 'border-green-200 bg-green-50' : ''}>
+              <Card key={annotation.id} className={annotation.resolved ? 'border-green-200 bg-green-50' : ''}>
                 <CardHeader className="pb-2 pt-4 px-4 flex flex-row justify-between">
                   <div className="flex items-center space-x-2">
                     <Avatar className="h-8 w-8">
@@ -100,14 +103,14 @@ export default function AnnotationList({ proposalId, currentUserId }: Annotation
                 </CardHeader>
                 <CardContent className="px-4 py-2">
                   <div className="text-sm">{annotation.content}</div>
-                  {annotation.status === 'resolved' && (
+                  {annotation.resolved && (
                     <p className="text-xs text-green-600 mt-2">
                       Resolved by {annotation.resolvedBy ? 'a team member' : 'author'}
                     </p>
                   )}
                 </CardContent>
                 <CardFooter className="px-4 pt-0 pb-3 flex flex-col items-start">
-                  {annotation.status !== 'resolved' && (
+                  {!annotation.resolved && (
                     <div className="flex space-x-2 mb-2">
                       <Button 
                         variant="outline" 

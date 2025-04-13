@@ -9,7 +9,8 @@ import {
   insertRightsAgreementSchema,
   insertAmendmentSchema,
   insertEventSchema,
-  insertTagSchema
+  insertTagSchema,
+  type User
 } from "@shared/schema";
 import { z, ZodError } from "zod";
 
@@ -64,6 +65,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Update user profile
+  app.patch("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Define a validation schema for user profile updates
+      const updateProfileSchema = z.object({
+        displayName: z.string().min(2).max(50).optional(),
+        avatar: z.string().url().or(z.string().length(0)).nullish(),
+        avatarType: z.enum(['url', 'generated', 'upload']).optional(),
+        bio: z.string().max(500).nullish(),
+        twitterUrl: z.string().url().or(z.string().length(0)).nullish(),
+        facebookUrl: z.string().url().or(z.string().length(0)).nullish(),
+        instagramUrl: z.string().url().or(z.string().length(0)).nullish(),
+        linkedinUrl: z.string().url().or(z.string().length(0)).nullish(),
+        githubUrl: z.string().url().or(z.string().length(0)).nullish(),
+        personalWebsiteUrl: z.string().url().or(z.string().length(0)).nullish(),
+        preferences: z.string().optional() // JSON string
+      });
+      
+      // Validate request body
+      const updateData = updateProfileSchema.parse(req.body);
+      
+      // Update user
+      const updatedUser = await storage.updateUser(userId, updateData);
+      
+      // Don't return password in response
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (err) {
+      handleZodError(err, res);
     }
   });
 

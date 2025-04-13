@@ -8,7 +8,10 @@ import {
   amendments, Amendment, InsertAmendment,
   badges, Badge, InsertBadge,
   userBadges, UserBadge, InsertUserBadge,
-  events, Event, InsertEvent
+  events, Event, InsertEvent,
+  proposals, Proposal, InsertProposal,
+  votes, Vote, InsertVote,
+  userRoles, UserRole, InsertUserRole
 } from "@shared/schema";
 
 export interface IStorage {
@@ -68,6 +71,24 @@ export interface IStorage {
   getEvent(id: number): Promise<Event | undefined>;
   createEvent(event: InsertEvent): Promise<Event>;
   updateEventAttendees(id: number, count: number): Promise<Event>;
+  
+  // Governance Proposals
+  getProposals(): Promise<Proposal[]>;
+  getProposalsByCategory(category: string): Promise<Proposal[]>;
+  getProposalsByStatus(status: string): Promise<Proposal[]>;
+  getProposal(id: number): Promise<Proposal | undefined>;
+  createProposal(proposal: InsertProposal): Promise<Proposal>;
+  updateProposal(id: number, proposal: Partial<Proposal>): Promise<Proposal>;
+  
+  // Votes
+  getVotesByProposal(proposalId: number): Promise<Vote[]>;
+  getUserVoteOnProposal(userId: number, proposalId: number): Promise<Vote | undefined>;
+  createVote(vote: InsertVote): Promise<Vote>;
+  
+  // User Roles
+  getUserRoles(userId: number): Promise<UserRole[]>;
+  assignRoleToUser(userRole: InsertUserRole): Promise<UserRole>;
+  removeRoleFromUser(userId: number, role: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -81,6 +102,9 @@ export class MemStorage implements IStorage {
   private badges: Map<number, Badge>;
   private userBadges: Map<number, UserBadge>;
   private events: Map<number, Event>;
+  private proposals: Map<number, Proposal>;
+  private votes: Map<number, Vote>;
+  private userRoles: Map<number, UserRole>;
   
   private userId: number;
   private discussionId: number;
@@ -92,6 +116,9 @@ export class MemStorage implements IStorage {
   private badgeId: number;
   private userBadgeId: number;
   private eventId: number;
+  private proposalId: number;
+  private voteId: number;
+  private userRoleId: number;
 
   constructor() {
     this.users = new Map();
@@ -104,6 +131,9 @@ export class MemStorage implements IStorage {
     this.badges = new Map();
     this.userBadges = new Map();
     this.events = new Map();
+    this.proposals = new Map();
+    this.votes = new Map();
+    this.userRoles = new Map();
     
     this.userId = 1;
     this.discussionId = 1;
@@ -115,6 +145,9 @@ export class MemStorage implements IStorage {
     this.badgeId = 1;
     this.userBadgeId = 1;
     this.eventId = 1;
+    this.proposalId = 1;
+    this.voteId = 1;
+    this.userRoleId = 1;
     
     // Initialize with sample data
     this.initializeData();

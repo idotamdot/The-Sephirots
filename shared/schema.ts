@@ -177,6 +177,85 @@ export const insertEventSchema = createInsertSchema(events).omit({
   attendees: true,
 });
 
+// Proposals schema for community governance
+export const proposalStatusEnum = pgEnum("proposal_status", [
+  "draft",
+  "active",
+  "passed",
+  "rejected",
+  "implemented"
+]);
+
+export const proposalCategoryEnum = pgEnum("proposal_category", [
+  "community_rules",
+  "feature_request",
+  "moderation_policy",
+  "resource_allocation",
+  "protocol_change",
+  "other"
+]);
+
+export const proposals = pgTable("proposals", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: proposalCategoryEnum("category").notNull(),
+  status: proposalStatusEnum("status").notNull().default("draft"),
+  proposedBy: integer("proposed_by").notNull(), // User ID
+  votesRequired: integer("votes_required").notNull().default(10),
+  votesFor: integer("votes_for").notNull().default(0),
+  votesAgainst: integer("votes_against").notNull().default(0),
+  votingEndsAt: timestamp("voting_ends_at").notNull(),
+  implementationDetails: text("implementation_details"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertProposalSchema = createInsertSchema(proposals).omit({
+  id: true,
+  votesFor: true,
+  votesAgainst: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Votes schema for proposals
+export const votes = pgTable("votes", {
+  id: serial("id").primaryKey(),
+  proposalId: integer("proposal_id").notNull(),
+  userId: integer("user_id").notNull(),
+  vote: boolean("vote").notNull(), // true = for, false = against
+  reason: text("reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertVoteSchema = createInsertSchema(votes).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Community roles schema
+export const roleEnum = pgEnum("role", [
+  "member",
+  "moderator",
+  "governance_council",
+  "admin"
+]);
+
+export const userRoles = pgTable("user_roles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  role: roleEnum("role").notNull(),
+  assignedBy: integer("assigned_by"), // User ID who assigned this role, null for system-assigned
+  assignedAt: timestamp("assigned_at").notNull().defaultNow(),
+  expiresAt: timestamp("expires_at"), // Optional expiration for temporary roles
+});
+
+export const insertUserRoleSchema = createInsertSchema(userRoles).omit({
+  id: true,
+  assignedAt: true,
+});
+
 // Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -207,6 +286,15 @@ export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
 
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
+
+export type Proposal = typeof proposals.$inferSelect;
+export type InsertProposal = z.infer<typeof insertProposalSchema>;
+
+export type Vote = typeof votes.$inferSelect;
+export type InsertVote = z.infer<typeof insertVoteSchema>;
+
+export type UserRole = typeof userRoles.$inferSelect;
+export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
 
 // We'll define relationships between tables later when needed
 // For now, this basic schema is sufficient for creating the tables

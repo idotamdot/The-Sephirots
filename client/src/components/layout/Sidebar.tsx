@@ -52,18 +52,15 @@ export default function Sidebar({ open, onClose, currentUser }: SidebarProps) {
               key={item.path} 
               href={item.path}
               onClick={onClose}
+              className={cn(
+                "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors duration-150",
+                location === item.path 
+                  ? "bg-primary-50 text-primary-700" 
+                  : "text-gray-700 hover:bg-gray-100"
+              )}
             >
-              <a 
-                className={cn(
-                  "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors duration-150",
-                  location === item.path 
-                    ? "bg-primary-50 text-primary-700" 
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
-              >
-                <i className={`${item.icon} text-lg`}></i>
-                <span>{item.label}</span>
-              </a>
+              <i className={`${item.icon} text-lg`}></i>
+              <span>{item.label}</span>
             </Link>
           ))}
         </nav>
@@ -93,10 +90,8 @@ export default function Sidebar({ open, onClose, currentUser }: SidebarProps) {
                 <p className="text-xs text-gray-500">Level {currentUser.level}</p>
               </div>
               <div className="ml-auto">
-                <Link href="/profile">
-                  <a className="text-gray-400 hover:text-gray-500">
-                    <i className="ri-settings-3-line"></i>
-                  </a>
+                <Link href="/profile" className="text-gray-400 hover:text-gray-500">
+                  <i className="ri-settings-3-line"></i>
                 </Link>
               </div>
             </div>

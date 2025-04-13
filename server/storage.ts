@@ -285,8 +285,12 @@ export class MemStorage implements IStorage {
     const id = this.userId++;
     const timestamp = new Date();
     const user: User = { 
-      ...insertUser, 
-      id, 
+      id,
+      username: insertUser.username,
+      password: insertUser.password,
+      displayName: insertUser.displayName,
+      avatar: insertUser.avatar || null,
+      bio: insertUser.bio || null,
       level: 1,
       points: 0,
       isAi: false,
@@ -331,8 +335,12 @@ export class MemStorage implements IStorage {
     const id = this.discussionId++;
     const timestamp = new Date();
     const discussion: Discussion = {
-      ...insertDiscussion,
       id,
+      title: insertDiscussion.title,
+      content: insertDiscussion.content,
+      userId: insertDiscussion.userId, 
+      category: insertDiscussion.category,
+      aiEnhanced: insertDiscussion.aiEnhanced || false,
       likes: 0,
       views: 0,
       createdAt: timestamp
@@ -370,7 +378,9 @@ export class MemStorage implements IStorage {
       ...insertComment,
       id,
       likes: 0,
-      createdAt: timestamp
+      createdAt: timestamp,
+      // Ensure aiGenerated has a default value
+      aiGenerated: insertComment.aiGenerated || false
     };
     this.comments.set(id, comment);
     return comment;

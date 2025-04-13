@@ -10,6 +10,7 @@ export interface User {
   points: number;
   isAi: boolean;
   createdAt: string;
+  roles?: string[]; // Added roles array for user permissions
 }
 
 export type TopicCategory = 'community_needs' | 'rights_agreement' | 'wellbeing' | 'communication' | 'other';

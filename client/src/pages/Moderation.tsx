@@ -111,8 +111,8 @@ export default function Moderation() {
   const getAiAssistance = async (flagId: number) => {
     setIsLoadingAi(true);
     try {
-      const response = await apiRequest<AIRecommendation>(`/api/moderation/flags/${flagId}/ai-assistance`);
-      setAiRecommendation(response);
+      const response = await apiRequest(`/api/moderation/flags/${flagId}/ai-assistance`);
+      setAiRecommendation(response as AIRecommendation);
     } catch (error) {
       console.error("Error getting AI assistance:", error);
       toast({
@@ -138,7 +138,7 @@ export default function Moderation() {
       reasoning: string;
       aiAssisted: boolean;
     }) => {
-      return apiRequest("/api/moderation/decisions", {
+      const requestData = {
         method: "POST",
         body: {
           flagId,
@@ -147,7 +147,8 @@ export default function Moderation() {
           reasoning,
           aiAssisted,
         },
-      });
+      };
+      return apiRequest("/api/moderation/decisions", requestData as any);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/moderation/flags/status"] });

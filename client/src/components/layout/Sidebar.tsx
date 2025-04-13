@@ -47,22 +47,24 @@ export default function Sidebar({ open, onClose, currentUser }: SidebarProps) {
         
         {/* Navigation Links */}
         <nav className="space-y-1 flex-1">
-          {navigationItems.map((item) => (
-            <Link 
-              key={item.path} 
-              href={item.path}
-              onClick={onClose}
-              className={cn(
-                "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors duration-150",
-                location === item.path 
-                  ? "bg-primary-50 text-primary-700" 
-                  : "text-gray-700 hover:bg-gray-100"
-              )}
-            >
-              <i className={`${item.icon} text-lg`}></i>
-              <span>{item.label}</span>
-            </Link>
-          ))}
+          {navigationItems
+            .filter(item => !item.adminOnly || (currentUser?.roles?.includes('admin') || currentUser?.roles?.includes('moderator')))
+            .map((item) => (
+              <Link 
+                key={item.path} 
+                href={item.path}
+                onClick={onClose}
+                className={cn(
+                  "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors duration-150",
+                  location === item.path 
+                    ? "bg-primary-50 text-primary-700" 
+                    : "text-gray-700 hover:bg-gray-100"
+                )}
+              >
+                <i className={`${item.icon} text-lg`}></i>
+                <span>{item.label}</span>
+              </Link>
+            ))}
         </nav>
         
         {/* User Profile Preview */}

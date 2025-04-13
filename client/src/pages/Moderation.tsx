@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { User } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -21,7 +22,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,9 +37,18 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { AlertTriangle, Check, X, Loader2, AlertCircle, FileText, MessageSquare, Vote, User } from "lucide-react";
+import { FileText, MessageSquare, User as UserIcon, AlertCircle, X, Check, Shield, Lock, Loader2 } from "lucide-react";
 
-// Types for moderation data
+// Custom icon for votes
+const Vote = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-1">
+    <path d="m9 12 2 2 4-4" />
+    <path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z" />
+    <path d="M22 19H2" />
+  </svg>
+);
+
+// Interface for moderation flag
 interface ModerationFlag {
   id: number;
   contentId: number;
@@ -52,6 +61,7 @@ interface ModerationFlag {
   createdAt: string;
 }
 
+// Interface for moderation decision
 interface ModerationDecision {
   id: number;
   flagId: number;
@@ -62,6 +72,7 @@ interface ModerationDecision {
   createdAt: string;
 }
 
+// Interface for moderation appeal
 interface ModerationAppeal {
   id: number;
   flagId: number;
@@ -71,40 +82,44 @@ interface ModerationAppeal {
   createdAt: string;
 }
 
+// Interface for AI recommendation
 interface AIRecommendation {
   recommendation: string;
   reasoning: string;
   confidence: number;
 }
 
-interface User {
-  id: number;
-  username: string;
-  displayName: string;
-}
-
 export default function Moderation() {
-  const [activeTab, setActiveTab] = useState("pending");
-  const [selectedFlag, setSelectedFlag] = useState<ModerationFlag | null>(null);
+  // Get current user for role-based access control
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["/api/users/me"],
+  });
+
+  // Check if user has admin or moderator role
+  const hasModeratorAccess = currentUser?.roles?.some(role => 
+    role === 'admin' || role === 'moderator'
+  );
+
+  const queryClient = useQueryClient();
   const [decisionDialog, setDecisionDialog] = useState(false);
   const [appealDialog, setAppealDialog] = useState(false);
+  const [selectedFlag, setSelectedFlag] = useState<ModerationFlag | null>(null);
   const [reason, setReason] = useState("");
+  const [activeTab, setActiveTab] = useState("pending");
   const [useAi, setUseAi] = useState(true);
   const [aiRecommendation, setAiRecommendation] = useState<AIRecommendation | null>(null);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
 
-  const queryClient = useQueryClient();
-
-  // Fetch moderation flags based on status
-  const { data: flags, isLoading: isLoadingFlags } = useQuery<ModerationFlag[]>({
+  // Get flags based on status - only fetch if user has moderator access
+  const { data: flags, isLoading: isLoadingFlags } = useQuery({
     queryKey: ["/api/moderation/flags/status", activeTab],
-    enabled: !!activeTab,
+    enabled: hasModeratorAccess && activeTab !== "appealed",
   });
 
-  // Fetch all appeals
-  const { data: appeals, isLoading: isLoadingAppeals } = useQuery<ModerationAppeal[]>({
+  // Get appeals for the appeals tab - only fetch if user has moderator access
+  const { data: appeals, isLoading: isLoadingAppeals } = useQuery({
     queryKey: ["/api/moderation/appeals"],
-    enabled: activeTab === "appealed",
+    enabled: hasModeratorAccess && activeTab === "appealed",
   });
 
   // Get AI assistance for moderation decision
@@ -148,7 +163,7 @@ export default function Moderation() {
         method: "POST",
         body: {
           flagId,
-          moderatorId: 1, // Normally would use current user ID
+          moderatorId: currentUser?.id || 1, // Use current user ID if available
           decision,
           reasoning,
           aiAssisted,
@@ -190,7 +205,7 @@ export default function Moderation() {
       const requestData = {
         method: "POST",
         body: {
-          reviewerId: 1, // Normally would use current user ID
+          reviewerId: currentUser?.id || 1, // Use current user ID if available
           outcome,
           flagId,
         },
@@ -284,13 +299,34 @@ export default function Moderation() {
       case "comment":
         return <MessageSquare className="h-4 w-4 mr-1" />;
       case "proposal":
-        return <Vote className="h-4 w-4 mr-1" />;
+        return <Vote />;
       case "profile":
-        return <User className="h-4 w-4 mr-1" />;
+        return <UserIcon className="h-4 w-4 mr-1" />;
       default:
         return null;
     }
   };
+
+  // If user doesn't have moderator access, show access denied
+  if (!hasModeratorAccess) {
+    return (
+      <div className="container py-10 flex flex-col items-center justify-center max-w-md mx-auto text-center h-[80vh]">
+        <div className="bg-red-50 p-8 rounded-xl border border-red-100 mb-6">
+          <Lock className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-red-700 mb-2">Access Denied</h1>
+          <p className="text-red-600 mb-4">
+            You don't have permission to access the moderation dashboard.
+          </p>
+          <p className="text-sm text-gray-500">
+            This area is restricted to administrators and moderators only.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => window.history.back()}>
+          Go Back
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-10 max-w-7xl">
@@ -715,7 +751,7 @@ function AppealTable({
         <AlertCircle className="h-10 w-10 text-muted-foreground mb-4" />
         <h3 className="font-medium text-lg">No appeals found</h3>
         <p className="text-muted-foreground mt-1">
-          There are no appeals to review at the moment
+          There are no active appeals at the moment
         </p>
       </div>
     );
@@ -728,8 +764,7 @@ function AppealTable({
           <TableRow>
             <TableHead>ID</TableHead>
             <TableHead>Flag ID</TableHead>
-            <TableHead>User ID</TableHead>
-            <TableHead>Reasoning</TableHead>
+            <TableHead>Reason</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="text-right">Action</TableHead>
@@ -740,24 +775,15 @@ function AppealTable({
             <TableRow key={appeal.id} className="cursor-pointer hover:bg-muted/50">
               <TableCell>{appeal.id}</TableCell>
               <TableCell>{appeal.flagId}</TableCell>
-              <TableCell>{appeal.userId}</TableCell>
               <TableCell className="max-w-xs truncate">{appeal.reasoning}</TableCell>
               <TableCell>
-                <Badge className={
-                  appeal.status === "pending" ? "bg-yellow-500" :
-                  appeal.status === "approved" ? "bg-green-500" :
-                  "bg-red-500"
-                }>
+                <Badge className="bg-blue-500">
                   {appeal.status}
                 </Badge>
               </TableCell>
               <TableCell>{new Date(appeal.createdAt).toLocaleDateString()}</TableCell>
               <TableCell className="text-right">
-                <Button 
-                  size="sm" 
-                  onClick={() => onSelectRow(appeal)}
-                  disabled={appeal.status !== "pending"}
-                >
+                <Button size="sm" onClick={() => onSelectRow(appeal)}>
                   Review
                 </Button>
               </TableCell>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { Proposal, ProposalStatus, ProposalCategory, User } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -25,46 +26,8 @@ import {
   AlertCircle,
   Edit,
   Plus,
-  Vote
+  Vote as VoteIcon
 } from "lucide-react";
-
-// Types for our governance data
-type ProposalStatus = "draft" | "active" | "passed" | "rejected" | "implemented";
-type ProposalCategory = "community_rules" | "feature_request" | "moderation_policy" | "resource_allocation" | "protocol_change" | "other";
-
-interface User {
-  id: number;
-  displayName: string;
-  isAi: boolean;
-}
-
-interface Vote {
-  id: number;
-  proposalId: number;
-  userId: number;
-  vote: boolean;
-  reason: string | null;
-  createdAt: string;
-  user?: User;
-}
-
-interface Proposal {
-  id: number;
-  title: string;
-  description: string;
-  category: ProposalCategory;
-  status: ProposalStatus;
-  proposedBy: number;
-  votesRequired: number;
-  votesFor: number;
-  votesAgainst: number;
-  votingEndsAt: string;
-  implementationDetails: string | null;
-  createdAt: string;
-  updatedAt: string;
-  user?: User;
-  votes?: Vote[];
-}
 
 // Helper function to format dates
 const formatDate = (dateString: string) => {
@@ -92,7 +55,7 @@ const getStatusColor = (status: ProposalStatus) => {
 const StatusIcon = ({ status }: { status: ProposalStatus }) => {
   switch (status) {
     case "draft": return <Edit className="h-4 w-4 mr-1" />;
-    case "active": return <Vote className="h-4 w-4 mr-1" />;
+    case "active": return <VoteIcon className="h-4 w-4 mr-1" />;
     case "passed": return <CheckCircle2 className="h-4 w-4 mr-1" />;
     case "rejected": return <XCircle className="h-4 w-4 mr-1" />;
     case "implemented": return <CheckCircle2 className="h-4 w-4 mr-1" />;
@@ -176,22 +139,20 @@ export default function Governance() {
   const queryClient = useQueryClient();
 
   // Fetch all proposals
-  const { data: proposals, isLoading, error } = useQuery({
+  const { data: proposals = [], isLoading, error } = useQuery<Proposal[]>({
     queryKey: ['/api/proposals'],
     staleTime: 60000, // 1 minute
   });
 
   // Function to filter proposals based on active tab
   const getFilteredProposals = () => {
-    if (!proposals) return [];
-    
     switch (activeTab) {
       case "active":
-        return proposals.filter((p: Proposal) => p.status === "active");
+        return proposals.filter((p) => p.status === "active");
       case "passed":
-        return proposals.filter((p: Proposal) => p.status === "passed" || p.status === "implemented");
+        return proposals.filter((p) => p.status === "passed" || p.status === "implemented");
       case "draft":
-        return proposals.filter((p: Proposal) => p.status === "draft");
+        return proposals.filter((p) => p.status === "draft");
       default:
         return proposals;
     }

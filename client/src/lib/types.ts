@@ -104,3 +104,44 @@ export interface AmendmentAnalysis {
   considerations: string[];
   recommendations: string[];
 }
+
+// Governance types
+export type ProposalStatus = "draft" | "active" | "passed" | "rejected" | "implemented";
+export type ProposalCategory = "community_rules" | "feature_request" | "moderation_policy" | "resource_allocation" | "protocol_change" | "other";
+
+export interface Vote {
+  id: number;
+  proposalId: number;
+  userId: number;
+  vote: boolean;
+  reason: string | null;
+  createdAt: string;
+  user?: User;
+}
+
+export interface Proposal {
+  id: number;
+  title: string;
+  description: string;
+  category: ProposalCategory;
+  status: ProposalStatus;
+  proposedBy: number;
+  votesRequired: number;
+  votesFor: number;
+  votesAgainst: number;
+  votingEndsAt: string;
+  implementationDetails: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user?: User;
+  votes?: Vote[];
+}
+
+export interface UserRole {
+  id: number;
+  userId: number;
+  role: string;
+  assignedBy: number | null;
+  expiresAt: string | null;
+  createdAt: string;
+}

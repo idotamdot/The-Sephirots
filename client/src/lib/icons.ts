@@ -11,6 +11,11 @@ export const navigationItems = [
     icon: "ri-discuss-line"
   },
   {
+    path: "/governance",
+    label: "Governance",
+    icon: "ri-government-line"
+  },
+  {
     path: "/rights-agreement",
     label: "Rights Agreement",
     icon: "ri-user-voice-line"

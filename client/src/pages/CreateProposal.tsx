@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { User } from "@/lib/types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -79,7 +80,7 @@ export default function CreateProposal() {
   });
 
   // Fetch current user
-  const { data: currentUser, isLoading: isLoadingUser } = useQuery({
+  const { data: currentUser, isLoading: isLoadingUser } = useQuery<User>({
     queryKey: ['/api/users/me'],
   });
 
@@ -96,7 +97,7 @@ export default function CreateProposal() {
         proposedBy: currentUser.id,
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Proposal created",
         description: "Your proposal has been created successfully!",

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { User, Proposal, ProposalStatus, ProposalCategory, Vote } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -26,47 +27,9 @@ import {
   Edit,
   ThumbsDown,
   ThumbsUp,
-  Vote,
+  Vote as VoteIcon,
   XCircle,
 } from "lucide-react";
-
-// Types for our governance data
-type ProposalStatus = "draft" | "active" | "passed" | "rejected" | "implemented";
-type ProposalCategory = "community_rules" | "feature_request" | "moderation_policy" | "resource_allocation" | "protocol_change" | "other";
-
-interface User {
-  id: number;
-  displayName: string;
-  isAi: boolean;
-}
-
-interface Vote {
-  id: number;
-  proposalId: number;
-  userId: number;
-  vote: boolean;
-  reason: string | null;
-  createdAt: string;
-  user?: User;
-}
-
-interface Proposal {
-  id: number;
-  title: string;
-  description: string;
-  category: ProposalCategory;
-  status: ProposalStatus;
-  proposedBy: number;
-  votesRequired: number;
-  votesFor: number;
-  votesAgainst: number;
-  votingEndsAt: string;
-  implementationDetails: string | null;
-  createdAt: string;
-  updatedAt: string;
-  user?: User;
-  votes?: Vote[];
-}
 
 // Helper function to format dates
 const formatDate = (dateString: string) => {
@@ -96,7 +59,7 @@ const getStatusColor = (status: ProposalStatus) => {
 const StatusIcon = ({ status }: { status: ProposalStatus }) => {
   switch (status) {
     case "draft": return <Edit className="h-4 w-4 mr-1" />;
-    case "active": return <Vote className="h-4 w-4 mr-1" />;
+    case "active": return <VoteIcon className="h-4 w-4 mr-1" />;
     case "passed": return <CheckCircle2 className="h-4 w-4 mr-1" />;
     case "rejected": return <XCircle className="h-4 w-4 mr-1" />;
     case "implemented": return <CheckCircle2 className="h-4 w-4 mr-1" />;
@@ -161,7 +124,7 @@ export default function ProposalDetail() {
   const queryClient = useQueryClient();
 
   // Fetch current user
-  const { data: currentUser } = useQuery({
+  const { data: currentUser } = useQuery<User>({
     queryKey: ['/api/users/me'],
   });
 
@@ -170,7 +133,7 @@ export default function ProposalDetail() {
     data: proposal,
     isLoading,
     error,
-  } = useQuery({
+  } = useQuery<Proposal & { votes: Vote[] }>({
     queryKey: [`/api/proposals/${proposalId}`],
     enabled: proposalId > 0,
   });
@@ -191,6 +154,9 @@ export default function ProposalDetail() {
   // Vote mutation
   const voteMutation = useMutation({
     mutationFn: async ({ vote }: { vote: boolean }) => {
+      if (!currentUser) {
+        throw new Error("User not authenticated");
+      }
       return apiRequest(`/api/proposals/${proposalId}/vote`, "POST", {
         userId: currentUser.id,
         vote,

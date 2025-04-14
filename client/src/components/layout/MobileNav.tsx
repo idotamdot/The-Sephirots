@@ -17,10 +17,17 @@ export default function MobileNav() {
             href={item.path}
             className={cn(
               "flex flex-col items-center",
-              location === item.path ? "text-primary-600" : "text-gray-500"
+              location === item.path ? "text-amber-600" : "text-gray-500"
             )}
           >
-            <i className={`${item.icon} text-xl`}></i>
+            <i className={`${item.icon} text-xl ${
+              location === item.path ? 'text-amber-600' : 
+              item.path === "/" ? 'text-blue-500' :
+              item.path === "/discussions" ? 'text-indigo-500' :
+              item.path === "/governance" ? 'text-amber-500' :
+              item.path === "/rights-agreement" ? 'text-purple-500' :
+              'text-gray-500'
+            }`}></i>
             <span className="text-xs mt-1">{item.label.split(' ')[0]}</span>
           </Link>
         ))}

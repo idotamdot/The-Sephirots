@@ -68,7 +68,24 @@ export default function Sidebar({ open, onClose, currentUser }: SidebarProps) {
                     : "text-gray-700 hover:bg-amber-50/50 hover:translate-x-1"
                 )}
               >
-                <i className={`${item.icon} text-lg ${location === item.path ? 'text-amber-600' : 'text-gray-500'}`}></i>
+                <i className={`${item.icon} text-lg ${
+                  location === item.path ? 'text-amber-600' : 
+                  item.path === "/" ? 'text-blue-500' :
+                  item.path === "/discussions" ? 'text-indigo-500' :
+                  item.path === "/governance" ? 'text-amber-500' :
+                  item.path === "/rights-agreement" ? 'text-purple-500' :
+                  item.path === "/community-needs" ? 'text-green-500' :
+                  item.path === "/wellbeing" ? 'text-pink-500' :
+                  item.path === "/achievements" ? 'text-yellow-500' :
+                  item.path === "/mystical-progress" ? 'text-teal-500' :
+                  item.path === "/mindmap" ? 'text-cyan-500' :
+                  item.path === "/wisdom-marketplace" ? 'text-orange-500' :
+                  item.path === "/rewards" ? 'text-red-500' :
+                  item.path === "/quantum-insights" ? 'text-violet-500' :
+                  item.path === "/ai-companion" ? 'text-emerald-500' :
+                  item.path === "/moderation" ? 'text-rose-500' :
+                  'text-gray-500'
+                }`}></i>
                 <span>{item.label}</span>
                 {location === item.path && 
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-400"></span>

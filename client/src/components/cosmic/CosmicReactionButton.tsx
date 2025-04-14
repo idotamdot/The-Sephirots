@@ -1,154 +1,106 @@
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
-import { apiRequest } from "@/lib/queryClient";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { useState, useEffect } from 'react';
+import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/use-auth';
 
 interface CosmicReactionButtonProps {
-  contentId: number;
-  contentType: string;
   emojiType: string;
   displayEmoji: string;
   tooltip: string;
-  isActive?: boolean;
+  contentId: number;
+  contentType: 'discussion' | 'comment' | 'proposal' | 'amendment';
   count?: number;
-  onReactionChange?: () => void;
+  initialReacted?: boolean;
+  onReactionChange?: (newCount: number, hasReacted: boolean) => void;
 }
 
-export const CosmicReactionButton = ({
-  contentId,
-  contentType,
+const CosmicReactionButton = ({
   emojiType,
   displayEmoji,
   tooltip,
-  isActive = false,
+  contentId,
+  contentType,
   count = 0,
-  onReactionChange,
+  initialReacted = false,
+  onReactionChange
 }: CosmicReactionButtonProps) => {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const [active, setActive] = useState(isActive);
-  const [reactionId, setReactionId] = useState<number | null>(null);
+  const [hasReacted, setHasReacted] = useState(initialReacted);
   const [reactionCount, setReactionCount] = useState(count);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const { user, isAuthenticated } = useAuth();
 
-  // Check if user has already reacted on mount
-  useEffect(() => {
-    if (user) {
-      checkUserReaction();
-    }
-  }, [user, contentId, contentType, emojiType]);
-
-  const checkUserReaction = async () => {
-    try {
-      const response = await apiRequest(
-        "GET",
-        `/api/users/${user?.id}/cosmic-reactions/${contentType}/${contentId}`
-      );
-      
-      const userReactions = await response.json();
-      
-      // Find if user has reacted with this emoji type
-      const userReaction = userReactions.find(
-        (reaction: any) => reaction.emojiType === emojiType
-      );
-      
-      if (userReaction) {
-        setActive(true);
-        setReactionId(userReaction.id);
-      } else {
-        setActive(false);
-        setReactionId(null);
-      }
-    } catch (error) {
-      console.error("Error checking user reaction:", error);
-    }
+  // Apply animation class based on reaction count
+  const getMilestoneClass = () => {
+    if (reactionCount >= 50) return 'milestone-3';
+    if (reactionCount >= 20) return 'milestone-2';
+    if (reactionCount >= 10) return 'milestone-1';
+    return '';
   };
 
-  const handleClick = async () => {
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to share cosmic reactions.",
-        variant: "destructive",
-      });
+  const toggleReaction = async () => {
+    if (!isAuthenticated) {
+      // Optionally show login prompt
+      alert('Please log in to react to content');
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      if (active && reactionId) {
-        // Remove the reaction
-        await apiRequest("DELETE", `/api/cosmic-reactions/${reactionId}`);
-        setActive(false);
-        setReactionId(null);
-        setReactionCount((prev) => Math.max(0, prev - 1));
+      const response = await apiRequest('POST', '/api/cosmic-reactions/toggle', {
+        emojiType,
+        contentId,
+        contentType,
+        userId: user?.id
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newHasReacted = !hasReacted;
+        const newCount = hasReacted ? reactionCount - 1 : reactionCount + 1;
         
-        toast({
-          title: "Cosmic energy withdrawn",
-          description: `Your ${tooltip} energy has been withdrawn.`,
-        });
-      } else {
-        // Add the reaction
-        const response = await apiRequest("POST", "/api/cosmic-reactions", {
-          contentId,
-          contentType,
-          emojiType,
-        });
+        setHasReacted(newHasReacted);
+        setReactionCount(newCount);
         
-        const newReaction = await response.json();
-        setActive(true);
-        setReactionId(newReaction.id);
-        setReactionCount((prev) => prev + 1);
-        
-        toast({
-          title: "Cosmic energy shared",
-          description: `You've shared your ${tooltip} energy.`,
-        });
-      }
-      
-      // Notify parent component about the change
-      if (onReactionChange) {
-        onReactionChange();
+        // Trigger animation when adding a reaction
+        if (newHasReacted) {
+          setIsAnimating(true);
+          setTimeout(() => setIsAnimating(false), 500);
+        }
+
+        // Notify parent component if callback provided
+        if (onReactionChange) {
+          onReactionChange(newCount, newHasReacted);
+        }
       }
     } catch (error) {
-      console.error("Error toggling reaction:", error);
-      toast({
-        title: "Something went wrong",
-        description: "We couldn't process your cosmic energy at this time.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      console.error('Error toggling reaction:', error);
     }
   };
 
+  // Animation class for the emoji
+  const getAnimationClass = () => {
+    if (isAnimating) return 'reaction-just-added';
+    return hasReacted ? `${emojiType.replace(/_/g, '-')} active` : '';
+  };
+
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant={active ? "default" : "outline"}
-            size="sm"
-            className={`cosmic-reaction-button ${active ? "active-cosmic-reaction" : ""}`}
-            onClick={handleClick}
-            disabled={isLoading}
-          >
-            <span className="mr-2">{displayEmoji}</span>
-            <span>{reactionCount}</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="bg-background/90 backdrop-blur-sm border border-muted">
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <div 
+      className={`cosmic-reaction-btn ${hasReacted ? 'reacted' : ''} ${getMilestoneClass()}`}
+      onClick={toggleReaction}
+    >
+      <span className={`reaction-emoji ${getAnimationClass()}`}>
+        {displayEmoji}
+      </span>
+      
+      {reactionCount > 0 && (
+        <span className="cosmic-reaction-count">
+          {reactionCount}
+        </span>
+      )}
+      
+      <div className="cosmic-tooltip">
+        {tooltip}
+      </div>
+    </div>
   );
 };
+
+export default CosmicReactionButton;

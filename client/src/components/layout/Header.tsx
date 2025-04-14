@@ -23,10 +23,14 @@ export default function Header({ onMenuClick, currentUser, isLoading }: HeaderPr
             <i className="ri-menu-line text-2xl"></i>
           </button>
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sephirot-keter-DEFAULT to-sephirot-keter-light flex items-center justify-center">
-              <i className="ri-community-line text-white text-lg"></i>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sephirot-keter-DEFAULT to-sephirot-gold-light flex items-center justify-center relative overflow-hidden">
+              <i className="ri-dove-line text-white text-lg z-10"></i>
+              <span className="absolute top-0 right-0 text-xs text-white">
+                <i className="ri-star-line absolute top-0 right-0 text-[8px] text-white"></i>
+                <i className="ri-star-line absolute top-1 right-1 text-[6px] text-white"></i>
+              </span>
             </div>
-            <span className="font-heading font-bold">The Sephirots</span>
+            <span className="font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-yellow-300">The Sephirots</span>
           </Link>
         </div>
         

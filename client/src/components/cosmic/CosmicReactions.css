@@ -1,188 +1,77 @@
-/* CosmicReactions.css - Styling for The Sephirots Cosmic Emoji Reaction System */
+/* Cosmic Reactions CSS */
 
-/* Main container for reactions */
+/* Container for reaction buttons */
 .cosmic-reactions-container {
   position: relative;
-  padding: 8px;
-  margin: 8px 0;
+  padding: 12px;
   border-radius: 12px;
+  margin: 10px 0;
   overflow: hidden;
-}
-
-/* Individual reaction button */
-.cosmic-reaction-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 4px;
-  padding: 8px;
-  border-radius: 50%;
-  cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 5; /* Higher than starry background */
 }
 
-.cosmic-reaction-btn:hover {
-  transform: scale(1.2);
+.cosmic-reactions-container.with-background {
+  background: rgba(30, 10, 60, 0.4);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 
+              inset 0 0 20px rgba(142, 81, 234, 0.1);
 }
 
-/* Reaction count badge */
-.cosmic-reaction-count {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  min-width: 20px;
-  height: 20px;
+/* Layout variants */
+.cosmic-reactions-container.horizontal .cosmic-reaction-bar {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: rgba(101, 31, 255, 0.8);
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  box-shadow: 0 0 5px rgba(101, 31, 255, 0.5);
-}
-
-/* Reaction bar with all available reactions */
-.cosmic-reaction-bar {
-  display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+}
+
+.cosmic-reactions-container.vertical .cosmic-reaction-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 64px;
+}
+
+.cosmic-reactions-container.grid .cosmic-reaction-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 8px;
+}
+
+/* Size variants */
+.cosmic-reactions-container.size-small .cosmic-reaction-btn {
+  font-size: 1rem;
+  padding: 6px;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.cosmic-reactions-container.size-medium .cosmic-reaction-btn {
+  font-size: 1.25rem;
   padding: 8px;
-  background: rgba(30, 27, 75, 0.4);
-  border-radius: 24px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 2px 5px rgba(255, 255, 255, 0.1);
-  z-index: 10;
-  position: relative;
+  min-width: 48px;
+  min-height: 48px;
 }
 
-/* Animation for reaction emojis */
-.reaction-emoji {
-  font-size: 24px;
-  transition: all 0.2s ease;
-  display: inline-block;
+.cosmic-reactions-container.size-large .cosmic-reaction-btn {
+  font-size: 1.5rem;
+  padding: 10px;
+  min-width: 60px;
+  min-height: 60px;
 }
 
-/* Animate when emoji is clicked */
-.reaction-emoji.pulse {
-  animation: emoji-pulse 0.5s ease;
-}
-
-@keyframes emoji-pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.5); }
-  100% { transform: scale(1); }
-}
-
-/* Sephirotic path specific animations */
-.star-of-awe {
-  filter: drop-shadow(0 0 5px rgba(251, 219, 101, 0.8));
-}
-
-.star-of-awe:hover {
-  animation: star-twinkle 1s infinite alternate;
-}
-
-.crescent-of-peace {
-  filter: drop-shadow(0 0 5px rgba(148, 187, 233, 0.8));
-}
-
-.crescent-of-peace:hover {
-  animation: crescent-glow 2s infinite alternate;
-}
-
-.flame-of-passion {
-  filter: drop-shadow(0 0 5px rgba(229, 83, 83, 0.8));
-}
-
-.flame-of-passion:hover {
-  animation: flame-flicker 0.8s infinite alternate;
-}
-
-.drop-of-compassion {
-  filter: drop-shadow(0 0 5px rgba(86, 204, 242, 0.8));
-}
-
-.drop-of-compassion:hover {
-  animation: droplet-ripple 1.5s infinite;
-}
-
-.leaf-of-growth {
-  filter: drop-shadow(0 0 5px rgba(120, 224, 143, 0.8));
-}
-
-.leaf-of-growth:hover {
-  animation: leaf-sway 2s infinite alternate;
-}
-
-.spiral-of-mystery {
-  filter: drop-shadow(0 0 5px rgba(155, 89, 182, 0.8));
-}
-
-.spiral-of-mystery:hover {
-  animation: spiral-rotate 3s infinite linear;
-}
-
-.mirror-of-insight {
-  filter: drop-shadow(0 0 5px rgba(236, 240, 241, 0.8));
-}
-
-.mirror-of-insight:hover {
-  animation: mirror-shine 1.5s infinite alternate;
-}
-
-/* Cosmic animation keyframes */
-@keyframes star-twinkle {
-  0% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0.7; transform: scale(1.15); }
-}
-
-@keyframes crescent-glow {
-  0% { filter: drop-shadow(0 0 3px rgba(148, 187, 233, 0.6)); }
-  100% { filter: drop-shadow(0 0 8px rgba(148, 187, 233, 1)); }
-}
-
-@keyframes flame-flicker {
-  0% { opacity: 0.8; transform: scale(0.97) rotate(-1deg); }
-  100% { opacity: 1; transform: scale(1.03) rotate(1deg); }
-}
-
-@keyframes droplet-ripple {
-  0%, 100% { filter: drop-shadow(0 0 5px rgba(86, 204, 242, 0.8)); }
-  50% { filter: drop-shadow(0 0 10px rgba(86, 204, 242, 1)); transform: scale(1.05); }
-}
-
-@keyframes leaf-sway {
-  0% { transform: rotate(-3deg); }
-  100% { transform: rotate(3deg); }
-}
-
-@keyframes spiral-rotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes mirror-shine {
-  0% { filter: brightness(1) drop-shadow(0 0 3px rgba(236, 240, 241, 0.6)); }
-  100% { filter: brightness(1.2) drop-shadow(0 0 8px rgba(236, 240, 241, 1)); }
-}
-
-/* Cosmic background effects for when reactions reach thresholds */
+/* Cosmic background effects */
 .cosmic-background {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  pointer-events: none;
-  z-index: 1;
+  z-index: -1;
   opacity: 0;
   transition: opacity 1s ease;
-  overflow: hidden;
 }
 
 .cosmic-background.active {
@@ -197,63 +86,123 @@
   bottom: 0;
   width: 100%;
   height: 100%;
-  display: block;
-  pointer-events: none;
 }
 
 .stars {
-  background-color: rgba(21, 10, 39, 0.8);
-  background-image: radial-gradient(white, rgba(255, 255, 255, 0.2) 2px, transparent 2px),
-                    radial-gradient(white, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
-                    radial-gradient(white, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
-                    radial-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px;
-  background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
-  z-index: 0;
-  opacity: 0.4;
-  animation: move-twink-back 200s linear infinite;
+  background: url('/src/assets/stars.svg') repeat;
+  background-size: 300px;
+  z-index: -2;
 }
 
 .twinkling {
-  background: transparent;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.8) 10%, transparent 60%),
-                    radial-gradient(rgba(255, 231, 186, 0.6) 20%, transparent 70%),
-                    radial-gradient(rgba(204, 182, 255, 0.6) 15%, transparent 65%),
-                    radial-gradient(rgba(186, 231, 255, 0.6) 25%, transparent 75%);
-  background-size: 800px 800px, 600px 600px, 700px 700px, 500px 500px;
-  background-position: 50px 100px, 200px 300px, 300px 50px, 400px 400px;
-  z-index: 1;
-  opacity: 0.5;
-  animation: move-twink-back 150s linear infinite;
+  background: url('/src/assets/twinkling.svg') repeat;
+  background-size: 500px;
+  z-index: -1;
+  opacity: 0.7;
+  animation: twinkle 20s linear infinite;
 }
 
-@keyframes move-twink-back {
+@keyframes twinkle {
   from {background-position: 0 0;}
-  to {background-position: -10000px 5000px;}
+  to {background-position: 500px 500px;}
 }
 
-/* Additional animation for when a new reaction is added */
-@keyframes cosmic-reaction-added {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.5); }
-  100% { transform: scale(1); }
+/* The reaction buttons */
+.cosmic-reaction-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(61, 26, 87, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
-.reaction-just-added {
-  animation: cosmic-reaction-added 0.5s ease-out;
+.cosmic-reaction-btn:hover {
+  background: rgba(91, 46, 137, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(142, 81, 234, 0.3);
 }
 
-/* Constellation effect when many reactions are added */
+.cosmic-reaction-btn.reacted {
+  background: linear-gradient(135deg, rgba(91, 46, 137, 0.6), rgba(142, 81, 234, 0.3));
+  border-color: rgba(216, 180, 254, 0.3);
+  box-shadow: 0 0 15px rgba(216, 180, 254, 0.4);
+}
+
+/* Reaction emoji styling */
+.reaction-emoji {
+  font-size: 1.5em;
+  line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cosmic-reaction-btn:hover .reaction-emoji {
+  transform: scale(1.2);
+}
+
+.cosmic-reaction-btn.reacted .reaction-emoji {
+  animation: pulse 2s infinite;
+}
+
+/* Count display */
+.cosmic-reaction-count {
+  font-size: 0.75em;
+  font-weight: 600;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Tooltip */
+.cosmic-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: rgba(30, 10, 60, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.cosmic-tooltip:after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(30, 10, 60, 0.9) transparent transparent transparent;
+}
+
+.cosmic-reaction-btn:hover .cosmic-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Constellation effect */
 .constellation {
   position: absolute;
-  width: 100%;
-  height: 100%;
   top: 0;
   left: 0;
-  z-index: 2;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
   opacity: 0;
   transition: opacity 1s ease;
-  pointer-events: none;
 }
 
 .constellation.active {
@@ -262,131 +211,156 @@
 
 .constellation-line {
   position: absolute;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.8), rgba(255,255,255,0.1));
-  transform-origin: left center;
-  opacity: 0;
-  z-index: 3;
-  animation: line-appear 1.5s ease-in-out forwards;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform-origin: 0 0;
+  opacity: 0.5;
+  animation: glow 3s infinite alternate;
 }
 
-@keyframes line-appear {
-  0% { opacity: 0; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.5; }
-}
-
-/* Energy surge effect for major reaction events */
+/* Energy surge effect when reaching reaction threshold */
 .energy-surge {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(186, 200, 255, 0.7) 30%,
-    rgba(147, 155, 255, 0.5) 50%,
-    rgba(132, 112, 255, 0.3) 70%,
-    transparent 100%
-  );
-  z-index: 4;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(216, 180, 254, 0.4) 0%, transparent 70%);
+  z-index: -1;
   opacity: 0;
-  pointer-events: none;
+  transform: scale(0.1);
+  transition: all 0.5s ease;
 }
 
 .energy-surge.active {
-  animation: energy-pulse 2s ease-out forwards;
+  opacity: 0.8;
+  transform: scale(2);
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-@keyframes energy-pulse {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    width: 300%;
-    height: 300%;
-    opacity: 0;
-  }
+/* Milestone effects for popular reactions */
+.cosmic-reaction-btn.milestone-1 .reaction-emoji {
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
 }
 
-/* Tooltip styles for reaction explanations */
-.cosmic-tooltip {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-10px);
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: rgba(25, 23, 36, 0.9);
-  color: white;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 20;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(4px);
+.cosmic-reaction-btn.milestone-2 .reaction-emoji {
+  text-shadow: 0 0 12px rgba(206, 148, 255, 0.9);
 }
 
-.cosmic-reaction-btn:hover .cosmic-tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-5px);
+.cosmic-reaction-btn.milestone-3 .reaction-emoji {
+  text-shadow: 0 0 16px rgba(255, 255, 255, 1);
+  animation: cosmic-pulse 2s infinite;
 }
 
-/* Reaction summary for post */
+/* Specific emoji type styling */
+.reaction-emoji.star-of-awe {
+  color: gold;
+}
+
+.reaction-emoji.crescent-of-peace {
+  color: silver;
+}
+
+.reaction-emoji.flame-of-passion {
+  color: #ff6b6b;
+}
+
+.reaction-emoji.drop-of-compassion {
+  color: #4da6ff;
+}
+
+.reaction-emoji.leaf-of-growth {
+  color: #4ade80;
+}
+
+.reaction-emoji.spiral-of-mystery {
+  color: #c084fc;
+}
+
+.reaction-emoji.mirror-of-insight {
+  color: #e879f9;
+}
+
+/* Animation for new reactions */
+.reaction-just-added {
+  animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Reaction summary */
 .reaction-summary {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 6px;
-  padding: 6px 10px;
-  border-radius: 20px;
-  background: rgba(30, 27, 75, 0.3);
-  backdrop-filter: blur(4px);
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: center;
+  font-size: 0.85rem;
 }
 
 .reaction-summary-item {
   display: flex;
   align-items: center;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  gap: 4px;
+  background: rgba(81, 46, 95, 0.3);
+  padding: 2px 6px;
+  border-radius: 12px;
 }
 
 .reaction-summary-emoji {
-  margin-right: 4px;
+  font-size: 1.1rem;
 }
 
-/* Reaction count styles for milestone effects */
-.milestone-1 .cosmic-reaction-count {
-  animation: milestone-pulse 1s infinite alternate;
+.reaction-summary-total {
+  font-size: 0.75rem;
+  opacity: 0.7;
 }
 
-.milestone-2 .cosmic-reaction-count {
-  background: linear-gradient(45deg, #9333ea, #4f46e5);
-  animation: milestone-pulse 1s infinite alternate;
+/* Animations */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
-.milestone-3 .cosmic-reaction-count {
-  background: linear-gradient(45deg, #fbbf24, #ec4899);
-  animation: milestone-pulse 1s infinite alternate, milestone-rotate 3s linear infinite;
+@keyframes cosmic-pulse {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  }
+  50% {
+    transform: scale(1.15);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(216, 180, 254, 0.8);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  }
 }
 
-@keyframes milestone-pulse {
-  0% { box-shadow: 0 0 5px rgba(101, 31, 255, 0.5); }
-  100% { box-shadow: 0 0 10px rgba(101, 31, 255, 1); }
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-@keyframes milestone-rotate {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+@keyframes glow {
+  0% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.7;
+  }
 }

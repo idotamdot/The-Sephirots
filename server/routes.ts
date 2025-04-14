@@ -2165,6 +2165,98 @@ app.post("/api/ai/perspective", async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
       }
     });
+    
+    // Toggle reaction (add if not present, remove if exists)
+    app.post("/api/cosmic-reactions/toggle", async (req, res) => {
+      try {
+        if (!req.isAuthenticated()) {
+          return res.status(401).json({ error: "You must be logged in to react" });
+        }
+        
+        const { emojiType, contentId, contentType } = req.body;
+        
+        if (!emojiType || !contentId || !contentType) {
+          return res.status(400).json({ error: "Missing required fields" });
+        }
+        
+        const userId = (req.user as any).id;
+        
+        // Check if the user already has this reaction on this content
+        const existingReaction = await storage.getUserCosmicReactionOnContent(
+          userId, 
+          contentId, 
+          contentType, 
+          emojiType
+        );
+        
+        if (existingReaction) {
+          // If reaction exists, remove it
+          await storage.deleteCosmicReaction(existingReaction.id);
+          
+          // Get updated count
+          const reactions = await storage.getCosmicReactionsByContent(contentId, contentType);
+          const count = reactions.filter(r => r.emojiType === emojiType).length;
+          
+          return res.json({
+            removed: true,
+            emojiType,
+            count,
+            hasReacted: false
+          });
+        } else {
+          // If reaction doesn't exist, add it
+          const newReaction = await storage.createCosmicReaction({
+            userId,
+            contentId,
+            contentType,
+            emojiType
+          });
+          
+          // Get updated count
+          const reactions = await storage.getCosmicReactionsByContent(contentId, contentType);
+          const count = reactions.filter(r => r.emojiType === emojiType).length;
+          
+          // Get emoji metadata
+          const metadata = await storage.getCosmicEmojiMetadataByType(emojiType);
+          
+          // If points are granted for this reaction, update the content creator's points
+          if (metadata && metadata.pointsGranted > 0) {
+            // Different content types might reference users differently
+            let contentOwnerId;
+            
+            if (contentType === 'discussion') {
+              const discussion = await storage.getDiscussion(contentId);
+              contentOwnerId = discussion?.userId;
+            } else if (contentType === 'comment') {
+              const comment = await storage.getComment(contentId);
+              contentOwnerId = comment?.userId;
+            } else if (contentType === 'proposal') {
+              const proposal = await storage.getProposal(contentId);
+              contentOwnerId = proposal?.proposedBy;
+            } else if (contentType === 'amendment') {
+              const amendment = await storage.getAmendment(contentId);
+              contentOwnerId = amendment?.proposedBy;
+            }
+            
+            // Add points to content creator (if not reacting to own content)
+            if (contentOwnerId && contentOwnerId !== userId) {
+              await storage.updateUserPoints(contentOwnerId, metadata.pointsGranted);
+            }
+          }
+          
+          return res.json({
+            added: true,
+            emojiType,
+            count,
+            hasReacted: true,
+            reaction: newReaction
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
   }
 
   return httpServer;

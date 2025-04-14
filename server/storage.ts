@@ -22,7 +22,9 @@ import {
   mindMapNodes, MindMapNode, InsertMindMapNode, 
   mindMapConnections, MindMapConnection, InsertMindMapConnection,
   mindMapCollaborators, MindMapCollaborator, InsertMindMapCollaborator,
-  mindMapTemplates, MindMapTemplate, InsertMindMapTemplate
+  mindMapTemplates, MindMapTemplate, InsertMindMapTemplate,
+  cosmicReactions, CosmicReaction, InsertCosmicReaction,
+  cosmicEmojiMetadata, CosmicEmojiMetadata, InsertCosmicEmojiMetadata
 } from "@shared/schema";
 
 export interface IStorage {
@@ -179,6 +181,18 @@ export interface IStorage {
   getMindMapTemplates(): Promise<MindMapTemplate[]>;
   getMindMapTemplate(id: number): Promise<MindMapTemplate | undefined>;
   createMindMapTemplate(template: InsertMindMapTemplate): Promise<MindMapTemplate>;
+  
+  // Cosmic Reaction methods
+  getCosmicReactionsByContent(contentId: number, contentType: string): Promise<CosmicReaction[]>;
+  getUserCosmicReactionOnContent(userId: number, contentId: number, contentType: string, emojiType: string): Promise<CosmicReaction | undefined>;
+  createCosmicReaction(reaction: InsertCosmicReaction): Promise<CosmicReaction>;
+  deleteCosmicReaction(id: number): Promise<void>;
+  
+  // Cosmic Emoji Metadata methods
+  getCosmicEmojiMetadata(): Promise<CosmicEmojiMetadata[]>;
+  getCosmicEmojiMetadataByType(emojiType: string): Promise<CosmicEmojiMetadata | undefined>;
+  createCosmicEmojiMetadata(metadata: InsertCosmicEmojiMetadata): Promise<CosmicEmojiMetadata>;
+  updateCosmicEmojiMetadata(id: number, metadata: Partial<CosmicEmojiMetadata>): Promise<CosmicEmojiMetadata>;
 }
 
 export class MemStorage implements IStorage {

@@ -595,5 +595,60 @@ export type InsertMindMapCollaborator = z.infer<typeof insertMindMapCollaborator
 export type MindMapTemplate = typeof mindMapTemplates.$inferSelect;
 export type InsertMindMapTemplate = z.infer<typeof insertMindMapTemplateSchema>;
 
+// Cosmic Emoji Reaction System
+
+// Define the emoji types enum for cosmic reactions
+export const cosmicEmojiTypeEnum = pgEnum("cosmic_emoji_type", [
+  "star_of_awe",
+  "crescent_of_peace",
+  "flame_of_passion",
+  "drop_of_compassion",
+  "leaf_of_growth",
+  "spiral_of_mystery",
+  "mirror_of_insight"
+]);
+
+// Reactions schema for discussions and comments
+export const cosmicReactions = pgTable("cosmic_reactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  contentId: integer("content_id").notNull(),
+  contentType: text("content_type").notNull(), // "discussion" or "comment"
+  emojiType: cosmicEmojiTypeEnum("emoji_type").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertCosmicReactionSchema = createInsertSchema(cosmicReactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Emoji metadata for displaying tooltips, animations, etc.
+export const cosmicEmojiMetadata = pgTable("cosmic_emoji_metadata", {
+  id: serial("id").primaryKey(),
+  emojiType: cosmicEmojiTypeEnum("emoji_type").notNull().unique(),
+  displayEmoji: text("display_emoji").notNull(), // The actual emoji character to display
+  tooltip: text("tooltip").notNull(), // The tooltip text for this emoji
+  description: text("description").notNull(), // Longer description of what this emoji represents
+  sephiroticPath: text("sephirotic_path").notNull(), // Which Sephirotic path/attribute this relates to
+  pointsGranted: integer("points_granted").notNull().default(1), // Points granted toward that path when receiving this reaction
+  animationClass: text("animation_class").notNull(), // CSS class for animation
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertCosmicEmojiMetadataSchema = createInsertSchema(cosmicEmojiMetadata).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Export cosmic reaction types
+export type CosmicReaction = typeof cosmicReactions.$inferSelect;
+export type InsertCosmicReaction = z.infer<typeof insertCosmicReactionSchema>;
+
+export type CosmicEmojiMetadata = typeof cosmicEmojiMetadata.$inferSelect;
+export type InsertCosmicEmojiMetadata = z.infer<typeof insertCosmicEmojiMetadataSchema>;
+
 // We'll define relationships between tables later when needed
 // For now, this basic schema is sufficient for creating the tables

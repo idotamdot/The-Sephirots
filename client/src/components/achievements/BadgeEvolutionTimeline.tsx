@@ -1,82 +1,139 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { ChevronRight } from 'lucide-react';
 import { Badge } from '@/lib/types';
-import FounderBadge from '@/components/badges/FounderBadge';
-import GenericBadge from '@/components/badges/GenericBadge';
+import { GenericBadge, FounderBadge } from '@/components/badges';
+import { ArrowRight } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 interface BadgeEvolutionTimelineProps {
   badgeFamily: Badge[];
-  earnedBadgeIds?: number[];
-  className?: string;
+  earnedBadgeIds: number[];
 }
 
-export default function BadgeEvolutionTimeline({
-  badgeFamily,
-  earnedBadgeIds = [],
-  className
-}: BadgeEvolutionTimelineProps) {
-  // Sort badges by level
-  const sortedBadges = [...badgeFamily].sort((a, b) => (a.level || 0) - (b.level || 0));
+export default function BadgeEvolutionTimeline({ badgeFamily, earnedBadgeIds }: BadgeEvolutionTimelineProps) {
+  const sortedBadges = [...badgeFamily].sort((a, b) => {
+    // If levels are different, sort by level
+    if (a.level !== b.level) {
+      return a.level - b.level;
+    }
+    
+    // If tiers are different, sort by tier priority
+    const tierPriority: Record<string, number> = {
+      'founder': 4,
+      'platinum': 3,
+      'gold': 2,
+      'silver': 1,
+      'bronze': 0
+    };
+    
+    const aTierValue = tierPriority[a.tier as keyof typeof tierPriority] || 0;
+    const bTierValue = tierPriority[b.tier as keyof typeof tierPriority] || 0;
+    
+    if (aTierValue !== bTierValue) {
+      return aTierValue - bTierValue; // Lowest tier first in timeline
+    }
+    
+    // Otherwise sort by points required
+    return a.points - b.points;
+  });
   
-  // Check if a badge is earned
-  const isBadgeEarned = (id: number) => earnedBadgeIds.includes(id);
+  if (sortedBadges.length === 0) {
+    return (
+      <div className="text-center py-8 border border-dashed rounded-lg">
+        <p className="text-gray-500">No badges available in this evolution path.</p>
+      </div>
+    );
+  }
   
   return (
-    <div className={cn("w-full", className)}>
-      <h3 className="text-lg font-semibold mb-4">Badge Evolution Path</h3>
+    <div className="relative">
+      {/* Timeline line */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-200 via-amber-200 to-purple-200 opacity-50 rounded-full" />
       
-      <div className="flex flex-col md:flex-row justify-start items-center space-y-4 md:space-y-0 md:space-x-4">
-        {sortedBadges.map((badge, index) => (
-          <div key={badge.id} className="flex flex-col md:flex-row items-center">
-            {/* Badge with its earned status */}
-            <div className="flex flex-col items-center">
-              {badge.tier === 'founder' ? (
-                <FounderBadge 
-                  badge={badge} 
-                  enhanced={isBadgeEarned(badge.id)} 
-                  size="md" 
-                />
-              ) : (
-                <GenericBadge 
-                  badge={badge} 
-                  earned={isBadgeEarned(badge.id)} 
-                  size="md" 
-                />
+      <div className="grid grid-cols-1 gap-8 py-4">
+        {sortedBadges.map((badge, index) => {
+          const isEarned = earnedBadgeIds.includes(badge.id);
+          const isLast = index === sortedBadges.length - 1;
+          const nextBadge = !isLast ? sortedBadges[index + 1] : null;
+          
+          return (
+            <div key={badge.id} className="relative">
+              {/* Timeline dot */}
+              <div 
+                className={`absolute left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full z-10 ${
+                  isEarned ? 'bg-amber-500' : 'bg-gray-300'
+                }`}
+              />
+              
+              <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 items-center ${
+                index % 2 === 0 ? '' : 'md:grid-cols-[1fr_auto_1fr] md:[direction:rtl]'
+              }`}>
+                <div className={`flex justify-center md:justify-end ${
+                  index % 2 === 0 ? 'md:col-start-1' : 'md:col-start-3 md:[direction:ltr]'
+                }`}>
+                  {badge.tier === 'founder' ? (
+                    <FounderBadge
+                      badge={{
+                        ...badge,
+                        tier: badge.tier || 'founder',
+                        level: badge.level || 1,
+                        points: badge.points || 0
+                      }} 
+                      earned={isEarned}
+                      size="md"
+                    />
+                  ) : (
+                    <GenericBadge 
+                      badge={{
+                        ...badge,
+                        tier: badge.tier || 'bronze',
+                        level: badge.level || 1,
+                        points: badge.points || 0
+                      }} 
+                      earned={isEarned}
+                      size="md"
+                    />
+                  )}
+                </div>
+                
+                <div className="flex justify-center">
+                  <div className="h-full" />
+                </div>
+                
+                <div className={`${
+                  index % 2 === 0 ? 'md:col-start-3 md:text-left' : 'md:col-start-1 md:text-right md:[direction:ltr]'
+                }`}>
+                  <h3 className="font-medium">{badge.name}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{badge.description}</p>
+                  
+                  <div className="mt-2 text-sm">
+                    <span className={`inline-block px-2 py-0.5 rounded-full ${
+                      isEarned ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {isEarned ? 'Earned' : `${badge.points} points required`}
+                    </span>
+                  </div>
+                  
+                  {badge.requirement && (
+                    <p className="mt-2 text-xs text-gray-500 italic">
+                      "{badge.requirement}"
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              {!isLast && nextBadge && (
+                <div className="flex justify-center mt-6 mb-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span>{badge.points} points</span>
+                    <ArrowRight className="h-3 w-3" />
+                    <span>{nextBadge.points} points</span>
+                  </div>
+                </div>
               )}
-              <div className="mt-1 text-center">
-                <span className="text-xs text-muted-foreground">
-                  Level {badge.level || 1}
-                </span>
-              </div>
+              
+              {!isLast && <Separator className="my-4" />}
             </div>
-            
-            {/* Arrow between badges, except after the last one */}
-            {index < sortedBadges.length - 1 && (
-              <div className="flex items-center justify-center transform rotate-90 md:rotate-0 md:ml-2">
-                <ChevronRight 
-                  className={cn(
-                    "h-6 w-6 mx-2",
-                    isBadgeEarned(badge.id) ? "text-primary" : "text-muted-foreground opacity-50"
-                  )} 
-                />
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-      
-      <div className="mt-6 p-4 bg-muted rounded-md">
-        <h4 className="font-medium mb-2">How to Progress</h4>
-        <ul className="list-disc list-inside space-y-2 text-sm">
-          {sortedBadges.map((badge) => (
-            <li key={`req-${badge.id}`} className={cn(
-              isBadgeEarned(badge.id) ? "text-muted-foreground line-through" : ""
-            )}>
-              <span className="font-medium">{badge.name} (Level {badge.level || 1})</span>: {badge.requirement}
-            </li>
-          ))}
-        </ul>
+          );
+        })}
       </div>
     </div>
   );

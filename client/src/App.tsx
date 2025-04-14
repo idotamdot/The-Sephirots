@@ -19,10 +19,13 @@ import CreateProposal from "@/pages/CreateProposal";
 import Moderation from "@/pages/Moderation";
 import SupportJourney from "@/pages/SupportJourney";
 import DonationThankYou from "@/pages/DonationThankYou";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
+import AuthStatus from "@/components/auth/AuthStatus";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { User } from "@/lib/types";
@@ -89,6 +92,8 @@ function App() {
               <div className="flex-1 overflow-y-auto bg-gray-50 bg-opacity-70 backdrop-blur-md">
                 <Switch>
                   <Route path="/" component={Home} />
+                  <Route path="/login" component={Login} />
+                  <Route path="/register" component={Register} />
                   <Route path="/discussions" component={Discussions} />
                   <Route path="/discussions/:id">
                     {params => <Discussion id={parseInt(params.id)} />}

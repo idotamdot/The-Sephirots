@@ -3,6 +3,7 @@ import { User } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import DoveAndStars from "@/components/icons/DoveAndStars";
+import AuthStatus from "@/components/auth/AuthStatus";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -58,6 +59,13 @@ export default function Header({ onMenuClick, currentUser, isLoading }: HeaderPr
           <button className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100" aria-label="Messages">
             <i className="ri-message-3-line text-xl"></i>
           </button>
+          
+          {/* Auth Status Component (Visible on desktop) */}
+          <div className="hidden md:block">
+            <AuthStatus />
+          </div>
+          
+          {/* Mobile User Avatar */}
           <div className="md:hidden">
             {isLoading ? (
               <Skeleton className="w-8 h-8 rounded-full" />

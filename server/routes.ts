@@ -48,7 +48,54 @@ function handleZodError(err: unknown, res: Response) {
   return res.status(500).json({ error: "Internal server error" });
 }
 
+// Configure Passport.js for local authentication
+
+// Helper function to hash passwords
+function hashPassword(password: string): string {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure passport local strategy
+  passport.use(new LocalStrategy(async (username, password, done) => {
+    try {
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user) {
+        return done(null, false, { message: "Incorrect username" });
+      }
+      
+      // Check password
+      const hashedPassword = hashPassword(password);
+      if (user.password !== hashedPassword) {
+        return done(null, false, { message: "Incorrect password" });
+      }
+      
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  }));
+  
+  // Configure passport session serialization
+  passport.serializeUser((user: any, done) => {
+    done(null, user.id);
+  });
+  
+  passport.deserializeUser(async (id: number, done) => {
+    try {
+      const user = await storage.getUser(id);
+      if (!user) {
+        return done(null, false);
+      }
+      
+      // Don't expose password
+      const { password, ...userWithoutPassword } = user;
+      done(null, userWithoutPassword);
+    } catch (err) {
+      done(err);
+    }
+  });
   // Community stats API for the Cosmic Background Mood Synchronizer
   app.get('/api/community-stats', async (req, res) => {
     try {
@@ -120,20 +167,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok" });
   });
 
+  // ===== AUTH ROUTES =====
+  
+  // Login route
+  app.post("/api/auth/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        return next(err);
+      }
+      
+      if (!user) {
+        return res.status(401).json({ error: info.message || "Authentication failed" });
+      }
+      
+      req.login(user, (err) => {
+        if (err) {
+          return next(err);
+        }
+        
+        // Don't return password in response
+        const { password, ...userWithoutPassword } = user;
+        return res.json(userWithoutPassword);
+      });
+    })(req, res, next);
+  });
+  
+  // Register route
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      // Validate request body
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(userData.username);
+      if (existingUser) {
+        return res.status(409).json({ error: "Username already exists" });
+      }
+      
+      // Hash password
+      userData.password = hashPassword(userData.password);
+      
+      // Create user
+      const user = await storage.createUser(userData);
+      
+      // Automatically log in the user
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({ error: "Failed to log in after registration" });
+        }
+        
+        // Don't return password in response
+        const { password, ...userWithoutPassword } = user;
+        res.status(201).json(userWithoutPassword);
+      });
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+  
+  // Logout route
+  app.post("/api/auth/logout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+  
   // ===== USER ROUTES =====
   
-  // Get current user (stub - in production this would use sessions)
+  // Get current user from session
   app.get("/api/users/me", async (req, res) => {
     try {
-      // For demo purposes, return the first user
-      const user = await storage.getUser(2);
-      if (!user) {
+      if (!req.user) {
         return res.status(404).json({ error: "User not found" });
       }
       
-      // Don't return password in response
-      const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      // User is already in req.user from passport deserialization
+      res.json(req.user);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Internal server error" });

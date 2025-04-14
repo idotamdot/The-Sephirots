@@ -83,6 +83,7 @@ function App() {
                 <Route path="/mystical-progress" component={MysticalProgress} />
                 <Route path="/mindmap" component={MindMapExplorer} />
                 <Route path="/wisdom-marketplace" component={WisdomMarketplace} />
+                <Route path="/rewards" component={Rewards} />
                 <Route path="/profile">
                   <Profile currentUser={currentUser} />
                 </Route>

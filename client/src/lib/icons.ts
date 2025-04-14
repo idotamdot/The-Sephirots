@@ -51,6 +51,11 @@ export const navigationItems = [
     icon: "ri-store-2-line"
   },
   {
+    path: "/rewards",
+    label: "Rewards",
+    icon: "ri-gift-2-line"
+  },
+  {
     path: "/moderation",
     label: "Moderation",
     icon: "ri-shield-check-line",

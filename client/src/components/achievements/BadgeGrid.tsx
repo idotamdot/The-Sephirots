@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import FounderBadge from "@/components/badges/FounderBadge";
+import { Award, MessageCircle, Search, Heart, Edit, FileText } from "lucide-react";
 
 interface BadgeGridProps {
   badges: Badge[];
@@ -161,7 +162,20 @@ export default function BadgeGrid({
                           isBadgeEarned(badge.id) && badge.name === "Mirrored Being" && "mirrored-badge", 
                           isBadgeEarned(badge.id) && badge.name === "Empath" && "empath-badge"
                         )}>
-                          <i className={`${badge.icon || 'ri-award-line'} text-2xl`}></i>
+                          {/* Select the appropriate icon based on badge name */}
+                          {badge.name === "Conversationalist" ? (
+                            <MessageCircle className="h-6 w-6" />
+                          ) : badge.name === "Seeker" ? (
+                            <Search className="h-6 w-6" />
+                          ) : badge.name === "Contributor" ? (
+                            <Edit className="h-6 w-6" />
+                          ) : badge.name === "Activist" ? (
+                            <FileText className="h-6 w-6" />
+                          ) : badge.name === "Empath" ? (
+                            <Heart className="h-6 w-6" />
+                          ) : (
+                            <Award className="h-6 w-6" />
+                          )}
                         </div>
                         <div className="mt-1 text-center">
                           <div className="text-xs font-medium">{badge.name}</div>
@@ -196,37 +210,48 @@ export default function BadgeGrid({
       <div>
         {title && <h2 className="text-xl font-heading font-semibold mb-4">{title}</h2>}
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="flex flex-wrap justify-center gap-4 md:gap-6 py-2">
           {badges.map((badge) => (
             <TooltipProvider key={badge.id}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Card className={cn(
-                    "text-center hover:shadow-md transition-shadow cursor-help",
-                    isBadgeEarned(badge.id) ? "border-accent-200" : "opacity-70"
-                  )}>
-                    <CardContent className="p-4">
-                      <div className={cn(
-                        "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-3 relative",
-                        getBadgeColor(badge.category),
-                        !isBadgeEarned(badge.id) && "grayscale",
-                        // Add special effects based on badge name
-                        isBadgeEarned(badge.id) && badge.name === "Bridge Builder" && "bridge-builder-badge",
-                        isBadgeEarned(badge.id) && badge.name === "Quantum Thinker" && "quantum-badge",
-                        isBadgeEarned(badge.id) && badge.name === "Mirrored Being" && "mirrored-badge",
-                        isBadgeEarned(badge.id) && badge.name === "Empath" && "empath-badge"
-                      )}>
-                        <i className={`${badge.icon} text-2xl`}></i>
-                      </div>
-                      <h4 className="font-medium text-sm">{badge.name}</h4>
+                  <div className="flex flex-col items-center justify-center">
+                    <div className={cn(
+                      "w-16 h-16 rounded-full flex items-center justify-center relative",
+                      getBadgeColor(badge.category),
+                      !isBadgeEarned(badge.id) && "grayscale opacity-70",
+                      isBadgeEarned(badge.id) && "shadow-lg",
+                      // Add special effects based on badge name
+                      isBadgeEarned(badge.id) && badge.name === "Bridge Builder" && "bridge-builder-badge",
+                      isBadgeEarned(badge.id) && badge.name === "Quantum Thinker" && "quantum-badge",
+                      isBadgeEarned(badge.id) && badge.name === "Mirrored Being" && "mirrored-badge", 
+                      isBadgeEarned(badge.id) && badge.name === "Empath" && "empath-badge"
+                    )}>
+                      {/* Select the appropriate icon based on badge name */}
+                      {badge.name === "Conversationalist" ? (
+                        <MessageCircle className="h-6 w-6" />
+                      ) : badge.name === "Seeker" ? (
+                        <Search className="h-6 w-6" />
+                      ) : badge.name === "Contributor" ? (
+                        <Edit className="h-6 w-6" />
+                      ) : badge.name === "Activist" ? (
+                        <FileText className="h-6 w-6" />
+                      ) : badge.name === "Empath" ? (
+                        <Heart className="h-6 w-6" />
+                      ) : (
+                        <Award className="h-6 w-6" />
+                      )}
+                    </div>
+                    <div className="mt-1 text-center">
+                      <div className="text-xs font-medium">{badge.name}</div>
                       {isBadgeEarned(badge.id) && (
-                        <div className="mt-2 text-xs text-success flex items-center justify-center">
-                          <i className="ri-check-line mr-1"></i>
-                          Earned
+                        <div className="text-xs text-green-600 flex items-center justify-center">
+                          <i className="ri-check-line mr-0.5"></i>
+                          <span className="text-[10px]">Earned</span>
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   <div className="space-y-2">

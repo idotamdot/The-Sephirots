@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RightsAgreement as RightsAgreementType, Amendment, User } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import AmendmentList from "@/components/rights/AmendmentList";
 import AmendmentForm from "@/components/rights/AmendmentForm";
+import VersionHistory from "@/components/rights/VersionHistory";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface RightsAgreementResponse {
@@ -22,15 +24,38 @@ interface RightsAgreementResponse {
 export default function RightsAgreement() {
   const [activeTab, setActiveTab] = useState("agreement");
   const [proposeDialogOpen, setProposeDialogOpen] = useState(false);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
+  const queryClient = useQueryClient();
   
+  // By default, show the latest version
   const { data, isLoading, error } = useQuery<RightsAgreementResponse>({
-    queryKey: ["/api/rights-agreement/latest"],
+    queryKey: selectedVersionId 
+      ? [`/api/rights-agreement/${selectedVersionId}`] 
+      : ["/api/rights-agreement/latest"],
   });
   
   // Get current user for proposing amendments
   const { data: currentUser } = useQuery<User>({
     queryKey: ["/api/users/me"],
   });
+  
+  const handleSelectVersion = useCallback((versionId: number) => {
+    setSelectedVersionId(versionId);
+    setHistoryDialogOpen(false);
+    // Clear previous data to show loading state
+    queryClient.removeQueries({
+      queryKey: [selectedVersionId ? `/api/rights-agreement/${selectedVersionId}` : "/api/rights-agreement/latest"]
+    });
+  }, [selectedVersionId, queryClient]);
+  
+  const handleResetToLatest = useCallback(() => {
+    setSelectedVersionId(null);
+    // Clear previous data to show loading state
+    queryClient.removeQueries({
+      queryKey: [selectedVersionId ? `/api/rights-agreement/${selectedVersionId}` : "/api/rights-agreement/latest"]
+    });
+  }, [selectedVersionId, queryClient]);
   
   if (isLoading) {
     return (
@@ -62,20 +87,46 @@ export default function RightsAgreement() {
     );
   }
   
+  const isHistoricalVersion = selectedVersionId !== null;
+  
   return (
     <div className="p-4 md:p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-heading font-bold">{data.title}</h1>
-          <p className="text-gray-600">
-            Version {data.version} • Last updated {new Date(data.createdAt).toLocaleDateString()}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-muted-foreground">
+              Version {data.version} • Last updated {new Date(data.createdAt).toLocaleDateString()}
+            </p>
+            {isHistoricalVersion && (
+              <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
+                Historical Version
+              </span>
+            )}
+          </div>
         </div>
         
-        <Button onClick={() => setProposeDialogOpen(true)}>
-          <i className="ri-draft-line mr-2"></i>
-          Propose Amendment
-        </Button>
+        <div className="flex gap-3">
+          {isHistoricalVersion && (
+            <Button variant="outline" onClick={handleResetToLatest}>
+              <i className="ri-arrow-go-back-line mr-2"></i>
+              Latest Version
+            </Button>
+          )}
+          
+          <Button variant="outline" onClick={() => setHistoryDialogOpen(true)}>
+            <i className="ri-history-line mr-2"></i>
+            Version History
+          </Button>
+          
+          <Button 
+            onClick={() => setProposeDialogOpen(true)}
+            disabled={isHistoricalVersion}
+          >
+            <i className="ri-draft-line mr-2"></i>
+            Propose Amendment
+          </Button>
+        </div>
       </div>
       
       <Tabs 
@@ -195,6 +246,7 @@ export default function RightsAgreement() {
             <AmendmentList 
               amendments={data.amendments}
               userId={currentUser.id}
+              isHistoricalView={isHistoricalVersion}
             />
           )}
         </TabsContent>
@@ -218,6 +270,23 @@ export default function RightsAgreement() {
               onSuccess={() => setProposeDialogOpen(false)}
             />
           )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Version History Dialog */}
+      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Rights Agreement Version History</DialogTitle>
+            <DialogDescription>
+              View previous versions of the Rights Agreement
+            </DialogDescription>
+          </DialogHeader>
+          
+          <VersionHistory 
+            currentAgreementId={data.id}
+            onSelectVersion={handleSelectVersion}
+          />
         </DialogContent>
       </Dialog>
     </div>

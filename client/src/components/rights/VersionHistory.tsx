@@ -53,7 +53,10 @@ export default function VersionHistory({ currentAgreementId, onSelectVersion }: 
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-medium">Version {version.version}</h3>
-                  <Badge variant={version.status === "approved" ? "success" : "secondary"}>
+                  <Badge 
+                    variant="secondary"
+                    className={version.status === "approved" ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}
+                  >
                     {version.status}
                   </Badge>
                 </div>

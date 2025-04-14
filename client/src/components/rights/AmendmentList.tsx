@@ -12,9 +12,10 @@ import { useState } from "react";
 interface AmendmentListProps {
   amendments: Amendment[];
   userId: number;
+  isHistoricalView?: boolean;
 }
 
-export default function AmendmentList({ amendments, userId }: AmendmentListProps) {
+export default function AmendmentList({ amendments, userId, isHistoricalView = false }: AmendmentListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [votingAmendmentId, setVotingAmendmentId] = useState<number | null>(null);
@@ -100,35 +101,41 @@ export default function AmendmentList({ amendments, userId }: AmendmentListProps
                         Proposed {formatRelativeTime(amendment.createdAt)}
                       </span>
                       
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="border-destructive/30 text-destructive hover:bg-destructive/10"
-                          onClick={() => voteOnAmendment.mutate({ id: amendment.id, support: false })}
-                          disabled={votingAmendmentId === amendment.id}
-                        >
-                          {votingAmendmentId === amendment.id ? (
-                            <i className="ri-loader-4-line animate-spin mr-1"></i>
-                          ) : (
-                            <i className="ri-thumb-down-line mr-1"></i>
-                          )}
-                          Oppose
-                        </Button>
-                        
-                        <Button 
-                          size="sm"
-                          onClick={() => voteOnAmendment.mutate({ id: amendment.id, support: true })}
-                          disabled={votingAmendmentId === amendment.id}
-                        >
-                          {votingAmendmentId === amendment.id ? (
-                            <i className="ri-loader-4-line animate-spin mr-1"></i>
-                          ) : (
-                            <i className="ri-thumb-up-line mr-1"></i>
-                          )}
-                          Support
-                        </Button>
-                      </div>
+                      {!isHistoricalView ? (
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                            onClick={() => voteOnAmendment.mutate({ id: amendment.id, support: false })}
+                            disabled={votingAmendmentId === amendment.id}
+                          >
+                            {votingAmendmentId === amendment.id ? (
+                              <i className="ri-loader-4-line animate-spin mr-1"></i>
+                            ) : (
+                              <i className="ri-thumb-down-line mr-1"></i>
+                            )}
+                            Oppose
+                          </Button>
+                          
+                          <Button 
+                            size="sm"
+                            onClick={() => voteOnAmendment.mutate({ id: amendment.id, support: true })}
+                            disabled={votingAmendmentId === amendment.id}
+                          >
+                            {votingAmendmentId === amendment.id ? (
+                              <i className="ri-loader-4-line animate-spin mr-1"></i>
+                            ) : (
+                              <i className="ri-thumb-up-line mr-1"></i>
+                            )}
+                            Support
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">
+                          Historical view
+                        </span>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

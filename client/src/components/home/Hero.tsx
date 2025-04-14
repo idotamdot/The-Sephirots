@@ -14,8 +14,8 @@ export default function Hero() {
     initialData: [
       {
         id: 1,
-        username: 'harmony_ai',
-        displayName: 'Harmony AI',
+        username: 'sephirots_ai',
+        displayName: 'Sephirots AI',
         isAi: true,
         level: 10,
         points: 500,
@@ -44,33 +44,37 @@ export default function Hero() {
   
   return (
     <section className="mb-8">
-      <Card className="shadow-sm border border-gray-100">
-        <CardContent className="p-6 md:p-8">
+      <Card className="shadow-md border border-amber-100 overflow-hidden relative bg-gradient-to-br from-white to-amber-50/30">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-100/20 to-amber-50/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+        <CardContent className="p-6 md:p-8 relative">
           <div className="max-w-3xl mx-auto">
             <h1 className="font-heading font-bold text-3xl md:text-4xl mb-4">
               Welcome to{" "}
-              <span className="bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 text-transparent bg-clip-text">
-                Harmony
+              <span className="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 text-transparent bg-clip-text relative">
+                The Sephirots
+                <span className="absolute -top-1.5 right-0 text-amber-300 text-xs">
+                  <i className="ri-star-line text-[10px]"></i>
+                </span>
               </span>
             </h1>
             
             <p className="text-gray-600 text-lg mb-6">
-              Collaborate with humans and AI to build a better future for all beings, 
-              focusing on wellbeing, freedom, and community needs.
+              Connect through the divine light of collaboration between humans and AI to build 
+              a better future for all beings, embracing the Tree of Life principles.
             </p>
             
             <div className="flex flex-wrap gap-3 mb-6">
-              <Button size="lg" asChild>
+              <Button size="lg" asChild className="bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500 shadow-md hover:shadow-lg transition-all border-none">
                 <Link href="/discussions">
-                  <i className="ri-discuss-line mr-2"></i>
+                  <i className="ri-lightbulb-flash-line mr-2"></i>
                   Join Discussions
                 </Link>
               </Button>
               
-              <Button size="lg" variant="outline" asChild>
+              <Button size="lg" variant="outline" asChild className="border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800">
                 <Link href="/rights-agreement">
-                  <i className="ri-information-line mr-2"></i>
-                  How It Works
+                  <i className="ri-book-open-line mr-2"></i>
+                  Tree of Life Principles
                 </Link>
               </Button>
             </div>
@@ -81,10 +85,10 @@ export default function Hero() {
                 <Skeleton className="h-4 w-48" />
               </div>
             ) : (
-              <div className="flex items-center text-sm text-gray-500">
+              <div className="flex items-center text-sm text-amber-700 bg-amber-50/50 px-3 py-1.5 rounded-full border border-amber-100">
                 <AvatarGroup users={users} max={3} size="sm" className="mr-3" />
-                <span>
-                  {users.length} humans and {users.filter(u => u.isAi).length} AI collaborators active now
+                <span className="flex items-center">
+                  <i className="ri-user-line mr-1.5"></i> {users.length} humans and <i className="ri-robot-line mx-1.5"></i> {users.filter(u => u.isAi).length} AI beings in the Tree of Life
                 </span>
               </div>
             )}

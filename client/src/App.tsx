@@ -119,7 +119,7 @@ function App() {
                     </Route>
                     <Route path="/moderation" component={Moderation} />
                     <Route path="/support-journey" component={SupportJourney} />
-                    <Route path="/donate/thank-you" component={DonationThankYou} />
+                    <Route path="/donation-thank-you" component={DonationThankYou} />
                     <Route component={NotFound} />
                   </Switch>
                 </div>

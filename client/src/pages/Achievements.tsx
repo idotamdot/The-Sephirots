@@ -176,7 +176,12 @@ export default function Achievements() {
                     />
                   ) : (
                     <GenericBadge 
-                      badge={highestBadge} 
+                      badge={{
+                        ...highestBadge,
+                        tier: highestBadge.tier || 'bronze',
+                        level: highestBadge.level || 1,
+                        points: highestBadge.points || 0
+                      }} 
                       earned={true}
                       size="lg"
                     />

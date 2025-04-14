@@ -28,7 +28,7 @@ export default function BadgeEvolutionTimeline({
       
       <div className="flex flex-col md:flex-row justify-start items-center space-y-4 md:space-y-0 md:space-x-4">
         {sortedBadges.map((badge, index) => (
-          <React.Fragment key={badge.id}>
+          <div key={badge.id} className="flex flex-col md:flex-row items-center">
             {/* Badge with its earned status */}
             <div className="flex flex-col items-center">
               {badge.tier === 'founder' ? (
@@ -53,7 +53,7 @@ export default function BadgeEvolutionTimeline({
             
             {/* Arrow between badges, except after the last one */}
             {index < sortedBadges.length - 1 && (
-              <div className="flex items-center justify-center transform rotate-90 md:rotate-0">
+              <div className="flex items-center justify-center transform rotate-90 md:rotate-0 md:ml-2">
                 <ChevronRight 
                   className={cn(
                     "h-6 w-6 mx-2",
@@ -62,7 +62,7 @@ export default function BadgeEvolutionTimeline({
                 />
               </div>
             )}
-          </React.Fragment>
+          </div>
         ))}
       </div>
       

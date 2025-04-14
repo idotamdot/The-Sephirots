@@ -7,6 +7,7 @@ import CommunityNeeds from "@/pages/CommunityNeeds";
 import Wellbeing from "@/pages/Wellbeing";
 import Achievements from "@/pages/Achievements";
 import MysticalProgress from "@/pages/MysticalProgress";
+import MindMapExplorer from "@/pages/MindMapExplorer";
 import Profile from "@/pages/Profile";
 import Governance from "@/pages/Governance";
 import ProposalDetail from "@/pages/ProposalDetail";
@@ -78,6 +79,7 @@ function App() {
                 <Route path="/wellbeing" component={Wellbeing} />
                 <Route path="/achievements" component={Achievements} />
                 <Route path="/mystical-progress" component={MysticalProgress} />
+                <Route path="/mindmap" component={MindMapExplorer} />
                 <Route path="/profile">
                   <Profile currentUser={currentUser} />
                 </Route>

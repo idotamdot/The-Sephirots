@@ -41,6 +41,11 @@ export const navigationItems = [
     icon: "ri-compass-3-line"
   },
   {
+    path: "/mindmap",
+    label: "Mind Mapping",
+    icon: "ri-mind-map"
+  },
+  {
     path: "/moderation",
     label: "Moderation",
     icon: "ri-shield-check-line",

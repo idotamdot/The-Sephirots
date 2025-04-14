@@ -61,6 +61,11 @@ export const navigationItems = [
     icon: "ri-sparkling-2-line"
   },
   {
+    path: "/ai-companion",
+    label: "AI Companion",
+    icon: "ri-robot-line"
+  },
+  {
     path: "/moderation",
     label: "Moderation",
     icon: "ri-shield-check-line",

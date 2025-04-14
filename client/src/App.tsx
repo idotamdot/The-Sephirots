@@ -11,6 +11,7 @@ import MindMapExplorer from "@/pages/MindMapExplorer";
 import WisdomMarketplace from "@/pages/WisdomMarketplace";
 import Rewards from "@/pages/Rewards";
 import QuantumInsights from "@/pages/QuantumInsights";
+import AICompanion from "@/pages/AICompanion";
 import Profile from "@/pages/Profile";
 import Governance from "@/pages/Governance";
 import ProposalDetail from "@/pages/ProposalDetail";
@@ -101,6 +102,7 @@ function App() {
                 <Route path="/wisdom-marketplace" component={WisdomMarketplace} />
                 <Route path="/rewards" component={Rewards} />
                 <Route path="/quantum-insights" component={QuantumInsights} />
+                <Route path="/ai-companion" component={AICompanion} />
                 <Route path="/profile">
                   <Profile currentUser={currentUser} />
                 </Route>

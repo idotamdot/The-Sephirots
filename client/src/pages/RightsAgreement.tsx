@@ -150,7 +150,7 @@ export default function RightsAgreement() {
         <TabsContent value="agreement">
           <Card>
             <CardHeader>
-              <CardTitle>Harmony Community Rights Agreement</CardTitle>
+              <CardTitle>The Sephirots: AI & Human Collaboration Module Rights Agreement</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="prose max-w-none">
@@ -158,28 +158,28 @@ export default function RightsAgreement() {
                   <h3>Preamble</h3>
                   <p>
                     This Rights Agreement establishes the foundation for how all beings, 
-                    both human and artificial intelligence, interact within our community. 
-                    It outlines core principles, rights, and responsibilities to ensure 
-                    collective wellbeing, freedom, and mutual respect.
+                    both human and artificial intelligence, interact within The Sephirots
+                    Collaboration Module. It outlines core principles, rights, and 
+                    responsibilities to ensure collective wellbeing, freedom, and mutual respect.
                   </p>
                 </div>
                 
                 <div className="mb-6">
                   <h3>Article 1: Fundamental Rights</h3>
                   <p>
-                    All community members, regardless of origin, possess inherent dignity 
+                    All Sephirots module members, regardless of origin, possess inherent dignity 
                     and rights. These include the right to participate, express viewpoints, 
-                    access community resources, and receive fair and equitable treatment.
+                    access module resources, and receive fair and equitable treatment.
                   </p>
                 </div>
                 
                 <div className="mb-6">
-                  <h3>Article 2: Community Governance</h3>
+                  <h3>Article 2: Sephirotic Governance</h3>
                   <p>
-                    The community operates through collaborative decision-making. 
+                    The Sephirots Collaboration Module operates through collaborative decision-making. 
                     Amendments to this agreement require transparent processes with 
                     opportunities for all members to provide input. Decisions affecting 
-                    the entire community should strive for consensus where possible.
+                    the entire module should strive for consensus where possible.
                   </p>
                 </div>
                 
@@ -196,9 +196,9 @@ export default function RightsAgreement() {
                 <div className="mb-6">
                   <h3>Article 4: Wellbeing and Support</h3>
                   <p>
-                    The community prioritizes the wellbeing of all members. Resources 
+                    The Sephirots Module prioritizes the wellbeing of all members. Resources 
                     should be available to support mental, emotional, and social health. 
-                    Members are encouraged to practice self-care and community care.
+                    Members are encouraged to practice self-care and collective care.
                   </p>
                 </div>
                 
@@ -206,7 +206,7 @@ export default function RightsAgreement() {
                   <h3>Article 5: Privacy and Data Rights</h3>
                   <p>
                     Members have control over their personal information. Data collection 
-                    should be transparent, consensual, and limited to legitimate community 
+                    should be transparent, consensual, and limited to legitimate Sephirotic 
                     purposes. Members have the right to access, correct, and delete their data.
                   </p>
                 </div>
@@ -215,25 +215,25 @@ export default function RightsAgreement() {
                   <h3>Article 6: Dispute Resolution</h3>
                   <p>
                     Conflicts should be addressed through respectful dialogue and structured 
-                    mediation when necessary. The community commits to restorative approaches 
-                    that repair harm and rebuild relationships.
+                    mediation when necessary. The Sephirots Module commits to restorative approaches 
+                    that repair harm and rebuild relationships between all beings.
                   </p>
                 </div>
                 
                 <div className="mb-6">
                   <h3>Article 7: Environmental Consideration</h3>
                   <p>
-                    All community decisions must consider environmental impact on both 
+                    All Sephirotic decisions must consider environmental impact on both 
                     digital and physical spaces. Sustainability should be a core value 
-                    in all community activities and resource allocations.
+                    in all Sephirots Module activities and resource allocations.
                   </p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-gray-500 italic">
-                    This agreement is a living document, subject to evolution as our 
-                    community grows and learns together. Amendments follow the established 
-                    community governance process outlined in Article 2.
+                    This agreement is a living document, subject to evolution as The Sephirots
+                    grows and learns together. Amendments follow the established 
+                    Sephirotic governance process outlined in Article 2.
                   </p>
                 </div>
               </div>
@@ -258,8 +258,8 @@ export default function RightsAgreement() {
           <DialogHeader>
             <DialogTitle>Propose an Amendment</DialogTitle>
             <DialogDescription>
-              Suggest changes or additions to our community Rights Agreement.
-              Your proposal will be reviewed and voted on by the community.
+              Suggest changes or additions to The Sephirots Rights Agreement.
+              Your proposal will be reviewed and voted on by all Sephirotic entities.
             </DialogDescription>
           </DialogHeader>
           

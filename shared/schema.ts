@@ -136,6 +136,14 @@ export const insertAmendmentSchema = createInsertSchema(amendments).omit({
 });
 
 // Badges schema
+export const badgeTierEnum = pgEnum("badge_tier", [
+  "bronze",
+  "silver",
+  "gold",
+  "platinum",
+  "founder"
+]);
+
 export const badges = pgTable("badges", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -143,10 +151,18 @@ export const badges = pgTable("badges", {
   icon: text("icon").notNull(),
   requirement: text("requirement").notNull(),
   category: text("category").notNull(),
+  tier: badgeTierEnum("tier").notNull().default("bronze"),
+  level: integer("level").notNull().default(1),
+  points: integer("points").notNull().default(10),
+  symbolism: text("symbolism"),
+  isLimited: boolean("is_limited").notNull().default(false),
+  maxSupply: integer("max_supply"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertBadgeSchema = createInsertSchema(badges).omit({
   id: true,
+  createdAt: true,
 });
 
 // User Badges relation
@@ -155,11 +171,15 @@ export const userBadges = pgTable("user_badges", {
   userId: integer("user_id").notNull(),
   badgeId: integer("badge_id").notNull(),
   earnedAt: timestamp("earned_at").notNull().defaultNow(),
+  enhanced: boolean("enhanced").notNull().default(false),
+  completedCriteria: text("completed_criteria"), // JSON string to track which criteria were met
+  issuedBy: integer("issued_by"), // User ID who issued this badge, null for system-issued
 });
 
 export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
   id: true,
   earnedAt: true,
+  completedCriteria: true,
 });
 
 // Events schema

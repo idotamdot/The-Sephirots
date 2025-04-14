@@ -79,7 +79,13 @@ export default {
             dark: "#B7791F",
           },
         },
-      },
+        skyglow: {
+          light: "#e0f7ff",
+          DEFAULT: "#bae6fd",
+          glow: "#a5f3fc",
+          dark: "#38bdf8",
+        },
+      }, // ⬅️ end of colors
       keyframes: {
         "accordion-down": {
           from: {

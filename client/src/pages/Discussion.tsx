@@ -22,7 +22,8 @@ export default function Discussion({ id }: DiscussionPageProps) {
   const { data: currentUser } = useQuery<User>({
     queryKey: ["/api/users/me"],
   });
-  
+  const [aiReply, setAiReply] = useState<string | null>(null);
+const [loadingAI, setLoadingAI] = useState(false);
   if (isLoading) {
     return (
       <div className="p-4 md:p-6 space-y-6">
@@ -72,12 +73,32 @@ export default function Discussion({ id }: DiscussionPageProps) {
           </Link>
         </Button>
       </div>
-      
-      <DiscussionDetail discussion={discussion} />
-      
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">
+      {currentUser && (
+        <div className="mb-4 flex items-center gap-4">
+          <Button onClick={requestAIPerspective} disabled={loadingAI}>
+            {loadingAI ? "Asking Harmony AI..." : "Request AI Perspective"}
+          </Button>
+{currentUser && (
+  <div className="mb-4 flex items-center gap-4">
+    <Button onClick={requestAIPerspective} disabled={loadingAI}>
+      {loadingAI ? "Asking Harmony AI..." : "Request AI Perspective"}
+    </Button>
+
+    {aiReply && (
+      <div className="bg-skyglow-light border border-skyglow-dark text-blue-900 p-6 rounded-xl shadow-xl animate-subtle-pulse max-w-2xl">
+        <i className="ri-sparkling-fill mr-2" />
+        Harmony AI: {aiReply}
+      </div>
+    )}
+</div>
+)}
+          
+<DiscussionDetail discussion={discussion} />
+
+<Card>
+  <CardHeader>
+    <CardTitle className="text-xl">
+
             {discussion.comments?.length || 0} Responses
           </CardTitle>
         </CardHeader>

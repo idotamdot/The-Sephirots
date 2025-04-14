@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import openai from "./openai";
 import { ModerationService } from "./moderation";
+import { getAIPerspective } from "./aiPerspective";
 import { 
   insertUserSchema, 
   insertDiscussionSchema, 
@@ -1033,6 +1034,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // // ===== 🌌 COSMIC INSIGHTS: AI Perspective Channel =====
+app.post("/api/ai/perspective", async (req, res) => {
+  try {
+    const { discussionText, badges, userContext, style } = req.body;
+
+    if (!discussionText) {
+      return res.status(400).json({ error: "Missing discussionText" });
+    }
+
+    const result = await getAIPerspective({ discussionText, badges, userContext, style });
+
+    res.json(result);
+  } catch (err) {
+    console.error("AI Perspective API error:", err);
+    res.status(500).json({ error: "Failed to generate AI perspective" });
+  }
+});
+
+
+  
   // Get all moderation flags
   app.get("/api/moderation/flags", async (_req, res) => {
     try {

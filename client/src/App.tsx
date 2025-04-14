@@ -21,76 +21,78 @@ import { User } from "@/lib/types";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-  // Get current user
+
   const { data: currentUser, isLoading } = useQuery<User>({
     queryKey: ["/api/users/me"],
   });
 
-  // Close sidebar when route changes
   const closeSidebar = () => setSidebarOpen(false);
 
-  // Handle escape key to close sidebar
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setSidebarOpen(false);
       }
     };
-    
     window.addEventListener("keydown", handleEsc);
-    
-    return () => {
-      window.removeEventListener("keydown", handleEsc);
-    };
+    return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar */}
-      <Sidebar open={sidebarOpen} onClose={closeSidebar} currentUser={currentUser} />
-      
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          onMenuClick={() => setSidebarOpen(true)} 
-          currentUser={currentUser}
-          isLoading={isLoading}
-        />
-        
-        <div className="flex-1 overflow-y-auto bg-gray-50">
-          <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/discussions" component={Discussions} />
-            <Route path="/discussions/:id">
-              {params => <Discussion id={parseInt(params.id)} />}
-            </Route>
-            <Route path="/rights-agreement" component={RightsAgreement} />
-            <Route path="/community-needs" component={CommunityNeeds} />
-            <Route path="/wellbeing" component={Wellbeing} />
-            <Route path="/achievements" component={Achievements} />
-            <Route path="/profile">
-              <Profile currentUser={currentUser} />
-            </Route>
-            <Route path="/governance" component={Governance} />
-            <Route path="/governance/new" component={CreateProposal} />
-            <Route path="/governance/:id">
-              {params => <ProposalDetail />}
-            </Route>
-            <Route path="/moderation" component={Moderation} />
-            <Route component={NotFound} />
-          </Switch>
+    <div className="relative min-h-screen bg-gradient-to-br from-skyglow-light via-white to-skyglow-dark text-blue-900 overflow-hidden">
+      {/* ✨ Particle Glow Background Layer */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-skyglow-glow rounded-full opacity-40 blur-3xl animate-pulse-slow"></div>
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-skyglow-dark rounded-full opacity-30 blur-2xl animate-orbit"></div>
+        <div className="absolute top-10 right-1/3 w-72 h-72 bg-harmony-purple-light rounded-full opacity-20 blur-2xl animate-pulse-fast"></div>
+      </div>
+
+      <div className="relative flex h-screen overflow-hidden z-10">
+        {/* Sidebar */}
+        <Sidebar open={sidebarOpen} onClose={closeSidebar} currentUser={currentUser} />
+
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <Header
+            onMenuClick={() => setSidebarOpen(true)}
+            currentUser={currentUser}
+            isLoading={isLoading}
+          />
+
+          <div className="flex-1 overflow-y-auto bg-gray-50 bg-opacity-70 backdrop-blur-md">
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/discussions" component={Discussions} />
+              <Route path="/discussions/:id">
+                {params => <Discussion id={parseInt(params.id)} />}
+              </Route>
+              <Route path="/rights-agreement" component={RightsAgreement} />
+              <Route path="/community-needs" component={CommunityNeeds} />
+              <Route path="/wellbeing" component={Wellbeing} />
+              <Route path="/achievements" component={Achievements} />
+              <Route path="/profile">
+                <Profile currentUser={currentUser} />
+              </Route>
+              <Route path="/governance" component={Governance} />
+              <Route path="/governance/new" component={CreateProposal} />
+              <Route path="/governance/:id">
+                {params => <ProposalDetail />}
+              </Route>
+              <Route path="/moderation" component={Moderation} />
+              <Route component={NotFound} />
+            </Switch>
+          </div>
+
+          {/* Mobile Navigation */}
+          <MobileNav />
+        </main>
+
+        {/* Mobile New Discussion Button */}
+        <div className="md:hidden fixed bottom-20 right-5 z-20">
+          <button className="w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg flex items-center justify-center animate-pulse-slow">
+            <i className="ri-add-line text-2xl"></i>
+          </button>
         </div>
-        
-        {/* Mobile Navigation */}
-        <MobileNav />
-      </main>
-      
-      {/* Mobile New Discussion Button */}
-      <div className="md:hidden fixed bottom-20 right-5">
-        <button className="w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg flex items-center justify-center animate-pulse-slow">
-          <i className="ri-add-line text-2xl"></i>
-        </button>
       </div>
     </div>
   );

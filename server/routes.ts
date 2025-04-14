@@ -2112,6 +2112,8 @@ app.post("/api/ai/perspective", async (req, res) => {
       }
     });
     
+    // This endpoint was duplicated below. Removing this version.
+
     // Delete reaction
     app.delete("/api/cosmic-reactions/:id", async (req, res) => {
       try {

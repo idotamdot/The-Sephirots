@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiRequest } from '@/lib/queryClient';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '../../hooks/use-auth';
 import './CosmicReactions.css';
 
 interface CosmicReactionButtonProps {

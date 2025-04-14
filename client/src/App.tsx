@@ -17,6 +17,8 @@ import Governance from "@/pages/Governance";
 import ProposalDetail from "@/pages/ProposalDetail";
 import CreateProposal from "@/pages/CreateProposal";
 import Moderation from "@/pages/Moderation";
+import SupportJourney from "@/pages/SupportJourney";
+import DonationThankYou from "@/pages/DonationThankYou";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -110,6 +112,8 @@ function App() {
                     {params => <ProposalDetail />}
                   </Route>
                   <Route path="/moderation" component={Moderation} />
+                  <Route path="/support-journey" component={SupportJourney} />
+                  <Route path="/donate/thank-you" component={DonationThankYou} />
                   <Route component={NotFound} />
                 </Switch>
               </div>

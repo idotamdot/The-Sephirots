@@ -394,46 +394,60 @@ export default function CompleteCollection({
                       </div>
                     </div>
                     
-                    {/* Contributor Badge (Bottom Center) */}
+                    {/* Contributor Badge (Bottom Center) - Malkuth: Kingdom/Manifestation */}
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-center">
                       <div className={cn(
-                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        "w-16 h-16 rounded-full border-2 mx-auto flex flex-col items-center justify-center",
                         earnedBadgeIds.includes(9) 
-                          ? "border-indigo-400 bg-indigo-900/50" 
+                          ? "border-green-400 bg-indigo-900/50" 
                           : "border-gray-700 bg-gray-900/50"
                       )}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(9) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
                           <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                         </svg>
+                        {earnedBadgeIds.includes(9) && (
+                          <span className="text-[7px] text-green-200 mt-1">Malkuth</span>
+                        )}
                       </div>
-                      <p className={cn(
-                        "mt-2 text-sm",
-                        earnedBadgeIds.includes(9) ? "text-white" : "text-gray-500"
-                      )}>Contributor</p>
+                      <div className="mt-2 text-center">
+                        <p className={cn(
+                          "text-sm",
+                          earnedBadgeIds.includes(9) ? "text-white" : "text-gray-500"
+                        )}>Contributor</p>
+                        {earnedBadgeIds.includes(9) && (
+                          <p className="text-[10px] text-green-300 italic">Manifestation</p>
+                        )}
+                      </div>
                     </div>
                     
-                    {/* Connection lines between badges */}
-                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" fill="none" stroke="#4338ca" strokeWidth="0.5" opacity="0.6">
-                      {/* Vertical line from Founder to Bridge Builder */}
-                      <line x1="50" y1="22" x2="50" y2="48" />
+                    {/* Tree of Life Connection lines between badges */}
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" fill="none">
+                      {/* Pillar lines */}
+                      {/* Center Pillar: Keter to Tiferet to Malkuth */}
+                      <line x1="50" y1="22" x2="50" y2="48" stroke={earnedBadgeIds.includes(4) && earnedBadgeIds.includes(6) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(4) && earnedBadgeIds.includes(6) ? "0.8" : "0.4"} />
+                      <line x1="50" y1="52" x2="50" y2="78" stroke={earnedBadgeIds.includes(6) && earnedBadgeIds.includes(9) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(6) && earnedBadgeIds.includes(9) ? "0.8" : "0.4"} />
                       
-                      {/* Horizontal line from Conversationalist to Quantum Thinker */}
-                      <line x1="20" y1="32" x2="80" y2="32" />
+                      {/* Left Pillar: Conversationalist to Empath */}
+                      <line x1="20" y1="32" x2="25" y2="75" stroke={earnedBadgeIds.includes(1) && earnedBadgeIds.includes(8) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(1) && earnedBadgeIds.includes(8) ? "0.8" : "0.4"} />
                       
-                      {/* Line from Bridge Builder to Contributor */}
-                      <line x1="50" y1="52" x2="50" y2="78" />
+                      {/* Right Pillar: Quantum Thinker to Mirrored Being */}
+                      <line x1="80" y1="32" x2="75" y2="75" stroke={earnedBadgeIds.includes(5) && earnedBadgeIds.includes(7) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(5) && earnedBadgeIds.includes(7) ? "0.8" : "0.4"} />
                       
-                      {/* Line from Bridge Builder to Empath */}
-                      <line x1="50" y1="52" x2="25" y2="78" />
+                      {/* Cross lines */}
+                      {/* Horizontal: Conversationalist to Quantum Thinker */}
+                      <line x1="20" y1="32" x2="80" y2="32" stroke={earnedBadgeIds.includes(1) && earnedBadgeIds.includes(5) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(1) && earnedBadgeIds.includes(5) ? "0.8" : "0.4"} />
                       
-                      {/* Line from Bridge Builder to Mirrored Being */}
-                      <line x1="50" y1="52" x2="75" y2="78" />
+                      {/* Diagonal: Founder to Conversationalist and Quantum Thinker */}
+                      <line x1="50" y1="22" x2="20" y2="32" stroke={earnedBadgeIds.includes(4) && earnedBadgeIds.includes(1) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(4) && earnedBadgeIds.includes(1) ? "0.8" : "0.4"} />
+                      <line x1="50" y1="22" x2="80" y2="32" stroke={earnedBadgeIds.includes(4) && earnedBadgeIds.includes(5) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(4) && earnedBadgeIds.includes(5) ? "0.8" : "0.4"} />
                       
-                      {/* Line from Founder to Conversationalist */}
-                      <line x1="50" y1="22" x2="20" y2="32" />
+                      {/* Diagonal: Bridge Builder to Side Badges */}
+                      <line x1="50" y1="52" x2="25" y2="78" stroke={earnedBadgeIds.includes(6) && earnedBadgeIds.includes(8) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(6) && earnedBadgeIds.includes(8) ? "0.8" : "0.4"} />
+                      <line x1="50" y1="52" x2="75" y2="78" stroke={earnedBadgeIds.includes(6) && earnedBadgeIds.includes(7) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(6) && earnedBadgeIds.includes(7) ? "0.8" : "0.4"} />
                       
-                      {/* Line from Founder to Quantum Thinker */}
-                      <line x1="50" y1="22" x2="80" y2="32" />
+                      {/* Bottom connections to Contributor */}
+                      <line x1="25" y1="78" x2="50" y2="78" stroke={earnedBadgeIds.includes(8) && earnedBadgeIds.includes(9) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(8) && earnedBadgeIds.includes(9) ? "0.8" : "0.4"} />
+                      <line x1="75" y1="78" x2="50" y2="78" stroke={earnedBadgeIds.includes(7) && earnedBadgeIds.includes(9) ? "#a78bfa" : "#4338ca"} strokeWidth="0.5" opacity={earnedBadgeIds.includes(7) && earnedBadgeIds.includes(9) ? "0.8" : "0.4"} />
                     </svg>
                   </div>
                 </div>

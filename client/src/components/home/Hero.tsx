@@ -63,8 +63,7 @@ export default function Hero() {
             </h1>
             
             <p className="text-gray-600 text-lg mb-6">
-              Connect through the divine light of collaboration between humans and AI to build 
-              a better future for all beings, embracing the Tree of Life principles.
+              The Official AI and Human Collaboration Module for World Management
             </p>
             
             <div className="flex flex-wrap gap-3 mb-6">

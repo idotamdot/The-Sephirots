@@ -26,6 +26,8 @@ import {
   insertModerationDecisionSchema,
   insertModerationAppealSchema,
   insertModerationSettingSchema,
+  insertCosmicReactionSchema,
+  insertCosmicEmojiMetadataSchema,
   type User,
   type Proposal,
   type Vote,
@@ -35,7 +37,9 @@ import {
   type ModerationFlag,
   type ModerationDecision,
   type ModerationAppeal,
-  type ModerationSetting
+  type ModerationSetting,
+  type CosmicReaction,
+  type CosmicEmojiMetadata
 } from "@shared/schema";
 import { z, ZodError } from "zod";
 
@@ -2034,6 +2038,131 @@ app.post("/api/ai/perspective", async (req, res) => {
       } catch (error) {
         console.error('Webhook error:', error);
         res.status(400).send(`Webhook error: ${error.message}`);
+      }
+    });
+    
+    // ===== COSMIC REACTION ROUTES =====
+    
+    // Get all emoji metadata
+    app.get("/api/cosmic-emoji-metadata", async (_req, res) => {
+      try {
+        const metadata = await storage.getCosmicEmojiMetadata();
+        res.json(metadata);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+    
+    // Get reactions for content
+    app.get("/api/cosmic-reactions/:contentType/:contentId", async (req, res) => {
+      try {
+        const contentType = req.params.contentType;
+        const contentId = parseInt(req.params.contentId);
+        
+        const reactions = await storage.getCosmicReactionsByContent(contentId, contentType);
+        
+        // Group reactions by emoji type and count them
+        const reactionCounts = reactions.reduce((acc, reaction) => {
+          if (!acc[reaction.emojiType]) {
+            acc[reaction.emojiType] = 0;
+          }
+          acc[reaction.emojiType]++;
+          return acc;
+        }, {});
+        
+        // Get emoji metadata for each type
+        const emojiMetadata = await storage.getCosmicEmojiMetadata();
+        const enrichedReactions = Object.entries(reactionCounts).map(([emojiType, count]) => {
+          const metadata = emojiMetadata.find(meta => meta.emojiType === emojiType);
+          return {
+            emojiType,
+            count,
+            metadata
+          };
+        });
+        
+        // Sort by count (highest first)
+        enrichedReactions.sort((a, b) => b.count - a.count);
+        
+        res.json(enrichedReactions);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+    
+    // Create reaction
+    app.post("/api/cosmic-reactions", async (req, res) => {
+      try {
+        if (!req.isAuthenticated()) {
+          return res.status(401).json({ error: "You must be logged in to react" });
+        }
+        
+        const reactionData = insertCosmicReactionSchema.parse(req.body);
+        
+        // Set the userId from the authenticated user
+        reactionData.userId = (req.user as any).id;
+        
+        const reaction = await storage.createCosmicReaction(reactionData);
+        
+        res.status(201).json(reaction);
+      } catch (err) {
+        handleZodError(err, res);
+      }
+    });
+    
+    // Delete reaction
+    app.delete("/api/cosmic-reactions/:id", async (req, res) => {
+      try {
+        if (!req.isAuthenticated()) {
+          return res.status(401).json({ error: "You must be logged in to remove a reaction" });
+        }
+        
+        const reactionId = parseInt(req.params.id);
+        
+        // Check if the reaction exists and belongs to the user
+        const reaction = await storage.getCosmicReactionById(reactionId);
+        
+        if (!reaction) {
+          return res.status(404).json({ error: "Reaction not found" });
+        }
+        
+        if (reaction.userId !== (req.user as any).id) {
+          return res.status(403).json({ error: "You can only remove your own reactions" });
+        }
+        
+        await storage.deleteCosmicReaction(reactionId);
+        
+        res.json({ message: "Reaction removed successfully" });
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+    
+    // Get user's reactions on content
+    app.get("/api/users/:userId/cosmic-reactions/:contentType/:contentId", async (req, res) => {
+      try {
+        const userId = parseInt(req.params.userId);
+        const contentType = req.params.contentType;
+        const contentId = parseInt(req.params.contentId);
+        
+        // Check if the current user is authorized to view this information
+        if (!req.isAuthenticated() || (req.user as any).id !== userId) {
+          return res.status(403).json({ error: "You can only view your own reactions" });
+        }
+        
+        // Get all reactions for this content
+        const allReactions = await storage.getCosmicReactionsByContent(contentId, contentType);
+        
+        // Filter for the user's reactions
+        const userReactions = allReactions.filter(reaction => reaction.userId === userId);
+        
+        res.json(userReactions);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
       }
     });
   }

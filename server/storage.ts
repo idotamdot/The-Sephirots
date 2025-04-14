@@ -184,6 +184,7 @@ export interface IStorage {
   
   // Cosmic Reaction methods
   getCosmicReactionsByContent(contentId: number, contentType: string): Promise<CosmicReaction[]>;
+  getCosmicReactionById(id: number): Promise<CosmicReaction | undefined>;
   getUserCosmicReactionOnContent(userId: number, contentId: number, contentType: string, emojiType: string): Promise<CosmicReaction | undefined>;
   createCosmicReaction(reaction: InsertCosmicReaction): Promise<CosmicReaction>;
   deleteCosmicReaction(id: number): Promise<void>;
@@ -1567,6 +1568,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.cosmicReactions.values()).filter(
       reaction => reaction.contentId === contentId && reaction.contentType === contentType
     );
+  }
+  
+  async getCosmicReactionById(id: number): Promise<CosmicReaction | undefined> {
+    return this.cosmicReactions.get(id);
   }
   
   async getUserCosmicReactionOnContent(userId: number, contentId: number, contentType: string, emojiType: string): Promise<CosmicReaction | undefined> {

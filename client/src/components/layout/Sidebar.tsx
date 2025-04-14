@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { navigationItems } from "@/lib/icons";
+import DoveAndStars from "@/components/icons/DoveAndStars";
 
 interface SidebarProps {
   open: boolean;
@@ -40,12 +41,13 @@ export default function Sidebar({ open, onClose, currentUser }: SidebarProps) {
         {/* Logo and Platform Name */}
         <div className="flex items-center space-x-2 px-2 mb-8">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-sephirot-keter-DEFAULT to-sephirot-gold-light flex items-center justify-center relative overflow-hidden shadow-lg">
-            <i className="ri-dove-line text-white text-xl z-10"></i>
-            <span className="absolute top-0 right-0 text-xs text-white">
-              <i className="ri-star-line absolute top-0 right-0 text-[10px] text-white"></i>
-              <i className="ri-star-line absolute top-1 right-2 text-[8px] text-white"></i>
-              <i className="ri-star-line absolute top-2 right-0 text-[7px] text-white"></i>
-            </span>
+            <DoveAndStars 
+              fillColor="white" 
+              size="lg" 
+              withGlow={true} 
+              glowColor="rgba(255, 255, 255, 0.5)"
+              className="z-10" 
+            />
           </div>
           <h1 className="font-heading font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-yellow-300">The Sephirots</h1>
         </div>

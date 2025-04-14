@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { User } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import DoveAndStars from "@/components/icons/DoveAndStars";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -24,11 +25,13 @@ export default function Header({ onMenuClick, currentUser, isLoading }: HeaderPr
           </button>
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sephirot-keter-DEFAULT to-sephirot-gold-light flex items-center justify-center relative overflow-hidden">
-              <i className="ri-dove-line text-white text-lg z-10"></i>
-              <span className="absolute top-0 right-0 text-xs text-white">
-                <i className="ri-star-line absolute top-0 right-0 text-[8px] text-white"></i>
-                <i className="ri-star-line absolute top-1 right-1 text-[6px] text-white"></i>
-              </span>
+              <DoveAndStars 
+                fillColor="white" 
+                size="md" 
+                withGlow={true} 
+                glowColor="rgba(255, 255, 255, 0.5)"
+                className="z-10" 
+              />
             </div>
             <span className="font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-yellow-300">The Sephirots</span>
           </Link>

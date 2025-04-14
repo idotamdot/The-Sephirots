@@ -44,7 +44,7 @@ function App() {
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-skyglow-glow rounded-full opacity-40 blur-3xl animate-pulse-slow"></div>
         <div className="absolute bottom-10 right-10 w-80 h-80 bg-skyglow-dark rounded-full opacity-30 blur-2xl animate-orbit"></div>
-        <div className="absolute top-10 right-1/3 w-72 h-72 bg-harmony-purple-light rounded-full opacity-20 blur-2xl animate-pulse-fast"></div>
+        <div className="absolute top-10 right-1/3 w-72 h-72 bg-sephirot-purple-light rounded-full opacity-20 blur-2xl animate-pulse-fast"></div>
       </div>
 
       <div className="relative flex h-screen overflow-hidden z-10">

@@ -61,14 +61,14 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Harmony badge colors
-        harmony: {
+        // Sephirot badge colors
+        sephirot: {
           purple: {
-            light: "#B794F6",
-            DEFAULT: "#805AD5",
-            dark: "#553C9A",
+            light: "#C294F6",
+            DEFAULT: "#905AD5",
+            dark: "#653C9A",
           },
-          lavender: {
+          divine: {
             light: "#E9D8FD",
             DEFAULT: "#B794F6",
             dark: "#805AD5",
@@ -78,6 +78,31 @@ export default {
             DEFAULT: "#D69E2E",
             dark: "#B7791F",
           },
+          keter: {
+            light: "#FEFCBF",
+            DEFAULT: "#ECC94B", 
+            dark: "#B7791F"
+          },
+          binah: {
+            light: "#C4F1F9",
+            DEFAULT: "#76E4F7",
+            dark: "#0BC5EA"
+          },
+          chokhmah: {
+            light: "#BEE3F8",
+            DEFAULT: "#63B3ED",
+            dark: "#3182CE"
+          },
+          tiferet: { 
+            light: "#FEB2B2",
+            DEFAULT: "#FC8181",
+            dark: "#E53E3E"
+          },
+          chesed: {
+            light: "#C6F6D5",
+            DEFAULT: "#68D391",
+            dark: "#38A169"
+          }
         },
         skyglow: {
           light: "#e0f7ff",

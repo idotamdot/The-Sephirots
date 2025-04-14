@@ -56,6 +56,11 @@ export const navigationItems = [
     icon: "ri-gift-2-line"
   },
   {
+    path: "/quantum-insights",
+    label: "Quantum Insights",
+    icon: "ri-sparkling-2-line"
+  },
+  {
     path: "/moderation",
     label: "Moderation",
     icon: "ri-shield-check-line",

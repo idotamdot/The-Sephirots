@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 
 export default function SupportButton() {
   return (
-    <Link href="/support">
+    <Link href="/support-journey">
       <Button 
         variant="outline" 
         className="w-full flex items-center justify-center bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200 hover:bg-gradient-to-r hover:from-amber-100 hover:to-amber-200 hover:border-amber-300 transition-all duration-300"

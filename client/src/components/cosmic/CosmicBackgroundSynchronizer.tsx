@@ -105,15 +105,19 @@ export default function CosmicBackgroundSynchronizer({
     
     // Adjust mood based on community activity if data is available
     if (communityStats) {
-      const { activeUsers, discussions, proposals } = communityStats;
+      // Safely extract values with fallbacks
+      const activeUsers = communityStats.activeUsers || 0;
+      const recentlyActiveDiscussions = communityStats.discussions?.recentlyActive || 0;
+      const inProgressProposals = communityStats.proposals?.inProgress || 0;
+      const recentlyApprovedProposals = communityStats.proposals?.recentlyApproved || 0;
       
-      if (activeUsers > 100 || discussions?.recentlyActive > 5 || proposals?.inProgress > 3) {
+      if (activeUsers > 100 || recentlyActiveDiscussions > 5 || inProgressProposals > 3) {
         // High activity levels
         if (newMood === 'calm') newMood = 'focused';
         if (newMood === 'focused') newMood = 'energetic';
       }
       
-      if (proposals?.recentlyApproved > 0) {
+      if (recentlyApprovedProposals > 0) {
         // Celebrations for approved proposals
         newMood = 'celebratory';
       }

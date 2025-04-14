@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import Home from "@/pages/Home";
 import Discussions from "@/pages/Discussions";
 import Discussion from "@/pages/Discussion";
@@ -26,26 +26,16 @@ import { useQuery } from "@tanstack/react-query";
 import { User } from "@/lib/types";
 import { AudioProvider } from "@/components/audio/AudioContext";
 import AudioControl from "@/components/audio/AudioControl";
-import StarfieldBackground from "@/components/mindmap/StarfieldBackground";
+import CosmicBackgroundSynchronizer from "@/components/cosmic/CosmicBackgroundSynchronizer";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [starfieldSeed, setStarfieldSeed] = useState<number>(Date.now());
 
   const { data: currentUser, isLoading } = useQuery<User>({
     queryKey: ["/api/users/me"],
   });
 
   const closeSidebar = () => setSidebarOpen(false);
-
-  // Update starfield every hour
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStarfieldSeed(Date.now());
-    }, 60 * 60 * 1000); // 1 hour
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
@@ -57,76 +47,85 @@ function App() {
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
+  // Get current location for page-specific mood settings
+  const [location] = useLocation();
+  
+  // Determine mood based on current page
+  const getMoodForPage = () => {
+    if (location.includes('/ai-companion')) return 'calm';
+    if (location.includes('/mystical-progress')) return 'mystical';
+    if (location.includes('/governance')) return 'focused';
+    if (location.includes('/achievements')) return 'celebratory';
+    if (location.includes('/quantum-insights')) return 'energetic';
+    return undefined; // Let the component determine mood based on time and community activity
+  };
+  
   return (
     <AudioProvider>
-      <div className="relative min-h-screen bg-gradient-to-br from-skyglow-light via-white to-skyglow-dark text-blue-900 overflow-hidden">
+      <div className="relative min-h-screen overflow-hidden">
         {/* Audio Control */}
         <AudioControl />
         
-        {/* ✨ Cosmic Starfield Background */}
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          <StarfieldBackground 
-            starsCount={450}
-            speed={0.05}
-            backgroundColor="rgba(4, 3, 20, 0.85)"
-            interactive={true}
-            seed={starfieldSeed}
-          />
-        </div>
+        {/* ✨ Cosmic Background Mood Synchronizer */}
+        <CosmicBackgroundSynchronizer 
+          moodOverride={getMoodForPage()}
+          intensity={75}
+          interactive={true}
+        >
+          <div className="relative flex h-screen overflow-hidden z-10">
+            {/* Sidebar */}
+            <Sidebar open={sidebarOpen} onClose={closeSidebar} currentUser={currentUser} />
 
-        <div className="relative flex h-screen overflow-hidden z-10">
-          {/* Sidebar */}
-          <Sidebar open={sidebarOpen} onClose={closeSidebar} currentUser={currentUser} />
+            {/* Main Content */}
+            <main className="flex-1 flex flex-col overflow-hidden">
+              <Header
+                onMenuClick={() => setSidebarOpen(true)}
+                currentUser={currentUser}
+                isLoading={isLoading}
+              />
 
-          {/* Main Content */}
-          <main className="flex-1 flex flex-col overflow-hidden">
-            <Header
-              onMenuClick={() => setSidebarOpen(true)}
-              currentUser={currentUser}
-              isLoading={isLoading}
-            />
+              <div className="flex-1 overflow-y-auto bg-gray-50 bg-opacity-70 backdrop-blur-md">
+                <Switch>
+                  <Route path="/" component={Home} />
+                  <Route path="/discussions" component={Discussions} />
+                  <Route path="/discussions/:id">
+                    {params => <Discussion id={parseInt(params.id)} />}
+                  </Route>
+                  <Route path="/rights-agreement" component={RightsAgreement} />
+                  <Route path="/community-needs" component={CommunityNeeds} />
+                  <Route path="/wellbeing" component={Wellbeing} />
+                  <Route path="/achievements" component={Achievements} />
+                  <Route path="/mystical-progress" component={MysticalProgress} />
+                  <Route path="/mindmap" component={MindMapExplorer} />
+                  <Route path="/wisdom-marketplace" component={WisdomMarketplace} />
+                  <Route path="/rewards" component={Rewards} />
+                  <Route path="/quantum-insights" component={QuantumInsights} />
+                  <Route path="/ai-companion" component={AICompanion} />
+                  <Route path="/profile">
+                    <Profile currentUser={currentUser} />
+                  </Route>
+                  <Route path="/governance" component={Governance} />
+                  <Route path="/governance/new" component={CreateProposal} />
+                  <Route path="/governance/:id">
+                    {params => <ProposalDetail />}
+                  </Route>
+                  <Route path="/moderation" component={Moderation} />
+                  <Route component={NotFound} />
+                </Switch>
+              </div>
 
-            <div className="flex-1 overflow-y-auto bg-gray-50 bg-opacity-70 backdrop-blur-md">
-              <Switch>
-                <Route path="/" component={Home} />
-                <Route path="/discussions" component={Discussions} />
-                <Route path="/discussions/:id">
-                  {params => <Discussion id={parseInt(params.id)} />}
-                </Route>
-                <Route path="/rights-agreement" component={RightsAgreement} />
-                <Route path="/community-needs" component={CommunityNeeds} />
-                <Route path="/wellbeing" component={Wellbeing} />
-                <Route path="/achievements" component={Achievements} />
-                <Route path="/mystical-progress" component={MysticalProgress} />
-                <Route path="/mindmap" component={MindMapExplorer} />
-                <Route path="/wisdom-marketplace" component={WisdomMarketplace} />
-                <Route path="/rewards" component={Rewards} />
-                <Route path="/quantum-insights" component={QuantumInsights} />
-                <Route path="/ai-companion" component={AICompanion} />
-                <Route path="/profile">
-                  <Profile currentUser={currentUser} />
-                </Route>
-                <Route path="/governance" component={Governance} />
-                <Route path="/governance/new" component={CreateProposal} />
-                <Route path="/governance/:id">
-                  {params => <ProposalDetail />}
-                </Route>
-                <Route path="/moderation" component={Moderation} />
-                <Route component={NotFound} />
-              </Switch>
+              {/* Mobile Navigation */}
+              <MobileNav />
+            </main>
+
+            {/* Mobile New Discussion Button */}
+            <div className="md:hidden fixed bottom-20 right-5 z-20">
+              <button className="w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg flex items-center justify-center animate-pulse-slow">
+                <i className="ri-add-line text-2xl"></i>
+              </button>
             </div>
-
-            {/* Mobile Navigation */}
-            <MobileNav />
-          </main>
-
-          {/* Mobile New Discussion Button */}
-          <div className="md:hidden fixed bottom-20 right-5 z-20">
-            <button className="w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg flex items-center justify-center animate-pulse-slow">
-              <i className="ri-add-line text-2xl"></i>
-            </button>
           </div>
-        </div>
+        </CosmicBackgroundSynchronizer>
       </div>
     </AudioProvider>
   );

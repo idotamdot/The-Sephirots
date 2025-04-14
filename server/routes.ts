@@ -48,9 +48,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/community-stats', async (req, res) => {
     try {
       // For this endpoint, we'll aggregate stats from various parts of the platform
-      const users = await storage.getUsers();
-      const discussions = await storage.getDiscussions();
-      const proposals = await storage.getProposals();
+      // We need to handle the possibility that our current DatabaseStorage implementation
+      // might not have all the methods needed, so we'll gracefully handle errors
+      
+      let users = [];
+      let discussions = [];
+      let proposals = [];
+      
+      try {
+        users = Array.from((await storage.getUsers()) || []);
+        discussions = Array.from((await storage.getDiscussions()) || []);
+        proposals = Array.from((await storage.getProposals()) || []);
+      } catch (err) {
+        console.error("Error getting community stats:", err);
+        // If methods are missing, we'll return default values
+      }
       
       // Calculate active users (logged in within last 24h)
       const oneDayAgo = new Date();

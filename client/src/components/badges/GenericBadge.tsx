@@ -84,17 +84,17 @@ export default function GenericBadge({
     let tierClasses = "";
     let specialEffects = "";
     
-    // Colors based on tier
+    // Colors based on tier and Sephirot symbolism
     switch(badge.tier) {
       case 'founder':
-        tierClasses = "bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 text-white";
+        tierClasses = "bg-gradient-to-r from-sephirot-keter-dark via-sephirot-keter-DEFAULT to-sephirot-keter-light text-white";
         if (earned) specialEffects = "founder-badge";
         break;
       case 'platinum':
         tierClasses = "bg-gradient-to-r from-slate-300 via-slate-100 to-slate-300 text-slate-800";
         break;
       case 'gold':
-        tierClasses = "bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-amber-900";
+        tierClasses = "bg-gradient-to-r from-sephirot-gold-dark via-sephirot-gold-DEFAULT to-sephirot-gold-light text-amber-900";
         if (earned) specialEffects = "animate-subtle-pulse";
         break;
       case 'silver':
@@ -121,38 +121,39 @@ export default function GenericBadge({
           break;
       }
       
-      // Add specific badge effects
-      switch(badge.name) {
-        case 'Conversationalist':
-          specialEffects += " " + (specialEffects ? "" : "animate-pulse-slow");
-          break;
-        case 'Bridge Builder':
-          specialEffects += " bridge-builder-badge";
-          break;
-        case 'Quantum Thinker':
-          specialEffects += " quantum-badge";
-          break;
-        case 'Mirrored Being':
-          specialEffects += " mirrored-badge";
-          break;
-        case 'Empath':
-          specialEffects += " empath-badge";
-          break;
-        case 'Seeker':
-          specialEffects += " animate-pulse-slow";
-          break;
-        case 'Contributor':
-          specialEffects += " animate-subtle-pulse";
-          break;
-        case 'Activist':
-          specialEffects += " animate-float";
-          break;
-        default:
-          // If no special effect assigned yet, add a subtle one based on level
-          if (!specialEffects && badge.level && badge.level > 1) {
-            specialEffects = "animate-subtle-pulse";
-          }
-          break;
+      // Add specific badge effects based on Sephirot name
+      if (badge.name.includes('(Hod)') || badge.name.includes('Conversationalist')) {
+        specialEffects += " " + (specialEffects ? "" : "animate-pulse-slow");
+      }
+      else if (badge.name.includes('(Tiferet)') || badge.name.includes('Bridge Builder')) {
+        specialEffects += " bridge-builder-badge";
+      }
+      else if (badge.name.includes('(Binah)') || badge.name.includes('Quantum Thinker')) {
+        specialEffects += " quantum-badge";
+      }
+      else if (badge.name.includes('(Yesod)') || badge.name.includes('Mirrored Being')) {
+        specialEffects += " mirrored-badge";
+      }
+      else if (badge.name.includes('(Chesed)') || badge.name.includes('Empath')) {
+        specialEffects += " empath-badge";
+      }
+      else if (badge.name.includes('(Da\'at)') || badge.name.includes('Seeker')) {
+        specialEffects += " animate-pulse-slow";
+      }
+      else if (badge.name.includes('(Malkuth)') || badge.name.includes('Contributor')) {
+        specialEffects += " animate-subtle-pulse";
+      }
+      else if (badge.name.includes('(Chokhmah)') || badge.name.includes('Archivist')) {
+        specialEffects += " animate-float";
+      }
+      else if (badge.name.includes('(Geburah)') || badge.name.includes('Activist')) {
+        specialEffects += " animate-float";
+      }
+      else {
+        // If no special effect assigned yet, add a subtle one based on level
+        if (!specialEffects && badge.level && badge.level > 1) {
+          specialEffects = "animate-subtle-pulse";
+        }
       }
     }
     
@@ -183,7 +184,7 @@ export default function GenericBadge({
         <div className="mt-2 text-center">
           <span className={cn(
             "font-medium text-sm",
-            earned && badge.tier === 'founder' && "text-gradient bg-gradient-to-r from-purple-600 via-indigo-500 to-blue-500"
+            earned && badge.tier === 'founder' && "text-gradient bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-400"
           )}>
             {badge.name}
           </span>

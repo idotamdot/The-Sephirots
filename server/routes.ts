@@ -1,10 +1,14 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import openai from "./openai";
 import { ModerationService } from "./moderation";
 import { getAIPerspective } from "./aiPerspective";
 import Stripe from "stripe";
+import * as crypto from "crypto";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import session from "express-session";
 import { 
   insertUserSchema, 
   insertDiscussionSchema, 

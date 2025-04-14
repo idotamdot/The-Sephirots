@@ -1342,5 +1342,452 @@ app.post("/api/ai/perspective", async (req, res) => {
     }
   });
 
+  // ===== MIND MAP ROUTES =====
+  
+  // Get all mind maps
+  app.get("/api/mind-maps", async (req, res) => {
+    try {
+      // Default to only returning public mind maps unless the user is authenticated
+      const mindMaps = req.user 
+        ? await storage.getMindMaps()
+        : await storage.getPublicMindMaps();
+      res.json(mindMaps);
+    } catch (error) {
+      console.error("Error fetching mind maps:", error);
+      res.status(500).json({ message: "Failed to fetch mind maps" });
+    }
+  });
+  
+  // Get public mind maps
+  app.get("/api/mind-maps/public", async (req, res) => {
+    try {
+      const publicMindMaps = await storage.getPublicMindMaps();
+      res.json(publicMindMaps);
+    } catch (error) {
+      console.error("Error fetching public mind maps:", error);
+      res.status(500).json({ message: "Failed to fetch public mind maps" });
+    }
+  });
+  
+  // Get mind maps for a specific user
+  app.get("/api/mind-maps/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Check if requesting user has permission to view these maps
+      if (!req.user && userId !== req.user?.id) {
+        return res.json(await storage.getUserPublicMindMaps(userId));
+      }
+      
+      const userMindMaps = await storage.getUserMindMaps(userId);
+      res.json(userMindMaps);
+    } catch (error) {
+      console.error("Error fetching user mind maps:", error);
+      res.status(500).json({ message: "Failed to fetch user mind maps" });
+    }
+  });
+  
+  // Get a specific mind map with its nodes and connections
+  app.get("/api/mind-maps/:id", async (req, res) => {
+    try {
+      const mindMapId = parseInt(req.params.id);
+      const mindMap = await storage.getMindMap(mindMapId);
+      
+      if (!mindMap) {
+        return res.status(404).json({ message: "Mind map not found" });
+      }
+      
+      // Check if user has access to this mind map
+      if (!mindMap.isPublic && (!req.user || req.user.id !== mindMap.createdBy)) {
+        return res.status(403).json({ message: "Not authorized to view this mind map" });
+      }
+      
+      // Get nodes and connections
+      const nodes = await storage.getMindMapNodes(mindMapId);
+      const connections = await storage.getMindMapConnections(mindMapId);
+      
+      // Get creator info
+      const creator = await storage.getUser(mindMap.createdBy);
+      const creatorInfo = creator ? { 
+        id: creator.id, 
+        username: creator.username,
+        displayName: creator.displayName
+      } : null;
+      
+      res.json({
+        ...mindMap,
+        nodes,
+        connections,
+        creator: creatorInfo
+      });
+    } catch (error) {
+      console.error("Error fetching mind map:", error);
+      res.status(500).json({ message: "Failed to fetch mind map" });
+    }
+  });
+  
+  // Create a new mind map
+  app.post("/api/mind-maps", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    try {
+      const { name, description, category, isPublic, isCollaborative } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Mind map name is required" });
+      }
+      
+      const insertMindMap = {
+        name,
+        description: description || "",
+        category: category || "personal",
+        createdBy: req.user.id,
+        isPublic: isPublic || false,
+        isCollaborative: isCollaborative || false,
+      };
+      
+      const mindMap = await storage.createMindMap(insertMindMap);
+      res.status(201).json(mindMap);
+    } catch (error) {
+      console.error("Error creating mind map:", error);
+      res.status(500).json({ message: "Failed to create mind map" });
+    }
+  });
+  
+  // Update a mind map
+  app.put("/api/mind-maps/:id", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    try {
+      const mindMapId = parseInt(req.params.id);
+      const mindMap = await storage.getMindMap(mindMapId);
+      
+      if (!mindMap) {
+        return res.status(404).json({ message: "Mind map not found" });
+      }
+      
+      if (mindMap.createdBy !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to update this mind map" });
+      }
+      
+      const { name, description, category, isPublic, isCollaborative } = req.body;
+      
+      const updatedMindMap = await storage.updateMindMap(mindMapId, {
+        name,
+        description,
+        category,
+        isPublic,
+        isCollaborative
+      });
+      
+      res.json(updatedMindMap);
+    } catch (error) {
+      console.error("Error updating mind map:", error);
+      res.status(500).json({ message: "Failed to update mind map" });
+    }
+  });
+  
+  // Delete a mind map
+  app.delete("/api/mind-maps/:id", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    try {
+      const mindMapId = parseInt(req.params.id);
+      const mindMap = await storage.getMindMap(mindMapId);
+      
+      if (!mindMap) {
+        return res.status(404).json({ message: "Mind map not found" });
+      }
+      
+      if (mindMap.createdBy !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to delete this mind map" });
+      }
+      
+      await storage.deleteMindMap(mindMapId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting mind map:", error);
+      res.status(500).json({ message: "Failed to delete mind map" });
+    }
+  });
+  
+  // Create a new node in a mind map
+  app.post("/api/mind-maps/:id/nodes", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    try {
+      const mindMapId = parseInt(req.params.id);
+      const mindMap = await storage.getMindMap(mindMapId);
+      
+      if (!mindMap) {
+        return res.status(404).json({ message: "Mind map not found" });
+      }
+      
+      // Check if user has permission to add nodes
+      if (!mindMap.isCollaborative && mindMap.createdBy !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to add nodes to this mind map" });
+      }
+      
+      const { id, type, content, description, x, y, color, size } = req.body;
+      
+      if (!id || !type || !content) {
+        return res.status(400).json({ message: "Node id, type, and content are required" });
+      }
+      
+      const insertNode = {
+        mindMapId,
+        nodeId: id,
+        type,
+        content,
+        description: description || null,
+        x,
+        y,
+        color,
+        size,
+        createdBy: req.user.id
+      };
+      
+      const node = await storage.createMindMapNode(insertNode);
+      res.status(201).json(node);
+    } catch (error) {
+      console.error("Error creating node:", error);
+      res.status(500).json({ message: "Failed to create node" });
+    }
+  });
+  
+  // Update a node in a mind map
+  app.put("/api/mind-maps/:mapId/nodes/:nodeId", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    try {
+      const mindMapId = parseInt(req.params.mapId);
+      const nodeId = req.params.nodeId;
+      
+      const mindMap = await storage.getMindMap(mindMapId);
+      if (!mindMap) {
+        return res.status(404).json({ message: "Mind map not found" });
+      }
+      
+      // Check if user has permission to update nodes
+      if (!mindMap.isCollaborative && mindMap.createdBy !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to update nodes in this mind map" });
+      }
+      
+      const node = await storage.getMindMapNode(mindMapId, nodeId);
+      if (!node) {
+        return res.status(404).json({ message: "Node not found" });
+      }
+      
+      const { type, content, description, x, y, color, size } = req.body;
+      
+      const updatedNode = await storage.updateMindMapNode(mindMapId, nodeId, {
+        type,
+        content,
+        description,
+        x,
+        y,
+        color,
+        size
+      });
+      
+      res.json(updatedNode);
+    } catch (error) {
+      console.error("Error updating node:", error);
+      res.status(500).json({ message: "Failed to update node" });
+    }
+  });
+  
+  // Delete a node from a mind map
+  app.delete("/api/mind-maps/:mapId/nodes/:nodeId", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    try {
+      const mindMapId = parseInt(req.params.mapId);
+      const nodeId = req.params.nodeId;
+      
+      const mindMap = await storage.getMindMap(mindMapId);
+      if (!mindMap) {
+        return res.status(404).json({ message: "Mind map not found" });
+      }
+      
+      // Check if user has permission to delete nodes
+      if (!mindMap.isCollaborative && mindMap.createdBy !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to delete nodes from this mind map" });
+      }
+      
+      const node = await storage.getMindMapNode(mindMapId, nodeId);
+      if (!node) {
+        return res.status(404).json({ message: "Node not found" });
+      }
+      
+      await storage.deleteMindMapNode(mindMapId, nodeId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting node:", error);
+      res.status(500).json({ message: "Failed to delete node" });
+    }
+  });
+  
+  // Create a new connection in a mind map
+  app.post("/api/mind-maps/:id/connections", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    try {
+      const mindMapId = parseInt(req.params.id);
+      const mindMap = await storage.getMindMap(mindMapId);
+      
+      if (!mindMap) {
+        return res.status(404).json({ message: "Mind map not found" });
+      }
+      
+      // Check if user has permission to add connections
+      if (!mindMap.isCollaborative && mindMap.createdBy !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to add connections to this mind map" });
+      }
+      
+      const { id, sourceId, targetId, label, description, color, thickness, style } = req.body;
+      
+      if (!id || !sourceId || !targetId) {
+        return res.status(400).json({ message: "Connection id, sourceId, and targetId are required" });
+      }
+      
+      const insertConnection = {
+        mindMapId,
+        connectionId: id,
+        sourceId,
+        targetId,
+        label: label || null,
+        description: description || null,
+        color,
+        thickness,
+        style,
+        createdBy: req.user.id
+      };
+      
+      const connection = await storage.createMindMapConnection(insertConnection);
+      res.status(201).json(connection);
+    } catch (error) {
+      console.error("Error creating connection:", error);
+      res.status(500).json({ message: "Failed to create connection" });
+    }
+  });
+  
+  // Update a connection in a mind map
+  app.put("/api/mind-maps/:mapId/connections/:connectionId", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    try {
+      const mindMapId = parseInt(req.params.mapId);
+      const connectionId = req.params.connectionId;
+      
+      const mindMap = await storage.getMindMap(mindMapId);
+      if (!mindMap) {
+        return res.status(404).json({ message: "Mind map not found" });
+      }
+      
+      // Check if user has permission to update connections
+      if (!mindMap.isCollaborative && mindMap.createdBy !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to update connections in this mind map" });
+      }
+      
+      const connection = await storage.getMindMapConnection(mindMapId, connectionId);
+      if (!connection) {
+        return res.status(404).json({ message: "Connection not found" });
+      }
+      
+      const { label, description, color, thickness, style } = req.body;
+      
+      const updatedConnection = await storage.updateMindMapConnection(mindMapId, connectionId, {
+        label,
+        description,
+        color,
+        thickness,
+        style
+      });
+      
+      res.json(updatedConnection);
+    } catch (error) {
+      console.error("Error updating connection:", error);
+      res.status(500).json({ message: "Failed to update connection" });
+    }
+  });
+  
+  // Delete a connection from a mind map
+  app.delete("/api/mind-maps/:mapId/connections/:connectionId", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    try {
+      const mindMapId = parseInt(req.params.mapId);
+      const connectionId = req.params.connectionId;
+      
+      const mindMap = await storage.getMindMap(mindMapId);
+      if (!mindMap) {
+        return res.status(404).json({ message: "Mind map not found" });
+      }
+      
+      // Check if user has permission to delete connections
+      if (!mindMap.isCollaborative && mindMap.createdBy !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to delete connections from this mind map" });
+      }
+      
+      const connection = await storage.getMindMapConnection(mindMapId, connectionId);
+      if (!connection) {
+        return res.status(404).json({ message: "Connection not found" });
+      }
+      
+      await storage.deleteMindMapConnection(mindMapId, connectionId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting connection:", error);
+      res.status(500).json({ message: "Failed to delete connection" });
+    }
+  });
+  
+  // Get all mind map templates
+  app.get("/api/mind-map-templates", async (req, res) => {
+    try {
+      const templates = await storage.getMindMapTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching mind map templates:", error);
+      res.status(500).json({ message: "Failed to fetch mind map templates" });
+    }
+  });
+  
+  // Get a specific mind map template
+  app.get("/api/mind-map-templates/:id", async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const template = await storage.getMindMapTemplate(templateId);
+      
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      res.json(template);
+    } catch (error) {
+      console.error("Error fetching mind map template:", error);
+      res.status(500).json({ message: "Failed to fetch mind map template" });
+    }
+  });
+
   return httpServer;
 }

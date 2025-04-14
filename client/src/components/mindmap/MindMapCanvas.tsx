@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { HexColorPicker } from 'react-colorful';
 
 // Node types - these are the primary elements in our mind map
 export type NodeType = 'concept' | 'insight' | 'question' | 'practice' | 'experience';
@@ -846,19 +845,17 @@ export default function MindMapCanvas({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm text-gray-300">Color</label>
-                  <div className="relative">
+                  <div className="flex space-x-2">
                     <div 
-                      className="h-8 w-full rounded cursor-pointer border border-slate-700"
+                      className="h-8 w-8 rounded cursor-pointer border border-slate-700"
                       style={{ backgroundColor: nodeForm.color }}
-                      onClick={() => document.getElementById('colorPicker')?.click()}
                     ></div>
-                    <div className="hidden">
-                      <HexColorPicker
-                        id="colorPicker"
-                        color={nodeForm.color}
-                        onChange={(color) => setNodeForm({ ...nodeForm, color })}
-                      />
-                    </div>
+                    <Input
+                      type="color"
+                      value={nodeForm.color}
+                      onChange={(e) => setNodeForm({ ...nodeForm, color: e.target.value })}
+                      className="w-full bg-slate-800 border-slate-700"
+                    />
                   </div>
                 </div>
                 
@@ -950,19 +947,17 @@ export default function MindMapCanvas({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm text-gray-300">Color</label>
-                  <div className="relative">
+                  <div className="flex space-x-2">
                     <div 
-                      className="h-8 w-full rounded cursor-pointer border border-slate-700"
+                      className="h-8 w-8 rounded cursor-pointer border border-slate-700"
                       style={{ backgroundColor: connectionForm.color }}
-                      onClick={() => document.getElementById('connectionColorPicker')?.click()}
                     ></div>
-                    <div className="hidden">
-                      <HexColorPicker
-                        id="connectionColorPicker"
-                        color={connectionForm.color}
-                        onChange={(color) => setConnectionForm({ ...connectionForm, color })}
-                      />
-                    </div>
+                    <Input
+                      type="color"
+                      value={connectionForm.color}
+                      onChange={(e) => setConnectionForm({ ...connectionForm, color: e.target.value })}
+                      className="w-full bg-slate-800 border-slate-700"
+                    />
                   </div>
                 </div>
                 

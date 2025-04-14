@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface CosmicBackgroundSynchronizerProps {
@@ -22,6 +22,16 @@ interface StarParticle {
   blinkRate: number;
 }
 
+interface NebulaParticle {
+  id: number;
+  x: number;
+  y: number;
+  radius: number;
+  color: [number, number, number, number];
+  pulseRate: number;
+  phaseOffset: number;
+}
+
 export default function CosmicBackgroundSynchronizer({
   className,
   moodOverride,
@@ -37,8 +47,10 @@ export default function CosmicBackgroundSynchronizer({
   const [mood, setMood] = useState<string>(moodOverride || 'mystical');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [stars, setStars] = useState<StarParticle[]>([]);
+  const [nebulae, setNebulae] = useState<NebulaParticle[]>([]);
   const requestRef = useRef<number>();
   const previousTimeRef = useRef<number>();
+  const prevMoodRef = useRef<string | undefined>(moodOverride);
   
   // Get community activity statistics to determine mood
   const { data: communityStats } = useQuery({
@@ -78,11 +90,10 @@ export default function CosmicBackgroundSynchronizer({
     return () => clearInterval(interval);
   }, []);
   
-  // Determine mood based on time of day, community activity, and optional override
-  useEffect(() => {
+  // Calculate mood based on time and community stats
+  const calculatedMood = useMemo(() => {
     if (moodOverride) {
-      setMood(moodOverride);
-      return;
+      return moodOverride;
     }
     
     // Get hour of the day (0-23)
@@ -123,8 +134,16 @@ export default function CosmicBackgroundSynchronizer({
       }
     }
     
-    setMood(newMood);
+    return newMood;
   }, [moodOverride, currentTime, communityStats]);
+  
+  // Set mood only when calculated mood changes to avoid infinite loops
+  useEffect(() => {
+    if (calculatedMood !== prevMoodRef.current) {
+      setMood(calculatedMood);
+      prevMoodRef.current = calculatedMood;
+    }
+  }, [calculatedMood]);
   
   // Generate stars based on window dimensions and mood
   useEffect(() => {
@@ -146,6 +165,42 @@ export default function CosmicBackgroundSynchronizer({
       }
     };
     
+    const getNebulaeColorsByMood = (mood: string): [number, number, number, number][] => {
+      switch (mood) {
+        case 'calm':
+          return [
+            [95, 148, 255, 0.04], // Blue
+            [120, 170, 255, 0.03], // Light blue
+            [70, 130, 220, 0.05]   // Deep blue
+          ];
+        case 'energetic':
+          return [
+            [255, 100, 50, 0.04],  // Orange
+            [255, 180, 40, 0.03],  // Yellow
+            [255, 70, 70, 0.05]    // Red
+          ];
+        case 'focused':
+          return [
+            [125, 90, 220, 0.04],  // Indigo
+            [150, 120, 240, 0.03], // Lavender
+            [100, 60, 200, 0.05]   // Deep violet
+          ];
+        case 'celebratory':
+          return [
+            [255, 215, 0, 0.04],   // Gold
+            [255, 140, 0, 0.03],   // Orange
+            [255, 180, 40, 0.05]   // Yellow
+          ];
+        case 'mystical':
+        default:
+          return [
+            [148, 85, 247, 0.04],  // Purple
+            [251, 191, 36, 0.03],  // Amber
+            [168, 85, 247, 0.05]   // Violet
+          ];
+      }
+    };
+    
     const starColors = getStarColorBasedOnMood(mood);
     const starCount = Math.floor((windowDimensions.width * windowDimensions.height) / 6000 * (intensity / 100));
     
@@ -160,7 +215,22 @@ export default function CosmicBackgroundSynchronizer({
       blinkRate: Math.random() * 2 + 1
     }));
     
+    // Generate cosmic nebulae
+    const nebulaColors = getNebulaeColorsByMood(mood);
+    const nebulaCount = 5; // More nebulae for an enhanced cosmic effect
+    
+    const newNebulae: NebulaParticle[] = Array.from({ length: nebulaCount }).map((_, i) => ({
+      id: i,
+      x: windowDimensions.width * (0.2 + (i * 0.15)) + (Math.random() * 200 - 100),
+      y: windowDimensions.height * (0.2 + (i * 0.15)) + (Math.random() * 200 - 100),
+      radius: Math.max(windowDimensions.width, windowDimensions.height) * (0.1 + Math.random() * 0.15),
+      color: nebulaColors[i % nebulaColors.length],
+      pulseRate: 0.5 + Math.random() * 1.5,
+      phaseOffset: Math.random() * Math.PI * 2
+    }));
+    
     setStars(newStars);
+    setNebulae(newNebulae);
   }, [windowDimensions, mood, intensity]);
   
   // Mouse movement tracking for interactive stars
@@ -185,7 +255,7 @@ export default function CosmicBackgroundSynchronizer({
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [interactive]);
   
-  // Animation loop for stars
+  // Animation loop for stars and nebulae
   const animate = (time: number) => {
     if (previousTimeRef.current === undefined) {
       previousTimeRef.current = time;
@@ -199,6 +269,30 @@ export default function CosmicBackgroundSynchronizer({
     
     // Clear canvas
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    
+    // Draw nebulae first (behind stars)
+    nebulae.forEach(nebula => {
+      const pulseAmount = Math.sin(time / 5000 * nebula.pulseRate + nebula.phaseOffset);
+      const radiusWithPulse = nebula.radius * (0.85 + pulseAmount * 0.15);
+      const opacityMultiplier = 0.8 + pulseAmount * 0.2;
+      
+      const gradient = ctx.createRadialGradient(
+        nebula.x, nebula.y, 0,
+        nebula.x, nebula.y, radiusWithPulse
+      );
+      
+      const [r, g, b, baseOpacity] = nebula.color;
+      
+      gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseOpacity * 3 * opacityMultiplier})`);
+      gradient.addColorStop(0.4, `rgba(${r}, ${g}, ${b}, ${baseOpacity * 2 * opacityMultiplier})`);
+      gradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${baseOpacity * opacityMultiplier})`);
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(nebula.x, nebula.y, radiusWithPulse, 0, Math.PI * 2);
+      ctx.fill();
+    });
     
     // Update and draw stars
     stars.forEach(star => {
@@ -256,7 +350,62 @@ export default function CosmicBackgroundSynchronizer({
       ctx.globalAlpha = 1;
     });
     
+    // Add cosmic dust particles
+    addCosmicDust(ctx, time);
+    
     requestRef.current = requestAnimationFrame(animate);
+  };
+  
+  // Add cosmic dust particles
+  const addCosmicDust = (ctx: CanvasRenderingContext2D, time: number) => {
+    if (!canvasRef.current) return;
+    
+    const { width, height } = canvasRef.current;
+    const particleCount = 100 * (intensity / 100);
+    
+    // Different colors based on mood
+    let colorRanges;
+    switch (mood) {
+      case 'calm':
+        colorRanges = [[140, 180, 255], [160, 200, 255]];
+        break;
+      case 'energetic':
+        colorRanges = [[255, 160, 70], [255, 200, 100]];
+        break;
+      case 'focused':
+        colorRanges = [[140, 100, 240], [180, 140, 255]];
+        break;
+      case 'celebratory':
+        colorRanges = [[255, 200, 60], [255, 220, 100]];
+        break;
+      case 'mystical':
+      default:
+        colorRanges = [[160, 100, 240], [200, 160, 255]];
+        break;
+    }
+    
+    for (let i = 0; i < particleCount; i++) {
+      const x = Math.random() * width;
+      const y = Math.random() * height;
+      const size = Math.random() * 1.5;
+      
+      // Pulsing effect
+      const opacity = (0.1 + Math.sin(time / 3000 + i) * 0.05) * (intensity / 100);
+      
+      // Pick a color from the range
+      const colorIdx = Math.floor(Math.random() * colorRanges.length);
+      const [r, g, b] = colorRanges[colorIdx];
+      
+      // Add slight variation to color
+      const rVar = r + Math.floor(Math.random() * 20 - 10);
+      const gVar = g + Math.floor(Math.random() * 20 - 10);
+      const bVar = b + Math.floor(Math.random() * 20 - 10);
+      
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(${rVar}, ${gVar}, ${bVar}, ${opacity})`;
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
   };
   
   // Setup animation loop
@@ -267,7 +416,7 @@ export default function CosmicBackgroundSynchronizer({
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [stars, mousePosition, isMouseActive, mood, interactive]);
+  }, [stars, nebulae, mousePosition, isMouseActive, mood, interactive]);
   
   // Update canvas size when window dimensions change
   useEffect(() => {
@@ -305,49 +454,53 @@ export default function CosmicBackgroundSynchronizer({
       />
       
       {/* Animated mood-specific effects */}
-      <motion.div 
-        className="absolute inset-0 opacity-20"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.2 }}
-        transition={{ duration: 2 }}
-      >
-        {mood === 'energetic' && (
-          <div className="absolute inset-0">
-            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-orange-500/30 blur-3xl"></div>
-            <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-red-500/20 blur-3xl"></div>
-          </div>
-        )}
-        
-        {mood === 'calm' && (
-          <div className="absolute inset-0">
-            <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-blue-500/20 blur-3xl"></div>
-            <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl"></div>
-          </div>
-        )}
-        
-        {mood === 'focused' && (
-          <div className="absolute inset-0">
-            <div className="absolute top-1/4 -right-20 w-96 h-96 rounded-full bg-violet-500/20 blur-3xl"></div>
-            <div className="absolute bottom-1/4 -left-20 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl"></div>
-          </div>
-        )}
-        
-        {mood === 'celebratory' && (
-          <div className="absolute inset-0">
-            <div className="absolute -top-20 left-1/4 w-96 h-96 rounded-full bg-yellow-500/30 blur-3xl"></div>
-            <div className="absolute -bottom-20 right-1/4 w-96 h-96 rounded-full bg-amber-500/30 blur-3xl"></div>
-            <div className="absolute top-1/2 -right-20 w-64 h-64 rounded-full bg-orange-500/20 blur-3xl"></div>
-          </div>
-        )}
-        
-        {mood === 'mystical' && (
-          <div className="absolute inset-0">
-            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-violet-500/20 blur-3xl"></div>
-            <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl"></div>
-            <div className="absolute top-1/3 left-1/3 w-64 h-64 rounded-full bg-indigo-400/20 blur-3xl"></div>
-          </div>
-        )}
-      </motion.div>
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={mood}
+          className="absolute inset-0 opacity-20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.2 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5 }}
+        >
+          {mood === 'energetic' && (
+            <div className="absolute inset-0">
+              <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-orange-500/30 blur-3xl animate-pulse-slow"></div>
+              <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-red-500/20 blur-3xl animate-pulse-slow"></div>
+            </div>
+          )}
+          
+          {mood === 'calm' && (
+            <div className="absolute inset-0">
+              <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-blue-500/20 blur-3xl animate-float-slow"></div>
+              <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl animate-float-slow"></div>
+            </div>
+          )}
+          
+          {mood === 'focused' && (
+            <div className="absolute inset-0">
+              <div className="absolute top-1/4 -right-20 w-96 h-96 rounded-full bg-violet-500/20 blur-3xl animate-pulse-slow"></div>
+              <div className="absolute bottom-1/4 -left-20 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl animate-pulse-slow"></div>
+            </div>
+          )}
+          
+          {mood === 'celebratory' && (
+            <div className="absolute inset-0">
+              <div className="absolute -top-20 left-1/4 w-96 h-96 rounded-full bg-yellow-500/30 blur-3xl animate-float-slow"></div>
+              <div className="absolute -bottom-20 right-1/4 w-96 h-96 rounded-full bg-amber-500/30 blur-3xl animate-float-slow"></div>
+              <div className="absolute top-1/2 -right-20 w-64 h-64 rounded-full bg-orange-500/20 blur-3xl animate-pulse-fast"></div>
+            </div>
+          )}
+          
+          {mood === 'mystical' && (
+            <div className="absolute inset-0">
+              <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-violet-500/20 blur-3xl animate-pulse-slow"></div>
+              <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl animate-pulse-slow"></div>
+              <div className="absolute top-1/3 left-1/3 w-64 h-64 rounded-full bg-indigo-400/20 blur-3xl animate-float-slow"></div>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
       
       {/* Star field canvas */}
       <canvas

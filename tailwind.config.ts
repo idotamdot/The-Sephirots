@@ -140,6 +140,11 @@ export default {
           "0%, 100%": { transform: "scale(1)" },
           "50%": { transform: "scale(0.98)" },
         },
+        "float-slow": {
+          "0%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+          "100%": { transform: "translateY(0px)" },
+        },
         "orbit": {
           "0%": { transform: "rotate(0deg) translateX(25px) rotate(0deg)" },
           "100%": { transform: "rotate(360deg) translateX(25px) rotate(-360deg)" },
@@ -148,6 +153,11 @@ export default {
           "0%": { left: "-100%" },
           "100%": { left: "100%" },
         },
+        "nebula-pulse": {
+          "0%": { opacity: "0.7", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.05)" },
+          "100%": { opacity: "0.7", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -155,8 +165,10 @@ export default {
         "pulse-slow": "pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "pulse-fast": "pulse-fast 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "subtle-pulse": "subtle-pulse 4s ease-in-out infinite",
+        "float-slow": "float-slow 6s ease-in-out infinite",
         "orbit": "orbit 15s linear infinite",
         "shimmer": "shimmer 2s ease-in-out infinite",
+        "nebula-pulse": "nebula-pulse 8s ease-in-out infinite",
       },
     },
   },

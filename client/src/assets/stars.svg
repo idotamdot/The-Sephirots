@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="700" height="700" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg">
+  <!-- Small stars background pattern -->
+  <g fill="#FFFFFF">
+    <!-- Scattered small stars -->
+    <circle cx="50" cy="50" r="1" opacity="0.8" />
+    <circle cx="120" cy="80" r="1.2" opacity="0.7" />
+    <circle cx="200" cy="30" r="1" opacity="0.9" />
+    <circle cx="280" cy="90" r="1.4" opacity="0.8" />
+    <circle cx="350" cy="40" r="1" opacity="0.7" />
+    <circle cx="410" cy="120" r="1.2" opacity="0.9" />
+    <circle cx="490" cy="60" r="1" opacity="0.8" />
+    <circle cx="550" cy="130" r="1.3" opacity="0.7" />
+    <circle cx="620" cy="50" r="1" opacity="0.9" />
+    <circle cx="650" cy="110" r="1.2" opacity="0.8" />
+    
+    <circle cx="30" cy="180" r="1.1" opacity="0.7" />
+    <circle cx="100" cy="210" r="1" opacity="0.9" />
+    <circle cx="180" cy="160" r="1.3" opacity="0.8" />
+    <circle cx="250" cy="220" r="1" opacity="0.7" />
+    <circle cx="320" cy="170" r="1.2" opacity="0.9" />
+    <circle cx="390" cy="230" r="1" opacity="0.8" />
+    <circle cx="460" cy="180" r="1.4" opacity="0.7" />
+    <circle cx="530" cy="240" r="1" opacity="0.9" />
+    <circle cx="600" cy="190" r="1.2" opacity="0.8" />
+    <circle cx="670" cy="250" r="1" opacity="0.7" />
+    
+    <circle cx="40" cy="310" r="1.2" opacity="0.9" />
+    <circle cx="110" cy="350" r="1" opacity="0.8" />
+    <circle cx="190" cy="300" r="1.3" opacity="0.7" />
+    <circle cx="260" cy="360" r="1" opacity="0.9" />
+    <circle cx="330" cy="310" r="1.2" opacity="0.8" />
+    <circle cx="400" cy="370" r="1" opacity="0.7" />
+    <circle cx="470" cy="320" r="1.4" opacity="0.9" />
+    <circle cx="540" cy="380" r="1" opacity="0.8" />
+    <circle cx="610" cy="330" r="1.2" opacity="0.7" />
+    <circle cx="680" cy="390" r="1" opacity="0.9" />
+    
+    <circle cx="50" cy="440" r="1.3" opacity="0.8" />
+    <circle cx="120" cy="490" r="1" opacity="0.7" />
+    <circle cx="200" cy="440" r="1.2" opacity="0.9" />
+    <circle cx="280" cy="500" r="1" opacity="0.8" />
+    <circle cx="350" cy="450" r="1.4" opacity="0.7" />
+    <circle cx="410" cy="510" r="1" opacity="0.9" />
+    <circle cx="490" cy="460" r="1.2" opacity="0.8" />
+    <circle cx="550" cy="520" r="1" opacity="0.7" />
+    <circle cx="620" cy="470" r="1.3" opacity="0.9" />
+    <circle cx="650" cy="530" r="1" opacity="0.8" />
+    
+    <circle cx="30" cy="580" r="1.2" opacity="0.7" />
+    <circle cx="100" cy="630" r="1" opacity="0.9" />
+    <circle cx="180" cy="580" r="1.3" opacity="0.8" />
+    <circle cx="250" cy="640" r="1" opacity="0.7" />
+    <circle cx="320" cy="590" r="1.2" opacity="0.9" />
+    <circle cx="390" cy="650" r="1" opacity="0.8" />
+    <circle cx="460" cy="600" r="1.4" opacity="0.7" />
+    <circle cx="530" cy="660" r="1" opacity="0.9" />
+    <circle cx="600" cy="610" r="1.2" opacity="0.8" />
+    <circle cx="670" cy="670" r="1" opacity="0.7" />
+    
+    <!-- Medium stars (brighter) -->
+    <circle cx="75" cy="125" r="2" opacity="0.9" />
+    <circle cx="225" cy="175" r="2.2" opacity="0.8" />
+    <circle cx="375" cy="75" r="2.1" opacity="0.9" />
+    <circle cx="525" cy="225" r="2.3" opacity="0.8" />
+    <circle cx="675" cy="125" r="2" opacity="0.9" />
+    
+    <circle cx="125" cy="275" r="2.1" opacity="0.8" />
+    <circle cx="275" cy="325" r="2" opacity="0.9" />
+    <circle cx="425" cy="275" r="2.2" opacity="0.8" />
+    <circle cx="575" cy="325" r="2" opacity="0.9" />
+    
+    <circle cx="75" cy="425" r="2.3" opacity="0.9" />
+    <circle cx="225" cy="475" r="2" opacity="0.8" />
+    <circle cx="375" cy="425" r="2.1" opacity="0.9" />
+    <circle cx="525" cy="475" r="2" opacity="0.8" />
+    <circle cx="675" cy="425" r="2.2" opacity="0.9" />
+    
+    <circle cx="125" cy="575" r="2" opacity="0.8" />
+    <circle cx="275" cy="625" r="2.3" opacity="0.9" />
+    <circle cx="425" cy="575" r="2" opacity="0.8" />
+    <circle cx="575" cy="625" r="2.1" opacity="0.9" />
+    
+    <!-- A few larger stars -->
+    <circle cx="150" cy="150" r="3" opacity="1" />
+    <circle cx="450" cy="250" r="3.2" opacity="1" />
+    <circle cx="250" cy="450" r="3.1" opacity="1" />
+    <circle cx="550" cy="550" r="3.3" opacity="1" />
+  </g>
+</svg>

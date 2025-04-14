@@ -1800,6 +1800,22 @@ app.post("/api/ai/perspective", async (req, res) => {
       apiVersion: "2023-10-16"
     });
     
+    // Define the donation tiers metadata
+    const DONATION_TIERS = {
+      'seed-planter': {
+        name: 'Seed Planter',
+        badgeId: 1001, // This would be the actual badge ID in your system
+      },
+      'tree-tender': {
+        name: 'Tree Tender',
+        badgeId: 1002,
+      },
+      'light-guardian': {
+        name: 'Light Guardian',
+        badgeId: 1003,
+      }
+    };
+
     // Create payment intent for donation
     app.post("/api/create-donation-intent", async (req, res) => {
       try {
@@ -1810,14 +1826,26 @@ app.post("/api/ai/perspective", async (req, res) => {
             error: "Invalid amount. Must be at least 1 cent."
           });
         }
+
+        // Validate the tier ID
+        if (tierId && !DONATION_TIERS[tierId]) {
+          return res.status(400).json({
+            error: "Invalid donation tier."
+          });
+        }
         
         // Create the payment intent with Stripe
+        // Note: In a real application with application fees, you'd use a Connect account
+        // and transfer_data or application_fee_amount, but for simplicity here we'll
+        // just track the Replit allocation in metadata
         const paymentIntent = await stripe.paymentIntents.create({
           amount: amount, // Amount is already in cents
           currency: "usd",
           metadata: {
             tierId,
-            donationType: "one-time"
+            donationType: "one-time",
+            replitAllocation: "20", // Store the 20% allocation as metadata
+            replitAllocationAmount: Math.floor(amount * 0.20) // Calculate the 20% amount in cents
           }
         });
         

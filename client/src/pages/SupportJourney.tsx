@@ -1,70 +1,77 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { apiRequest } from '@/lib/queryClient';
-import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sparkles, Leaf, SunMedium } from "lucide-react";
 
-// Make sure to call loadStripe outside of a component's render to avoid recreating it
+// Make sure to call loadStripe outside of a component's render to avoid
+// recreating the Stripe object on every render.
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
   throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
 }
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-interface DonationTier {
-  id: string;
-  name: string;
-  amount: number;
-  description: string;
-  icon: string;
-  color: string;
-}
-
-const donationTiers: DonationTier[] = [
+// Donation tiers with their data
+const DONATION_TIERS = [
   {
     id: 'seed-planter',
     name: 'Seed Planter',
-    amount: 300, // $3.00
-    description: 'Plant a seed of support for our spiritual community',
-    icon: '🪷',
-    color: 'bg-gradient-to-br from-emerald-100 to-emerald-200 border-emerald-300'
+    icon: <Sparkles className="h-12 w-12 text-amber-500" />,
+    description: 'Plant the seeds of growth. Your support nurtures our digital garden.',
+    amountSuggestions: [500, 1000, 2500], // in cents
+    color: 'from-amber-400 to-amber-300',
+    benefits: [
+      'Recognition in our community',
+      'Digital Seed Planter badge',
+      'Access to Seed Planter meditation',
+    ]
   },
   {
     id: 'tree-tender',
     name: 'Tree Tender',
-    amount: 1000, // $10.00
-    description: 'Nurture the growth of our collective journey',
-    icon: '🌿',
-    color: 'bg-gradient-to-br from-green-100 to-green-200 border-green-300'
+    icon: <Leaf className="h-12 w-12 text-emerald-600" />,
+    description: 'Tend the growth of our collective wisdom tree. Help us branch out.',
+    amountSuggestions: [5000, 7500, 10000], // in cents
+    color: 'from-emerald-500 to-emerald-400',
+    benefits: [
+      'All Seed Planter benefits',
+      'Tree Tender digital badge',
+      'Early access to new features',
+      'Monthly cosmic insight session',
+    ]
   },
   {
     id: 'light-guardian',
     name: 'Light Guardian',
-    amount: 2500, // $25.00
-    description: 'Illuminate the path for all seekers of wisdom',
-    icon: '🌳',
-    color: 'bg-gradient-to-br from-amber-100 to-amber-200 border-amber-300'
-  },
-  {
-    id: 'cosmic-benefactor',
-    name: 'Cosmic Benefactor',
-    amount: 5000, // $50.00
-    description: 'Become a guiding star in our spiritual constellation',
-    icon: '✨',
-    color: 'bg-gradient-to-br from-purple-100 to-purple-200 border-purple-300'
+    icon: <SunMedium className="h-12 w-12 text-amber-600" />,
+    description: 'Illuminate the path with your generous spirit. Become a beacon of light.',
+    amountSuggestions: [15000, 25000, 50000], // in cents
+    color: 'from-amber-600 to-amber-500',
+    benefits: [
+      'All Tree Tender benefits',
+      'Light Guardian digital badge',
+      'Private cosmic consultation',
+      'Special mention in our Rights Agreement',
+      'Voice in platform development',
+    ]
   }
 ];
 
-// Checkout form component
-const CheckoutForm = ({ donationAmount }: { donationAmount: number }) => {
+// The payment form component that appears once a tier/amount is selected
+const DonationPaymentForm = ({ clientSecret }: { clientSecret: string }) => {
   const stripe = useStripe();
   const elements = useElements();
-  const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
-  
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -74,207 +81,307 @@ const CheckoutForm = ({ donationAmount }: { donationAmount: number }) => {
 
     setIsProcessing(true);
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/donate/thank-you`,
-      },
-    });
+    try {
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: window.location.origin + "/donation-thank-you",
+        },
+        redirect: "if_required",
+      });
 
-    setIsProcessing(false);
-
-    if (error) {
+      if (error) {
+        toast({
+          title: "Payment Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else if (paymentIntent && paymentIntent.status === "succeeded") {
+        toast({
+          title: "Payment Successful",
+          description: "Thank you for your generous support!",
+        });
+        navigate("/donation-thank-you");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
       toast({
-        title: "Payment Failed",
-        description: error.message || "An error occurred during payment processing.",
+        title: "Payment Error",
+        description: "An unexpected error occurred during payment processing.",
         variant: "destructive",
       });
-    } 
-    // Success is handled by redirect to return_url
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
-      <div className="mt-6">
-        <Button 
-          type="submit" 
-          disabled={!stripe || isProcessing}
-          className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
-        >
-          {isProcessing ? "Processing..." : `Support with $${(donationAmount / 100).toFixed(2)}`}
-        </Button>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="bg-white p-4 rounded-md border border-gray-200 shadow-sm">
+        <PaymentElement />
       </div>
+      
+      <Button 
+        type="submit" 
+        disabled={!stripe || isProcessing} 
+        className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500"
+      >
+        {isProcessing ? (
+          <span className="flex items-center">
+            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Processing...
+          </span>
+        ) : (
+          <span className="flex items-center">
+            <Sparkles className="mr-2 h-5 w-5" />
+            Complete Donation
+          </span>
+        )}
+      </Button>
     </form>
   );
 };
 
-// Tree visualization component
-const SephiroticTree = ({ tier }: { tier: number }) => {
-  return (
-    <div className="relative h-48 w-full flex items-center justify-center my-6">
-      {/* Tree base */}
-      <div className="absolute bottom-0 w-12 h-24 bg-gradient-to-t from-amber-800 to-amber-700 rounded-sm"></div>
-      
-      {/* Branches based on tier */}
-      <motion.div 
-        className="absolute bottom-16 left-1/2 -translate-x-16 w-20 h-1 bg-amber-800 rounded-full"
-        initial={{ opacity: 0, scaleX: 0 }}
-        animate={{ opacity: 1, scaleX: 1 }}
-        transition={{ delay: 0.5, duration: 0.8 }}
-      />
-      <motion.div 
-        className="absolute bottom-22 left-1/2 translate-x-4 w-20 h-1 bg-amber-800 rounded-full"
-        initial={{ opacity: 0, scaleX: 0 }}
-        animate={{ opacity: 1, scaleX: 1 }}
-        transition={{ delay: 0.7, duration: 0.8 }}
-      />
-      
-      {/* Tree glows - different for each tier */}
-      <motion.div 
-        className={`absolute bottom-16 left-1/2 -translate-x-20 w-8 h-8 rounded-full ${tier >= 1 ? 'bg-emerald-300' : 'bg-gray-200'} blur-md animate-pulse-slow`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: tier >= 1 ? 0.8 : 0.2 }}
-        transition={{ delay: 1, duration: 1 }}
-      />
-      <motion.div 
-        className={`absolute bottom-24 left-1/2 translate-x-8 w-10 h-10 rounded-full ${tier >= 2 ? 'bg-green-300' : 'bg-gray-200'} blur-md animate-pulse-slow`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: tier >= 2 ? 0.8 : 0.2 }}
-        transition={{ delay: 1.2, duration: 1 }}
-      />
-      <motion.div 
-        className={`absolute top-4 left-1/2 -translate-x-4 w-12 h-12 rounded-full ${tier >= 3 ? 'bg-amber-300' : 'bg-gray-200'} blur-md animate-pulse-slow`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: tier >= 3 ? 0.8 : 0.2 }}
-        transition={{ delay: 1.4, duration: 1 }}
-      />
-      <motion.div 
-        className={`absolute top-0 left-1/2 translate-x-10 w-14 h-14 rounded-full ${tier >= 4 ? 'bg-purple-300' : 'bg-gray-200'} blur-md animate-pulse-slow`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: tier >= 4 ? 0.8 : 0.2 }}
-        transition={{ delay: 1.6, duration: 1 }}
-      />
-    </div>
-  );
-};
-
-// Main donation page component
+// The main page component
 export default function SupportJourney() {
-  const [selectedTier, setSelectedTier] = useState<DonationTier | null>(null);
-  const [clientSecret, setClientSecret] = useState<string>("");
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>("");
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSelectTier = async (tier: DonationTier) => {
-    setSelectedTier(tier);
-    
+  const handleAmountSelect = (amount: number) => {
+    setSelectedAmount(amount);
+    setCustomAmount("");
+  };
+
+  const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow numeric input with up to 2 decimal places
+    if (/^\d*\.?\d{0,2}$/.test(value)) {
+      setCustomAmount(value);
+      setSelectedAmount(null);
+    }
+  };
+
+  const getActualAmount = (): number | null => {
+    if (selectedAmount) return selectedAmount;
+    if (customAmount) {
+      // Convert dollar amount to cents
+      return Math.round(parseFloat(customAmount) * 100);
+    }
+    return null;
+  };
+
+  const handleContinue = async () => {
+    const amount = getActualAmount();
+    if (!selectedTier || !amount || amount < 100) { // Minimum of $1.00
+      toast({
+        title: "Invalid Selection",
+        description: "Please select a tier and enter a valid amount (minimum $1.00).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const response = await apiRequest("POST", "/api/create-donation-intent", {
-        amount: tier.amount,
-        tierId: tier.id
+        amount,
+        tierId: selectedTier,
       });
       
       const data = await response.json();
-      setClientSecret(data.clientSecret);
+      if (data.clientSecret) {
+        setClientSecret(data.clientSecret);
+      } else {
+        throw new Error("Failed to initialize payment");
+      }
     } catch (error) {
-      console.error("Error creating payment intent:", error);
+      console.error("Payment initialization error:", error);
       toast({
-        title: "Error",
-        description: "Failed to initialize donation. Please try again.",
+        title: "Payment Error",
+        description: "Unable to initialize payment process. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  const getCurrentTierLevel = (): number => {
-    if (!selectedTier) return 0;
-    
-    const index = donationTiers.findIndex(tier => tier.id === selectedTier.id);
-    return index + 1;
-  };
-  
+
+  const selectedTierData = DONATION_TIERS.find(tier => tier.id === selectedTier);
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 mb-2">
-          Support The Sephirots Journey
+    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-12">
+        <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-amber-400 mb-4">
+          Support Our Cosmic Journey
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          Your contribution nourishes our spiritual community and helps illuminate the path for seekers of wisdom worldwide.
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Your contribution helps nurture The Sephirots' growth and allows us to continue building a flourishing spiritual ecosystem. Choose how you'd like to participate.
         </p>
       </div>
-      
-      {!selectedTier ? (
+
+      {!clientSecret ? (
         <>
-          <SephiroticTree tier={0} />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-            {donationTiers.map((tier) => (
-              <Card 
-                key={tier.id}
-                className={`overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.01] ${tier.color} border-2`}
-                onClick={() => handleSelectTier(tier)}
-              >
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      <span className="text-2xl">{tier.icon}</span> {tier.name}
-                    </CardTitle>
-                    <Badge variant="outline" className="text-lg font-semibold">${(tier.amount / 100).toFixed(2)}</Badge>
-                  </div>
-                  <CardDescription className="text-gray-700">
-                    {tier.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
-                    onClick={() => handleSelectTier(tier)}
+          {/* Tier Selection */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-amber-700">Choose Your Support Path</h2>
+            <RadioGroup value={selectedTier || ""} onValueChange={setSelectedTier} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {DONATION_TIERS.map((tier) => (
+                <div key={tier.id} className={`relative`}>
+                  <RadioGroupItem
+                    value={tier.id}
+                    id={tier.id}
+                    className="peer sr-only"
+                  />
+                  <Label
+                    htmlFor={tier.id}
+                    className={`flex flex-col h-full p-4 border-2 rounded-xl bg-white
+                      cursor-pointer transition-all duration-300 ease-in-out
+                      peer-aria-checked:border-amber-500 peer-aria-checked:bg-amber-50
+                      hover:border-amber-300 hover:bg-amber-50/50`}
                   >
-                    Select
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+                    <div className="flex justify-center mb-4">
+                      <div className={`p-3 rounded-full bg-gradient-to-br ${tier.color}`}>
+                        {tier.icon}
+                      </div>
+                    </div>
+                    <div className="font-semibold text-lg text-center text-amber-800 mb-2">{tier.name}</div>
+                    <p className="text-gray-600 text-sm text-center mb-4">{tier.description}</p>
+                    <ul className="text-sm text-gray-700 space-y-1 mt-auto mb-2">
+                      {tier.benefits.map((benefit, i) => (
+                        <li key={i} className="flex items-start">
+                          <span className="text-amber-500 mr-2">•</span>
+                          <span>{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
           </div>
-          
-          <div className="text-center mt-10 text-gray-600 dark:text-gray-400">
-            <p>Every donation plants a seed in our virtual Sephirotic Grove. The more you support, the more your light illuminates the cosmic space.</p>
-          </div>
+
+          {/* Amount Selection */}
+          {selectedTier && (
+            <Card className="mb-8 border-amber-200 shadow-md bg-gradient-to-br from-amber-50/50 to-white">
+              <CardHeader>
+                <CardTitle className="text-amber-800">Choose Your Donation Amount</CardTitle>
+                <CardDescription>
+                  Select a suggested amount or enter your own custom amount
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    {selectedTierData?.amountSuggestions.map((amount) => (
+                      <Button
+                        key={amount}
+                        type="button"
+                        variant={selectedAmount === amount ? "default" : "outline"}
+                        className={`${
+                          selectedAmount === amount
+                            ? "bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500 text-white"
+                            : "hover:bg-amber-50 border-amber-200 text-amber-800"
+                        }`}
+                        onClick={() => handleAmountSelect(amount)}
+                      >
+                        ${(amount / 100).toFixed(2)}
+                      </Button>
+                    ))}
+                  </div>
+                  
+                  <div className="flex mt-4 items-center">
+                    <Label htmlFor="customAmount" className="mr-2 text-amber-800">
+                      Custom Amount:
+                    </Label>
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                      <Input
+                        id="customAmount"
+                        type="text"
+                        value={customAmount}
+                        onChange={handleCustomAmountChange}
+                        placeholder="Enter amount"
+                        className="pl-8 border-amber-200 focus:ring-amber-500 focus:border-amber-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  onClick={handleContinue}
+                  disabled={isLoading || (!selectedAmount && !customAmount)}
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Continue to Payment
+                    </span>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
         </>
       ) : (
-        <>
-          <Button 
-            variant="outline" 
-            className="mb-4"
-            onClick={() => setSelectedTier(null)}
-          >
-            &larr; Choose a Different Tier
-          </Button>
-          
-          <Card className="mb-6">
+        <div className="max-w-md mx-auto">
+          <Card className="border-amber-200 shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-2xl">{selectedTier.icon}</span> {selectedTier.name}
-              </CardTitle>
-              <CardDescription>{selectedTier.description}</CardDescription>
+              <CardTitle className="text-center text-amber-800">Complete Your Donation</CardTitle>
+              <CardDescription className="text-center">
+                {selectedTierData?.name} - ${getActualAmount() ? (getActualAmount()! / 100).toFixed(2) : "0.00"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <SephiroticTree tier={getCurrentTierLevel()} />
-              
-              {clientSecret && (
-                <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <CheckoutForm donationAmount={selectedTier.amount} />
-                </Elements>
-              )}
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  clientSecret,
+                  appearance: {
+                    theme: 'stripe',
+                    variables: {
+                      colorPrimary: '#f59e0b',
+                      colorBackground: '#ffffff',
+                      colorText: '#6b7280',
+                      colorDanger: '#ef4444',
+                      fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+                      borderRadius: '8px',
+                    },
+                  },
+                }}
+              >
+                <DonationPaymentForm clientSecret={clientSecret} />
+              </Elements>
             </CardContent>
+            <CardFooter className="flex justify-center text-sm text-gray-500">
+              <p>Your payment information is securely processed by Stripe.</p>
+            </CardFooter>
           </Card>
           
-          <div className="text-center mt-6 text-gray-600 dark:text-gray-400">
-            <p className="text-sm">Your donation helps sustain The Sephirots platform and community.</p>
-            <p className="text-sm mt-1">All transactions are secure and processed by Stripe.</p>
-          </div>
-        </>
+          <Button
+            variant="ghost"
+            onClick={() => setClientSecret(null)}
+            className="mt-4 text-amber-600 hover:text-amber-800 hover:bg-amber-50"
+          >
+            ← Go back and modify your donation
+          </Button>
+        </div>
       )}
     </div>
   );

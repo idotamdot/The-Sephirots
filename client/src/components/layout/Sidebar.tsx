@@ -3,6 +3,7 @@ import { User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { navigationItems } from "@/lib/icons";
 import DoveAndStars from "@/components/icons/DoveAndStars";
+import SupportButton from "@/components/layout/SupportButton";
 
 interface SidebarProps {
   open: boolean;
@@ -92,6 +93,11 @@ export default function Sidebar({ open, onClose, currentUser }: SidebarProps) {
                 }
               </Link>
             ))}
+          
+          {/* Support Button */}
+          <div className="mt-6 px-2">
+            <SupportButton />
+          </div>
         </nav>
         
         {/* User Profile Preview */}

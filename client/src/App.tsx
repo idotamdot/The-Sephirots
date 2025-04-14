@@ -77,6 +77,7 @@ function App() {
                 <Route path="/community-needs" component={CommunityNeeds} />
                 <Route path="/wellbeing" component={Wellbeing} />
                 <Route path="/achievements" component={Achievements} />
+                <Route path="/mystical-progress" component={MysticalProgress} />
                 <Route path="/profile">
                   <Profile currentUser={currentUser} />
                 </Route>

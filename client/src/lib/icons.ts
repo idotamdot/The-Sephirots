@@ -36,6 +36,11 @@ export const navigationItems = [
     icon: "ri-award-line"
   },
   {
+    path: "/mystical-progress",
+    label: "Mystical Journey",
+    icon: "ri-compass-3-line"
+  },
+  {
     path: "/moderation",
     label: "Moderation",
     icon: "ri-shield-check-line",

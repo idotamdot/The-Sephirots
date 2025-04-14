@@ -7,6 +7,10 @@ import { User } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Hero() {
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["/api/users/me"],
+  });
+  
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
     // Mock data for the demo since we don't have a real users endpoint
@@ -64,6 +68,15 @@ export default function Hero() {
             </p>
             
             <div className="flex flex-wrap gap-3 mb-6">
+              {!currentUser && (
+                <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-purple-400 hover:from-purple-600 hover:to-purple-500 shadow-md hover:shadow-lg transition-all border-none">
+                  <Link href="/login">
+                    <i className="ri-login-circle-line mr-2"></i>
+                    Join The Community
+                  </Link>
+                </Button>
+              )}
+              
               <Button size="lg" asChild className="bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500 shadow-md hover:shadow-lg transition-all border-none">
                 <Link href="/discussions">
                   <i className="ri-lightbulb-flash-line mr-2"></i>
@@ -78,6 +91,29 @@ export default function Hero() {
                 </Link>
               </Button>
             </div>
+            
+            {/* Login/Signup Banner */}
+            {!currentUser && (
+              <div className="bg-gradient-to-r from-purple-100 to-amber-50 border border-purple-200 rounded-lg p-4 mb-6 shadow-sm">
+                <div className="flex items-center">
+                  <div className="text-purple-700 mr-3">
+                    <i className="ri-user-add-line text-2xl"></i>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-purple-800 font-medium">Join The Sephirots Community</h3>
+                    <p className="text-sm text-purple-600">Sign in to participate in discussions, earn achievements, and contribute to our collective wisdom.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" asChild variant="ghost" className="text-purple-600 hover:text-purple-800 hover:bg-purple-50">
+                      <Link href="/login">Login</Link>
+                    </Button>
+                    <Button size="sm" asChild className="bg-purple-600 hover:bg-purple-700 text-white">
+                      <Link href="/register">Register</Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {isLoading ? (
               <div className="flex items-center text-sm text-gray-500">

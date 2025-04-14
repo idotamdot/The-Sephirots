@@ -179,7 +179,7 @@ export default function AudioControl({ className }: AudioControlProps) {
   if (!audioEnabled) {
     return (
       <div className={cn(
-        "fixed bottom-4 right-4 z-50 flex items-center gap-2 p-2 rounded-full bg-gradient-to-r from-amber-500/90 to-amber-400/90 shadow-lg backdrop-blur-sm text-white",
+        "fixed bottom-20 right-4 md:bottom-4 z-50 flex items-center gap-2 p-2 rounded-full bg-gradient-to-r from-amber-500/90 to-amber-400/90 shadow-lg backdrop-blur-sm text-white",
         className
       )}>
         <Button 
@@ -190,16 +190,17 @@ export default function AudioControl({ className }: AudioControlProps) {
         >
           <Music size={16} />
         </Button>
-        <span className="text-sm font-medium">Enable Ethereal Music</span>
+        <span className="text-sm font-medium hidden md:inline">Enable Ethereal Music</span>
       </div>
     );
   }
   
-  // Minimal player that shows in corner of screen
+  // Desktop: Full player that shows in corner of screen
+  // Mobile: Simplified player that moves above nav bar
   return (
     <>
       <div className={cn(
-        "fixed bottom-4 right-4 z-50 flex items-center gap-2 p-1.5 rounded-full bg-gradient-to-r from-amber-100/90 to-amber-50/90 shadow-lg backdrop-blur-sm border border-amber-200/50",
+        "fixed bottom-20 right-4 md:bottom-4 z-50 flex items-center gap-2 p-1.5 rounded-full bg-gradient-to-r from-amber-100/90 to-amber-50/90 shadow-lg backdrop-blur-sm border border-amber-200/50",
         className
       )}>
         <Button 
@@ -215,7 +216,7 @@ export default function AudioControl({ className }: AudioControlProps) {
           variant="ghost" 
           size="icon"
           onClick={toggleMute}
-          className="h-8 w-8 text-amber-700 hover:text-amber-800 hover:bg-amber-200/50"
+          className="h-8 w-8 text-amber-700 hover:text-amber-800 hover:bg-amber-200/50 hidden md:flex"
         >
           {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </Button>

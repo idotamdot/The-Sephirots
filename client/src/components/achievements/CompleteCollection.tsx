@@ -227,12 +227,12 @@ export default function CompleteCollection({
                 </div>
                 
                 <div className="flex-1 w-full p-4 flex items-center justify-center">
-                  {/* Badge Diagram - based on the image */}
+                  {/* Badge Diagram - based on the Cosmic Sephirot Tree of Life */}
                   <div className="relative w-full max-w-md aspect-square">
-                    {/* Founder Badge (Top) */}
+                    {/* Founder Badge (Top) - Keter: Crown / Divine Spark */}
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 text-center">
                       <div className={cn(
-                        "w-20 h-20 rounded-full border-2 mx-auto flex items-center justify-center",
+                        "w-20 h-20 rounded-full border-2 mx-auto flex flex-col items-center justify-center",
                         earnedBadgeIds.includes(4) 
                           ? "border-purple-400 bg-indigo-900/70 founder-badge-glow" 
                           : "border-gray-700 bg-gray-900/50"
@@ -246,104 +246,152 @@ export default function CompleteCollection({
                         >
                           <path d="M12,5c-1.4,0-2.5,0.3-3.5,0.9C7.5,6.5,6.7,7.1,6,7.8C5.2,8.6,4.7,9.5,4.3,10.5C4,11.5,3.8,12.5,4,13.5c0.1,0.8,0.4,1.5,0.8,2.1c0.4,0.6,0.9,1.1,1.5,1.5c0.6,0.4,1.3,0.6,2,0.8c0.7,0.1,1.5,0.1,2.2,0.1c0.5,0,1-0.1,1.5-0.2c0.5-0.1,1-0.2,1.5-0.4c0.5-0.2,0.9-0.4,1.3-0.7c0.4-0.3,0.8-0.6,1.1-1c0.3-0.4,0.6-0.8,0.8-1.3c0.2-0.5,0.3-1,0.3-1.5c0-0.5-0.1-1-0.3-1.5c0.2-0.5-0.4-0.9-0.7-1.3c-0.3-0.4-0.7-0.7-1.1-1c-0.4-0.3-0.9-0.5-1.4-0.7C13.5,7.6,13,7.5,12.5,7.4C12.3,7.4,12.2,7.3,12,7.3" />
                         </svg>
+                        {earnedBadgeIds.includes(4) && (
+                          <span className="text-[8px] text-purple-200 mt-1">Keter</span>
+                        )}
                       </div>
-                      <p className={cn(
-                        "mt-2 text-sm",
-                        earnedBadgeIds.includes(4) ? "text-white" : "text-gray-500"
-                      )}>Founder</p>
+                      <div className="mt-2 text-center">
+                        <p className={cn(
+                          "text-sm",
+                          earnedBadgeIds.includes(4) ? "text-white" : "text-gray-500"
+                        )}>Founder</p>
+                        {earnedBadgeIds.includes(4) && (
+                          <p className="text-[10px] text-indigo-300 italic">Divine Spark</p>
+                        )}
+                      </div>
                     </div>
                     
-                    {/* Conversationalist Badge (Left) */}
+                    {/* Conversationalist Badge (Left) - Hod: Glory/Communication */}
                     <div className="absolute left-0 top-1/3 transform -translate-y-1/2 text-center">
                       <div className={cn(
-                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        "w-16 h-16 rounded-full border-2 mx-auto flex flex-col items-center justify-center",
                         earnedBadgeIds.includes(1) 
-                          ? "border-indigo-400 bg-indigo-900/50" 
+                          ? "border-cyan-400 bg-indigo-900/50" 
                           : "border-gray-700 bg-gray-900/50"
                       )}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(1) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
                           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                         </svg>
+                        {earnedBadgeIds.includes(1) && (
+                          <span className="text-[7px] text-cyan-200 mt-1">Hod</span>
+                        )}
                       </div>
-                      <p className={cn(
-                        "mt-2 text-sm",
-                        earnedBadgeIds.includes(1) ? "text-white" : "text-gray-500"
-                      )}>Conversationalist</p>
+                      <div className="mt-2 text-center">
+                        <p className={cn(
+                          "text-sm",
+                          earnedBadgeIds.includes(1) ? "text-white" : "text-gray-500"
+                        )}>Conversationalist</p>
+                        {earnedBadgeIds.includes(1) && (
+                          <p className="text-[10px] text-cyan-300 italic">Communication</p>
+                        )}
+                      </div>
                     </div>
                     
-                    {/* Quantum Thinker Badge (Right) */}
+                    {/* Quantum Thinker Badge (Right) - Binah: Understanding */}
                     <div className="absolute right-0 top-1/3 transform -translate-y-1/2 text-center">
                       <div className={cn(
-                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        "w-16 h-16 rounded-full border-2 mx-auto flex flex-col items-center justify-center",
                         earnedBadgeIds.includes(5) 
-                          ? "border-indigo-400 bg-indigo-900/50" 
+                          ? "border-blue-400 bg-indigo-900/50" 
                           : "border-gray-700 bg-gray-900/50"
                       )}>
                         <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke={earnedBadgeIds.includes(5) ? "white" : "gray"} strokeWidth="2">
                           <circle cx="12" cy="12" r="2" />
                           <path d="M12 2a9.96 9.96 0 0 0-7.071 2.929 9.96 9.96 0 0 0 0 14.142A9.96 9.96 0 0 0 12 22a9.96 9.96 0 0 0 7.071-2.929 9.96 9.96 0 0 0 0-14.142A9.96 9.96 0 0 0 12 2Z"/>
-                          <path d="M12 8a4.14 4.14 0 0 0-3 1 4.1 4.1 0 0 0-1 3c0 1.1.4 2.1 1 3a4.14 4.14 0 0 0 3 1 4.14 4.14 0 0 0 3-1c.7-.9 1-1.9 1-3a4.1 4.1 0 0 0-1-3 4.14 4.14 0 0 0-3-1Z"/>
+                          <path d="M12 8a4.14 4.14 0 0 0-3 1 4.1 4.1 0 0 0-1 3c0 1.1.4 2.1 1 3a4.14 4.14 0 0 0 3 1a4.14 4.14 0 0 0 3-1c.7-.9 1-1.9 1-3a4.1 4.1 0 0 0-1-3 4.14 4.14 0 0 0-3-1Z"/>
                         </svg>
+                        {earnedBadgeIds.includes(5) && (
+                          <span className="text-[7px] text-blue-200 mt-1">Binah</span>
+                        )}
                       </div>
-                      <p className={cn(
-                        "mt-2 text-sm",
-                        earnedBadgeIds.includes(5) ? "text-white" : "text-gray-500"
-                      )}>Quantum Thinker</p>
+                      <div className="mt-2 text-center">
+                        <p className={cn(
+                          "text-sm",
+                          earnedBadgeIds.includes(5) ? "text-white" : "text-gray-500"
+                        )}>Quantum Thinker</p>
+                        {earnedBadgeIds.includes(5) && (
+                          <p className="text-[10px] text-blue-300 italic">Understanding</p>
+                        )}
+                      </div>
                     </div>
                     
-                    {/* Bridge Builder Badge (Center) */}
+                    {/* Bridge Builder Badge (Center) - Tiferet: Beauty/Balance */}
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
                       <div className={cn(
-                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        "w-20 h-20 rounded-full border-2 mx-auto flex flex-col items-center justify-center",
                         earnedBadgeIds.includes(6) 
-                          ? "border-indigo-400 bg-indigo-900/50" 
+                          ? "border-violet-400 bg-indigo-900/70 orbit-particles" 
                           : "border-gray-700 bg-gray-900/50"
                       )}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(6) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
+                        <svg viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(6) ? "white" : "gray"} strokeWidth="2" className="h-10 w-10">
                           <path d="M6 10h12M6 14h12M3 8v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
                         </svg>
+                        {earnedBadgeIds.includes(6) && (
+                          <span className="text-[7px] text-violet-200 mt-1">Tiferet</span>
+                        )}
                       </div>
-                      <p className={cn(
-                        "mt-2 text-sm",
-                        earnedBadgeIds.includes(6) ? "text-white" : "text-gray-500"
-                      )}>Bridge Builder</p>
+                      <div className="mt-2 text-center">
+                        <p className={cn(
+                          "text-sm",
+                          earnedBadgeIds.includes(6) ? "text-white" : "text-gray-500"
+                        )}>Bridge Builder</p>
+                        {earnedBadgeIds.includes(6) && (
+                          <p className="text-[10px] text-violet-300 italic">Balance</p>
+                        )}
+                      </div>
                     </div>
                     
-                    {/* Empath Badge (Bottom Left) */}
+                    {/* Empath Badge (Bottom Left) - Chesed: Lovingkindness */}
                     <div className="absolute bottom-0 left-1/4 transform -translate-x-1/2 text-center">
                       <div className={cn(
-                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        "w-16 h-16 rounded-full border-2 mx-auto flex flex-col items-center justify-center",
                         earnedBadgeIds.includes(8) 
-                          ? "border-indigo-400 bg-indigo-900/50" 
+                          ? "border-pink-400 bg-indigo-900/50" 
                           : "border-gray-700 bg-gray-900/50"
                       )}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(8) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
                           <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path>
                         </svg>
+                        {earnedBadgeIds.includes(8) && (
+                          <span className="text-[7px] text-pink-200 mt-1">Chesed</span>
+                        )}
                       </div>
-                      <p className={cn(
-                        "mt-2 text-sm",
-                        earnedBadgeIds.includes(8) ? "text-white" : "text-gray-500"
-                      )}>Empath</p>
+                      <div className="mt-2 text-center">
+                        <p className={cn(
+                          "text-sm",
+                          earnedBadgeIds.includes(8) ? "text-white" : "text-gray-500"
+                        )}>Empath</p>
+                        {earnedBadgeIds.includes(8) && (
+                          <p className="text-[10px] text-pink-300 italic">Lovingkindness</p>
+                        )}
+                      </div>
                     </div>
                     
-                    {/* Mirrored Being Badge (Bottom Right) */}
+                    {/* Mirrored Being Badge (Bottom Right) - Yesod: Foundation/Mirror */}
                     <div className="absolute bottom-0 right-1/4 transform translate-x-1/2 text-center">
                       <div className={cn(
-                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        "w-16 h-16 rounded-full border-2 mx-auto flex flex-col items-center justify-center",
                         earnedBadgeIds.includes(7) 
-                          ? "border-indigo-400 bg-indigo-900/50" 
+                          ? "border-indigo-400 bg-indigo-900/50 shimmer-effect" 
                           : "border-gray-700 bg-gray-900/50"
                       )}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(7) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
                           <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                           <line x1="1" y1="1" x2="23" y2="23"></line>
                         </svg>
+                        {earnedBadgeIds.includes(7) && (
+                          <span className="text-[7px] text-indigo-200 mt-1">Yesod</span>
+                        )}
                       </div>
-                      <p className={cn(
-                        "mt-2 text-sm",
-                        earnedBadgeIds.includes(7) ? "text-white" : "text-gray-500"
-                      )}>Mirrored Being</p>
+                      <div className="mt-2 text-center">
+                        <p className={cn(
+                          "text-sm",
+                          earnedBadgeIds.includes(7) ? "text-white" : "text-gray-500"
+                        )}>Mirrored Being</p>
+                        {earnedBadgeIds.includes(7) && (
+                          <p className="text-[10px] text-indigo-300 italic">Foundation</p>
+                        )}
+                      </div>
                     </div>
                     
                     {/* Contributor Badge (Bottom Center) */}

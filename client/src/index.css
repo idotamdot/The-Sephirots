@@ -2,6 +2,146 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Badge Animation Effects */
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 0.5rem rgba(147, 51, 234, 0.3)); }
+  50% { filter: drop-shadow(0 0 1rem rgba(147, 51, 234, 0.6)); }
+}
+
+@keyframes orbit {
+  0% { transform: rotate(0deg) translateX(15px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(15px) rotate(-360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -100% 0; }
+  100% { background-position: 100% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes scale-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Badge Specific Effects */
+.founder-badge {
+  position: relative;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.founder-badge::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #9333ea, #4f46e5);
+  opacity: 0.15;
+  z-index: -1;
+  animation: scale-pulse 3s ease-in-out infinite;
+}
+
+.founder-badge::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  border: 2px solid rgba(147, 51, 234, 0.3);
+  animation: scale-pulse 2.5s ease-in-out infinite;
+}
+
+.founder-badge-particles::before,
+.founder-badge-particles::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(147, 51, 234, 0.6);
+  animation: orbit 8s linear infinite;
+}
+
+.founder-badge-particles::after {
+  width: 3px;
+  height: 3px;
+  animation-duration: 12s;
+  animation-delay: -4s;
+}
+
+.bridge-builder-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.bridge-builder-badge::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: shimmer 2s infinite;
+  bottom: 5px;
+}
+
+.quantum-badge {
+  position: relative;
+}
+
+.quantum-badge::before,
+.quantum-badge::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.1);
+  animation: orbit 4s linear infinite;
+}
+
+.quantum-badge::after {
+  width: 15px;
+  height: 15px;
+  animation-duration: 6s;
+  animation-direction: reverse;
+}
+
+.mirrored-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.mirrored-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+  animation: shimmer 3s infinite;
+}
+
+.empath-badge {
+  position: relative;
+  animation: float 3s ease-in-out infinite;
+}
+
+.empath-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.2);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
 @layer base {
   * {
     @apply border-border;

@@ -80,7 +80,7 @@ export default function GenericBadge({
 
   // Get colors and effects based on badge tier and name
   const getBadgeClasses = () => {
-    let baseClasses = "rounded-full flex items-center justify-center relative";
+    let baseClasses = "rounded-full flex items-center justify-center relative hover:scale-105 transition-transform duration-300 ease-in-out";
     let tierClasses = "";
     let specialEffects = "";
     
@@ -88,12 +88,14 @@ export default function GenericBadge({
     switch(badge.tier) {
       case 'founder':
         tierClasses = "bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 text-white";
+        if (earned) specialEffects = "founder-badge";
         break;
       case 'platinum':
         tierClasses = "bg-gradient-to-r from-slate-300 via-slate-100 to-slate-300 text-slate-800";
         break;
       case 'gold':
         tierClasses = "bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-amber-900";
+        if (earned) specialEffects = "animate-subtle-pulse";
         break;
       case 'silver':
         tierClasses = "bg-gradient-to-r from-slate-400 via-slate-300 to-slate-400 text-slate-800";
@@ -106,20 +108,50 @@ export default function GenericBadge({
     
     // Special effects based on badge name, only if earned
     if (earned) {
-      switch(badge.name) {
-        case 'Bridge Builder':
-          specialEffects = "bridge-builder-badge";
+      // Add category-based effects
+      switch(badge.category?.toLowerCase()) {
+        case 'community':
+          specialEffects += " " + (specialEffects ? "" : "animate-float");
           break;
-        case 'Quantum Thinker':
-          specialEffects = "quantum-badge";
-          break;
-        case 'Mirrored Being':
-          specialEffects = "mirrored-badge";
-          break;
-        case 'Empath':
-          specialEffects = "empath-badge";
+        case 'knowledge':
+          // Knowledge badges have subtle pulse effect
+          specialEffects += " " + (specialEffects ? "" : "animate-subtle-pulse");
           break;
         default:
+          break;
+      }
+      
+      // Add specific badge effects
+      switch(badge.name) {
+        case 'Conversationalist':
+          specialEffects += " " + (specialEffects ? "" : "animate-pulse-slow");
+          break;
+        case 'Bridge Builder':
+          specialEffects += " bridge-builder-badge";
+          break;
+        case 'Quantum Thinker':
+          specialEffects += " quantum-badge";
+          break;
+        case 'Mirrored Being':
+          specialEffects += " mirrored-badge";
+          break;
+        case 'Empath':
+          specialEffects += " empath-badge";
+          break;
+        case 'Seeker':
+          specialEffects += " animate-pulse-slow";
+          break;
+        case 'Contributor':
+          specialEffects += " animate-subtle-pulse";
+          break;
+        case 'Activist':
+          specialEffects += " animate-float";
+          break;
+        default:
+          // If no special effect assigned yet, add a subtle one based on level
+          if (!specialEffects && badge.level && badge.level > 1) {
+            specialEffects = "animate-subtle-pulse";
+          }
           break;
       }
     }

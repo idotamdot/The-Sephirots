@@ -53,8 +53,9 @@ export default function FounderBadge({
           "bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600",
           "hover:scale-105 transition-transform duration-300 ease-in-out",
           sizeClasses[size],
+          enhanced && "founder-badge",
           enhanced && !isAscended && "founder-badge-glow",
-          enhanced && isAscended && "founder-badge-ascended"
+          enhanced && isAscended && "founder-badge-ascended founder-badge-particles"
         )}
       >
         {/* Particles for ascended badges */}

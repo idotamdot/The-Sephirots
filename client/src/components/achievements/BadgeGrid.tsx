@@ -26,11 +26,25 @@ export default function BadgeGrid({
     );
   }
   
+  // Find founder badges
+  const founderBadges = badges.filter(badge => 
+    badge.tier === 'founder' || 
+    badge.name.toLowerCase().includes('founder') || 
+    badge.category.toLowerCase().includes('founder')
+  );
+  
+  // Regular badges (non-founder)
+  const regularBadges = badges.filter(badge => 
+    !(badge.tier === 'founder' || 
+      badge.name.toLowerCase().includes('founder') || 
+      badge.category.toLowerCase().includes('founder'))
+  );
+  
   // Group badges by category if showCategories is true
   const badgesByCategory: Record<string, Badge[]> = {};
   
   if (showCategories) {
-    badges.forEach(badge => {
+    regularBadges.forEach(badge => {
       if (!badgesByCategory[badge.category]) {
         badgesByCategory[badge.category] = [];
       }
@@ -67,7 +81,54 @@ export default function BadgeGrid({
     return (
       <div className="space-y-8">
         {title && <h2 className="text-xl font-heading font-semibold mb-4">{title}</h2>}
+
+        {/* Display founder badges section if there are any */}
+        {founderBadges.length > 0 && (
+          <div>
+            <h3 className="text-lg font-medium mb-4">Founder Badges</h3>
+            <div className="flex flex-wrap justify-center gap-6 mb-8">
+              {founderBadges.map((badge) => (
+                <TooltipProvider key={badge.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
+                        <FounderBadge 
+                          badge={badge} 
+                          enhanced={isBadgeEarned(badge.id) && badge.tier === 'founder'}
+                          size="md"
+                          className={!isBadgeEarned(badge.id) ? "opacity-50 grayscale" : ""}
+                        />
+                        {isBadgeEarned(badge.id) && (
+                          <div className="mt-2 text-xs text-success flex items-center justify-center">
+                            <i className="ri-check-line mr-1"></i>
+                            Earned
+                          </div>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <div className="space-y-2">
+                        <p className="font-medium">{badge.name}</p>
+                        <p className="text-sm">{badge.description}</p>
+                        {badge.symbolism && (
+                          <div className="text-xs">
+                            <strong>Symbolism:</strong>
+                            <p className="italic mt-1">{badge.symbolism}</p>
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          <strong>How to earn:</strong> {badge.requirement}
+                        </p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
+            </div>
+          </div>
+        )}
         
+        {/* Regular categories */}
         {Object.entries(badgesByCategory).map(([category, categoryBadges]) => (
           <div key={category}>
             <h3 className="text-lg font-medium mb-4">{getCategoryTitle(category)} Badges</h3>

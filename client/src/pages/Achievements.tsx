@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Badge, User } from "@/lib/types";
 import { BadgeGrid, BadgeEvolutionTimeline } from "@/components/achievements";
+import CompleteCollection from "@/components/achievements/CompleteCollection";
 import { FounderBadge, GenericBadge } from "@/components/badges";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -250,6 +251,13 @@ export default function Achievements() {
           </Tabs>
         </CardContent>
       </Card>
+      
+      {/* Complete Collection Reward Card */}
+      <CompleteCollection 
+        allBadges={badges} 
+        earnedBadgeIds={earnedBadgeIds} 
+        userName={currentUser.displayName || currentUser.username}
+      />
       
       <Card>
         <CardHeader>

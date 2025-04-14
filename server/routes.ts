@@ -502,6 +502,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+  
+  // Handle requests for physical achievement posters
+  app.post('/api/achievements/request-poster', async (req, res) => {
+    try {
+      const { userName } = req.body;
+      
+      // In a production app, we would:
+      // 1. Use Stripe to process payment for shipping
+      // 2. Use SendGrid to send a confirmation email
+      // 3. Store the order in the database
+      
+      // For demonstration purposes, we're just returning a success response
+      res.json({
+        success: true,
+        message: 'Poster request received',
+        details: {
+          recipient: userName,
+          requestDate: new Date().toISOString(),
+          status: 'processing'
+        }
+      });
+    } catch (error: any) {
+      console.error('Error processing poster request:', error);
+      res.status(500).json({ 
+        error: 'Failed to process poster request',
+        message: error.message 
+      });
+    }
+  });
 
   // ===== EVENT ROUTES =====
   

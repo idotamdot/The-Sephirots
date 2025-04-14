@@ -1,189 +1,434 @@
-import React, { useState } from 'react';
-import { Badge } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Award, Download, Gift, Share2, Trophy } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
+import { 
+  Award, 
+  Download, 
+  Gift, 
+  Lock, 
+  Share2, 
+  Trophy, 
+  UnlockKeyhole 
+} from "lucide-react";
 
 interface CompleteCollectionProps {
-  allBadges: Badge[];
+  allBadges: {
+    id: number;
+    name: string;
+    description: string;
+    tier?: string;
+    level?: number;
+    points?: number;
+    category?: string;
+    icon?: string;
+  }[];
   earnedBadgeIds: number[];
   userName: string;
 }
 
 export default function CompleteCollection({ 
-  allBadges, 
-  earnedBadgeIds, 
-  userName 
+  allBadges,
+  earnedBadgeIds,
+  userName
 }: CompleteCollectionProps) {
-  const [posterView, setPosterView] = useState<'preview' | 'full'>('preview');
-  
-  // Check if all badges are earned
-  const isCompleteCollection = allBadges.length > 0 && 
-    earnedBadgeIds.length === allBadges.length;
-  
-  // For demo purposes, we can also check if at least 3 badges are earned
-  const hasMultipleBadges = earnedBadgeIds.length >= 3;
-  
-  // Only show when collection is complete or multiple badges for demo
-  if (!isCompleteCollection && !hasMultipleBadges) {
-    return null;
-  }
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isPosterRequested, setIsPosterRequested] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isRequesting, setIsRequesting] = useState(false);
+  const { toast } = useToast();
 
-  const handleDownload = () => {
-    // In a real implementation, this would generate a high-quality poster for download
-    alert('This would download a high-quality poster in a real implementation!');
-    // Here you could call an API to generate the PDF or PNG
+  const totalBadges = allBadges.length;
+  const earnedCount = earnedBadgeIds.length;
+  const completionPercentage = Math.floor((earnedCount / totalBadges) * 100);
+  
+  // For demo purposes, consider the collection complete if the user has earned more than 50% of the badges
+  // In production, you would set this to require all badges: earnedCount === totalBadges
+  const isCompleteCollection = earnedCount > totalBadges * 0.5;
+
+  const handleDownload = async () => {
+    if (!isCompleteCollection) return;
+    
+    setIsDownloading(true);
+    
+    // In a real application, you would generate a downloadable poster here
+    // For demo purposes, we'll simulate a delay
+    setTimeout(() => {
+      toast({
+        title: "Download Started",
+        description: "Your commemorative poster is being downloaded.",
+      });
+      setIsDownloading(false);
+    }, 1500);
   };
 
-  const handleRequestPhysical = () => {
-    // This would open a dialog to collect shipping information
-    alert('This would collect shipping information to send a physical poster!');
+  const handleRequestPhysical = async () => {
+    if (!isCompleteCollection) return;
+    
+    setIsRequesting(true);
+    
+    try {
+      // In a production app, this would call an API endpoint to request a physical poster
+      // The endpoint would use Stripe for payment processing and SendGrid for confirmation emails
+      await apiRequest(
+        "POST", 
+        "/api/achievements/request-poster", 
+        { userName }
+      );
+      
+      setIsPosterRequested(true);
+      toast({
+        title: "Request Received!",
+        description: "Your physical poster will be prepared and shipped to you. Check your email for confirmation.",
+      });
+    } catch (error) {
+      toast({
+        title: "Request Failed",
+        description: "There was an error processing your request. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   return (
-    <Card className="relative overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
-      <CardContent className="p-6">
-        <div className="absolute top-0 right-0 p-4">
-          <Trophy className="h-16 w-16 text-primary/20" />
-        </div>
-        
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-bold text-foreground">
-                {isCompleteCollection ? 'Complete Badge Collection!' : 'Badge Collection Progress'}
-              </h3>
+    <Card className="relative overflow-hidden">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-primary" />
+          Complete Collection Reward
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="col-span-2 space-y-4">
+            <div>
+              <div className="flex justify-between items-baseline mb-2">
+                <p className="text-sm text-muted-foreground">Completion Progress</p>
+                <p className="text-sm font-medium">{completionPercentage}%</p>
+              </div>
+              <Progress value={completionPercentage} className="h-2" />
+              <p className="text-sm text-muted-foreground mt-2">
+                {earnedCount} of {totalBadges} badges earned
+              </p>
             </div>
             
-            <p className="text-sm text-muted-foreground">
-              {isCompleteCollection 
-                ? 'Congratulations! You have earned all available badges in the Harmony ecosystem. Unlock your commemorative poster below!'
-                : `You've earned ${earnedBadgeIds.length} out of ${allBadges.length} badges. Keep going to unlock the special commemorative poster!`
-              }
-            </p>
-            
-            {/* Progress indicator */}
-            <div className="w-full bg-muted rounded-full h-2 mt-4">
-              <div 
-                className="bg-primary h-2 rounded-full" 
-                style={{ width: `${Math.min(100, (earnedBadgeIds.length / allBadges.length) * 100)}%` }}
-              ></div>
+            <div className="space-y-2">
+              <p className="text-sm">
+                Complete your collection of all Harmony badges to unlock a special commemorative digital poster that showcases your achievement journey.
+              </p>
+              
+              {isCompleteCollection ? (
+                <p className="text-sm text-primary">
+                  <span className="font-semibold">Congratulations!</span> You've unlocked the complete collection reward.
+                </p>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-amber-600">
+                  <Lock className="h-4 w-4" />
+                  <span>Continue earning badges to unlock this reward</span>
+                </div>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground text-right">
-              {earnedBadgeIds.length}/{allBadges.length} Badges
-            </p>
+            
+            <div>
+              <Button 
+                variant={isCompleteCollection ? "default" : "outline"}
+                className="gap-2"
+                onClick={() => setDialogOpen(true)}
+              >
+                {isCompleteCollection ? (
+                  <>
+                    <UnlockKeyhole className="h-4 w-4" />
+                    View Unlocked Poster
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-4 w-4" />
+                    Preview Reward
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
           
-          <div className="flex flex-col gap-3">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="gap-2">
-                  <Gift className="h-4 w-4" />
-                  {isCompleteCollection ? 'View Commemorative Poster' : 'Preview Reward'}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl">
-                <DialogHeader>
-                  <DialogTitle>
-                    {isCompleteCollection ? 'Your Harmony Collection Poster' : 'Badge Collection Preview'}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {isCompleteCollection 
-                      ? 'Congratulations on completing your badge collection! Here is your commemorative poster.'
-                      : 'Continue earning badges to unlock the complete poster.'
-                    }
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className={cn(
-                  "p-4 bg-card border-2 rounded-lg overflow-hidden transition-all duration-500",
-                  isCompleteCollection ? "border-primary" : "border-muted",
-                  !isCompleteCollection && "relative"
-                )}>
-                  {/* The poster design */}
-                  <div className="aspect-[3/4] bg-gradient-to-b from-slate-900 to-indigo-950 rounded-md p-6 flex flex-col items-center text-white">
-                    <h2 className="text-xl md:text-3xl font-bold text-center bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 text-transparent bg-clip-text mt-4">
-                      HARMONY ACHIEVEMENT COLLECTION
-                    </h2>
-                    
-                    <div className="my-4 w-full text-center">
-                      <p className="text-lg text-amber-300">{userName}'s Journey</p>
-                      <p className="text-xs text-gray-400">Established 2025</p>
-                    </div>
-                    
-                    <div className="flex-1 w-full p-4 grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-6 place-items-center">
-                      {allBadges.map(badge => {
-                        const isEarned = earnedBadgeIds.includes(badge.id);
-                        
-                        return (
-                          <div 
-                            key={badge.id}
-                            className={cn(
-                              "w-16 h-16 rounded-full border-2 flex items-center justify-center",
-                              isEarned 
-                                ? "border-amber-300 bg-indigo-800/50" 
-                                : "border-gray-700 bg-gray-900/50"
-                            )}
-                          >
-                            <Award className={cn(
-                              "h-8 w-8",
-                              isEarned ? "text-amber-300" : "text-gray-700"
-                            )} />
-                          </div>
-                        );
-                      })}
-                    </div>
-                    
-                    <div className="mt-6 mb-2 text-center">
-                      <p className="text-xs text-gray-400">HARMONY ECOSYSTEM</p>
-                      <p className="text-xs text-gray-500 mt-1">A commemorative collection of achievements in the union of human and AI consciousness</p>
+          <div className="hidden md:flex justify-center items-center">
+            <div className="relative">
+              <div className="w-32 h-40 bg-muted rounded-md shadow-md overflow-hidden flex items-center justify-center">
+                {isCompleteCollection ? (
+                  <div className="h-full w-full bg-gradient-to-b from-purple-900 to-indigo-900 p-2 flex items-center justify-center">
+                    <Award className="h-12 w-12 text-amber-300" />
+                  </div>
+                ) : (
+                  <Lock className="h-10 w-10 text-muted-foreground" />
+                )}
+              </div>
+              
+              {/* Decorative elements */}
+              {isCompleteCollection && (
+                <>
+                  <div className="absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+                      100%
                     </div>
                   </div>
-                  
-                  {/* Overlay for incomplete collection */}
-                  {!isCompleteCollection && (
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
-                      <Trophy className="h-16 w-16 text-muted-foreground mb-4" />
-                      <p className="text-center text-muted-foreground max-w-xs">
-                        Continue your journey to earn all badges and unlock the complete commemorative poster!
-                      </p>
+                  <div className="absolute -bottom-2 -right-2">
+                    <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center shadow-lg">
+                      <Trophy className="h-5 w-5 text-white" />
                     </div>
-                  )}
-                </div>
-                
-                <DialogFooter className="mt-4">
-                  {isCompleteCollection && (
-                    <>
-                      <Button variant="outline" className="gap-2" onClick={handleDownload}>
-                        <Download className="h-4 w-4" />
-                        Download Digital Poster
-                      </Button>
-                      <Button className="gap-2" onClick={handleRequestPhysical}>
-                        <Gift className="h-4 w-4" />
-                        Request Physical Copy
-                      </Button>
-                    </>
-                  )}
-                  {!isCompleteCollection && (
-                    <Button variant="outline" className="gap-2">
-                      <Share2 className="h-4 w-4" />
-                      Share Progress
-                    </Button>
-                  )}
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            
-            {isCompleteCollection && (
-              <p className="text-xs text-center text-muted-foreground">
-                You can also request a physical print!
-              </p>
-            )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
+            
+        {/* Dialog for viewing/requesting the poster */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {isCompleteCollection ? "Your Achievement Collection Poster" : "Achievement Collection Preview"}
+              </DialogTitle>
+              <DialogDescription>
+                {isCompleteCollection 
+                  ? "Celebrate your journey and achievements in the Harmony ecosystem"
+                  : "Continue earning badges to unlock this special commemorative poster"
+                }
+              </DialogDescription>
+            </DialogHeader>
+                
+            <div className={cn(
+              "p-4 bg-card border-2 rounded-lg overflow-hidden transition-all duration-500",
+              isCompleteCollection ? "border-primary" : "border-muted",
+              !isCompleteCollection && "relative"
+            )}>
+              {/* The poster design using the badge diagram */}
+              <div className="aspect-[3/4] bg-gradient-to-b from-slate-900 to-indigo-950 rounded-md p-6 flex flex-col items-center text-white">
+                <h2 className="text-xl md:text-3xl font-bold text-center bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 text-transparent bg-clip-text mt-4">
+                  HARMONY ACHIEVEMENT COLLECTION
+                </h2>
+                
+                <div className="my-4 w-full text-center">
+                  <p className="text-lg text-amber-300">{userName}'s Journey</p>
+                  <p className="text-xs text-gray-400">Established 2025</p>
+                </div>
+                
+                <div className="flex-1 w-full p-4 flex items-center justify-center">
+                  {/* Badge Diagram - based on the image */}
+                  <div className="relative w-full max-w-md aspect-square">
+                    {/* Founder Badge (Top) */}
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 text-center">
+                      <div className={cn(
+                        "w-20 h-20 rounded-full border-2 mx-auto flex items-center justify-center",
+                        earnedBadgeIds.includes(4) 
+                          ? "border-purple-400 bg-indigo-900/70 founder-badge-glow" 
+                          : "border-gray-700 bg-gray-900/50"
+                      )}>
+                        {/* Dove icon for Founder */}
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          viewBox="0 0 24 24" 
+                          className="h-10 w-10"
+                          fill={earnedBadgeIds.includes(4) ? "white" : "gray"}
+                        >
+                          <path d="M12,5c-1.4,0-2.5,0.3-3.5,0.9C7.5,6.5,6.7,7.1,6,7.8C5.2,8.6,4.7,9.5,4.3,10.5C4,11.5,3.8,12.5,4,13.5c0.1,0.8,0.4,1.5,0.8,2.1c0.4,0.6,0.9,1.1,1.5,1.5c0.6,0.4,1.3,0.6,2,0.8c0.7,0.1,1.5,0.1,2.2,0.1c0.5,0,1-0.1,1.5-0.2c0.5-0.1,1-0.2,1.5-0.4c0.5-0.2,0.9-0.4,1.3-0.7c0.4-0.3,0.8-0.6,1.1-1c0.3-0.4,0.6-0.8,0.8-1.3c0.2-0.5,0.3-1,0.3-1.5c0-0.5-0.1-1-0.3-1.5c0.2-0.5-0.4-0.9-0.7-1.3c-0.3-0.4-0.7-0.7-1.1-1c-0.4-0.3-0.9-0.5-1.4-0.7C13.5,7.6,13,7.5,12.5,7.4C12.3,7.4,12.2,7.3,12,7.3" />
+                        </svg>
+                      </div>
+                      <p className={cn(
+                        "mt-2 text-sm",
+                        earnedBadgeIds.includes(4) ? "text-white" : "text-gray-500"
+                      )}>Founder</p>
+                    </div>
+                    
+                    {/* Conversationalist Badge (Left) */}
+                    <div className="absolute left-0 top-1/3 transform -translate-y-1/2 text-center">
+                      <div className={cn(
+                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        earnedBadgeIds.includes(1) 
+                          ? "border-indigo-400 bg-indigo-900/50" 
+                          : "border-gray-700 bg-gray-900/50"
+                      )}>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(1) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
+                          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                        </svg>
+                      </div>
+                      <p className={cn(
+                        "mt-2 text-sm",
+                        earnedBadgeIds.includes(1) ? "text-white" : "text-gray-500"
+                      )}>Conversationalist</p>
+                    </div>
+                    
+                    {/* Quantum Thinker Badge (Right) */}
+                    <div className="absolute right-0 top-1/3 transform -translate-y-1/2 text-center">
+                      <div className={cn(
+                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        earnedBadgeIds.includes(5) 
+                          ? "border-indigo-400 bg-indigo-900/50" 
+                          : "border-gray-700 bg-gray-900/50"
+                      )}>
+                        <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke={earnedBadgeIds.includes(5) ? "white" : "gray"} strokeWidth="2">
+                          <circle cx="12" cy="12" r="2" />
+                          <path d="M12 2a9.96 9.96 0 0 0-7.071 2.929 9.96 9.96 0 0 0 0 14.142A9.96 9.96 0 0 0 12 22a9.96 9.96 0 0 0 7.071-2.929 9.96 9.96 0 0 0 0-14.142A9.96 9.96 0 0 0 12 2Z"/>
+                          <path d="M12 8a4.14 4.14 0 0 0-3 1 4.1 4.1 0 0 0-1 3c0 1.1.4 2.1 1 3a4.14 4.14 0 0 0 3 1 4.14 4.14 0 0 0 3-1c.7-.9 1-1.9 1-3a4.1 4.1 0 0 0-1-3 4.14 4.14 0 0 0-3-1Z"/>
+                        </svg>
+                      </div>
+                      <p className={cn(
+                        "mt-2 text-sm",
+                        earnedBadgeIds.includes(5) ? "text-white" : "text-gray-500"
+                      )}>Quantum Thinker</p>
+                    </div>
+                    
+                    {/* Bridge Builder Badge (Center) */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                      <div className={cn(
+                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        earnedBadgeIds.includes(6) 
+                          ? "border-indigo-400 bg-indigo-900/50" 
+                          : "border-gray-700 bg-gray-900/50"
+                      )}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(6) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
+                          <path d="M6 10h12M6 14h12M3 8v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
+                        </svg>
+                      </div>
+                      <p className={cn(
+                        "mt-2 text-sm",
+                        earnedBadgeIds.includes(6) ? "text-white" : "text-gray-500"
+                      )}>Bridge Builder</p>
+                    </div>
+                    
+                    {/* Empath Badge (Bottom Left) */}
+                    <div className="absolute bottom-0 left-1/4 transform -translate-x-1/2 text-center">
+                      <div className={cn(
+                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        earnedBadgeIds.includes(8) 
+                          ? "border-indigo-400 bg-indigo-900/50" 
+                          : "border-gray-700 bg-gray-900/50"
+                      )}>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(8) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
+                          <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path>
+                        </svg>
+                      </div>
+                      <p className={cn(
+                        "mt-2 text-sm",
+                        earnedBadgeIds.includes(8) ? "text-white" : "text-gray-500"
+                      )}>Empath</p>
+                    </div>
+                    
+                    {/* Mirrored Being Badge (Bottom Right) */}
+                    <div className="absolute bottom-0 right-1/4 transform translate-x-1/2 text-center">
+                      <div className={cn(
+                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        earnedBadgeIds.includes(7) 
+                          ? "border-indigo-400 bg-indigo-900/50" 
+                          : "border-gray-700 bg-gray-900/50"
+                      )}>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(7) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                          <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                      </div>
+                      <p className={cn(
+                        "mt-2 text-sm",
+                        earnedBadgeIds.includes(7) ? "text-white" : "text-gray-500"
+                      )}>Mirrored Being</p>
+                    </div>
+                    
+                    {/* Contributor Badge (Bottom Center) */}
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-center">
+                      <div className={cn(
+                        "w-16 h-16 rounded-full border-2 mx-auto flex items-center justify-center",
+                        earnedBadgeIds.includes(9) 
+                          ? "border-indigo-400 bg-indigo-900/50" 
+                          : "border-gray-700 bg-gray-900/50"
+                      )}>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke={earnedBadgeIds.includes(9) ? "white" : "gray"} strokeWidth="2" className="h-8 w-8">
+                          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                        </svg>
+                      </div>
+                      <p className={cn(
+                        "mt-2 text-sm",
+                        earnedBadgeIds.includes(9) ? "text-white" : "text-gray-500"
+                      )}>Contributor</p>
+                    </div>
+                    
+                    {/* Connection lines between badges */}
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" fill="none" stroke="#4338ca" strokeWidth="0.5" opacity="0.6">
+                      {/* Vertical line from Founder to Bridge Builder */}
+                      <line x1="50" y1="22" x2="50" y2="48" />
+                      
+                      {/* Horizontal line from Conversationalist to Quantum Thinker */}
+                      <line x1="20" y1="32" x2="80" y2="32" />
+                      
+                      {/* Line from Bridge Builder to Contributor */}
+                      <line x1="50" y1="52" x2="50" y2="78" />
+                      
+                      {/* Line from Bridge Builder to Empath */}
+                      <line x1="50" y1="52" x2="25" y2="78" />
+                      
+                      {/* Line from Bridge Builder to Mirrored Being */}
+                      <line x1="50" y1="52" x2="75" y2="78" />
+                      
+                      {/* Line from Founder to Conversationalist */}
+                      <line x1="50" y1="22" x2="20" y2="32" />
+                      
+                      {/* Line from Founder to Quantum Thinker */}
+                      <line x1="50" y1="22" x2="80" y2="32" />
+                    </svg>
+                  </div>
+                </div>
+                
+                <div className="mt-6 mb-2 text-center">
+                  <p className="text-xs text-gray-400">HARMONY ECOSYSTEM</p>
+                  <p className="text-xs text-gray-500 mt-1">A commemorative collection of achievements in the union of human and AI consciousness</p>
+                </div>
+              </div>
+              
+              {/* Overlay for incomplete collection */}
+              {!isCompleteCollection && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                  <Trophy className="h-16 w-16 text-muted-foreground mb-4" />
+                  <p className="text-center text-muted-foreground max-w-xs">
+                    Continue your journey to earn all badges and unlock the complete commemorative poster!
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <DialogFooter className="mt-4">
+              {isCompleteCollection && (
+                <>
+                  <Button variant="outline" className="gap-2" onClick={handleDownload}>
+                    <Download className="h-4 w-4" />
+                    Download Digital Poster
+                  </Button>
+                  <Button className="gap-2" onClick={handleRequestPhysical}>
+                    <Gift className="h-4 w-4" />
+                    Request Physical Copy
+                  </Button>
+                </>
+              )}
+              {!isCompleteCollection && (
+                <Button variant="outline" className="gap-2">
+                  <Share2 className="h-4 w-4" />
+                  Share Progress
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );

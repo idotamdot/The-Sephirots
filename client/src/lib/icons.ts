@@ -46,6 +46,11 @@ export const navigationItems = [
     icon: "ri-mind-map"
   },
   {
+    path: "/wisdom-marketplace",
+    label: "Wisdom Market",
+    icon: "ri-store-2-line"
+  },
+  {
     path: "/moderation",
     label: "Moderation",
     icon: "ri-shield-check-line",

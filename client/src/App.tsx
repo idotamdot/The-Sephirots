@@ -8,6 +8,8 @@ import Wellbeing from "@/pages/Wellbeing";
 import Achievements from "@/pages/Achievements";
 import MysticalProgress from "@/pages/MysticalProgress";
 import MindMapExplorer from "@/pages/MindMapExplorer";
+import WisdomMarketplace from "@/pages/WisdomMarketplace";
+import Rewards from "@/pages/Rewards";
 import Profile from "@/pages/Profile";
 import Governance from "@/pages/Governance";
 import ProposalDetail from "@/pages/ProposalDetail";
@@ -80,6 +82,7 @@ function App() {
                 <Route path="/achievements" component={Achievements} />
                 <Route path="/mystical-progress" component={MysticalProgress} />
                 <Route path="/mindmap" component={MindMapExplorer} />
+                <Route path="/wisdom-marketplace" component={WisdomMarketplace} />
                 <Route path="/profile">
                   <Profile currentUser={currentUser} />
                 </Route>

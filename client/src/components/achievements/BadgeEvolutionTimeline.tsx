@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronRight } from 'lucide-react';
-import { Badge } from '@shared/schema';
+import { Badge } from '@/lib/types';
 import FounderBadge from '@/components/badges/FounderBadge';
 import GenericBadge from '@/components/badges/GenericBadge';
 

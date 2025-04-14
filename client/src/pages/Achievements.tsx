@@ -105,6 +105,16 @@ export default function Achievements() {
     return badges.filter(badge => badge.category === 'Cognition' || badge.name === 'Quantum Thinker');
   };
   
+  // Type assertion helper for badges with required tiers
+  const assertBadgeTypes = (badges: Badge[]): Badge[] => {
+    return badges.map(badge => ({
+      ...badge,
+      tier: badge.tier || 'bronze', // Default to bronze if tier is undefined
+      level: badge.level || 1,
+      points: badge.points || 0,
+    }));
+  };
+  
   return (
     <div className="p-4 md:p-6 space-y-8">
       <div>
@@ -155,7 +165,12 @@ export default function Achievements() {
                   <p className="text-sm text-gray-600 mb-1">Your Highest Badge</p>
                   {highestBadge.tier === 'founder' ? (
                     <FounderBadge 
-                      badge={highestBadge} 
+                      badge={{
+                        ...highestBadge,
+                        tier: highestBadge.tier || 'founder',
+                        level: highestBadge.level || 1,
+                        points: highestBadge.points || 0
+                      }}
                       enhanced={true}
                       size="lg"
                     />
@@ -209,21 +224,21 @@ export default function Achievements() {
             
             <TabsContent value="founder">
               <BadgeEvolutionTimeline
-                badgeFamily={getFounderBadges()}
+                badgeFamily={assertBadgeTypes(getFounderBadges())}
                 earnedBadgeIds={earnedBadgeIds}
               />
             </TabsContent>
             
             <TabsContent value="connector">
               <BadgeEvolutionTimeline
-                badgeFamily={getConnectorBadges()}
+                badgeFamily={assertBadgeTypes(getConnectorBadges())}
                 earnedBadgeIds={earnedBadgeIds}
               />
             </TabsContent>
             
             <TabsContent value="cognition">
               <BadgeEvolutionTimeline
-                badgeFamily={getCognitiveThinkingBadges()}
+                badgeFamily={assertBadgeTypes(getCognitiveThinkingBadges())}
                 earnedBadgeIds={earnedBadgeIds}
               />
             </TabsContent>

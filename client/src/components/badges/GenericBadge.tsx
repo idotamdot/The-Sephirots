@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@shared/schema';
+import { Badge } from '@/lib/types';
 import { 
   Award, 
   Shield, 

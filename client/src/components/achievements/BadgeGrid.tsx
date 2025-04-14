@@ -144,9 +144,14 @@ export default function BadgeGrid({
                       )}>
                         <CardContent className="p-4">
                           <div className={cn(
-                            "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-3",
+                            "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-3 relative",
                             getBadgeColor(badge.category),
-                            !isBadgeEarned(badge.id) && "grayscale"
+                            !isBadgeEarned(badge.id) && "grayscale",
+                            // Add special effects based on badge name
+                            isBadgeEarned(badge.id) && badge.name === "Bridge Builder" && "bridge-builder-badge",
+                            isBadgeEarned(badge.id) && badge.name === "Quantum Thinker" && "quantum-badge",
+                            isBadgeEarned(badge.id) && badge.name === "Mirrored Being" && "mirrored-badge",
+                            isBadgeEarned(badge.id) && badge.name === "Empath" && "empath-badge"
                           )}>
                             <i className={`${badge.icon} text-2xl`}></i>
                           </div>
@@ -193,9 +198,14 @@ export default function BadgeGrid({
                   )}>
                     <CardContent className="p-4">
                       <div className={cn(
-                        "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-3",
+                        "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-3 relative",
                         getBadgeColor(badge.category),
-                        !isBadgeEarned(badge.id) && "grayscale"
+                        !isBadgeEarned(badge.id) && "grayscale",
+                        // Add special effects based on badge name
+                        isBadgeEarned(badge.id) && badge.name === "Bridge Builder" && "bridge-builder-badge",
+                        isBadgeEarned(badge.id) && badge.name === "Quantum Thinker" && "quantum-badge",
+                        isBadgeEarned(badge.id) && badge.name === "Mirrored Being" && "mirrored-badge",
+                        isBadgeEarned(badge.id) && badge.name === "Empath" && "empath-badge"
                       )}>
                         <i className={`${badge.icon} text-2xl`}></i>
                       </div>

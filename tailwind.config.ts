@@ -61,6 +61,24 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Harmony badge colors
+        harmony: {
+          purple: {
+            light: "#B794F6",
+            DEFAULT: "#805AD5",
+            dark: "#553C9A",
+          },
+          lavender: {
+            light: "#E9D8FD",
+            DEFAULT: "#B794F6",
+            dark: "#805AD5",
+          },
+          gold: {
+            light: "#F6E05E",
+            DEFAULT: "#D69E2E",
+            dark: "#B7791F",
+          },
+        },
       },
       keyframes: {
         "accordion-down": {
@@ -79,10 +97,35 @@ export default {
             height: "0",
           },
         },
+        "pulse-slow": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
+        },
+        "pulse-fast": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.6" },
+        },
+        "subtle-pulse": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(0.98)" },
+        },
+        "orbit": {
+          "0%": { transform: "rotate(0deg) translateX(25px) rotate(0deg)" },
+          "100%": { transform: "rotate(360deg) translateX(25px) rotate(-360deg)" },
+        },
+        "shimmer": {
+          "0%": { left: "-100%" },
+          "100%": { left: "100%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-slow": "pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "pulse-fast": "pulse-fast 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "subtle-pulse": "subtle-pulse 4s ease-in-out infinite",
+        "orbit": "orbit 15s linear infinite",
+        "shimmer": "shimmer 2s ease-in-out infinite",
       },
     },
   },

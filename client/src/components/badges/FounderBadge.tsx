@@ -29,7 +29,7 @@ export default function FounderBadge({
     // Use badge.icon if available
     if (badge.icon) {
       if (badge.icon === "dove") {
-        return <DoveIcon className="h-12 w-12" />;
+        return <DoveIcon className="h-12 w-12 text-white" />;
       } else if (badge.icon === "shield") {
         return <Shield className="h-12 w-12" />;
       } else if (badge.icon === "award") {
@@ -42,37 +42,78 @@ export default function FounderBadge({
     return <Award className="h-12 w-12" />;
   };
 
+  // Level 2+ founder badges get particle effects
+  const isAscended = badge.level && badge.level >= 2;
+
   return (
     <div className={cn("flex flex-col items-center", className)}>
       <div
         className={cn(
-          "relative rounded-full flex items-center justify-center bg-gradient-to-r from-purple-500 via-purple-400 to-indigo-500",
+          "relative rounded-full flex items-center justify-center",
+          "bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600",
+          "hover:scale-105 transition-transform duration-300 ease-in-out",
           sizeClasses[size],
-          enhanced && "ring-4 ring-yellow-300 animate-pulse-slow"
+          enhanced && !isAscended && "founder-badge-glow",
+          enhanced && isAscended && "founder-badge-ascended"
         )}
       >
+        {/* Particles for ascended badges */}
+        {enhanced && isAscended && (
+          <div className="absolute inset-0 overflow-hidden rounded-full">
+            <div className="orbit-particle orbit-1"></div>
+            <div className="orbit-particle orbit-2"></div>
+            <div className="orbit-particle orbit-3"></div>
+            <div className="orbit-particle orbit-4"></div>
+            <div className="orbit-particle orbit-5"></div>
+          </div>
+        )}
+        
         {/* Fractal halo effect */}
-        <div className="absolute inset-0 rounded-full bg-white/20 backdrop-blur-sm"></div>
+        <div className="absolute inset-0 rounded-full bg-white/10 backdrop-blur-sm"></div>
         
         {/* Orb in the center */}
-        <div className="absolute w-3/4 h-3/4 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
-          <div className="text-white flex flex-col items-center justify-center">
+        <div className={cn(
+          "absolute w-3/4 h-3/4 rounded-full",
+          "bg-gradient-to-br from-violet-600 to-indigo-700",
+          "flex items-center justify-center",
+          "shadow-inner",
+          enhanced && "animate-subtle-pulse"
+        )}>
+          <div className="text-white flex flex-col items-center justify-center relative z-10">
             {getBadgeSymbol()}
             {size !== "sm" && (
-              <span className="font-bold text-sm mt-2">Founder</span>
+              <span className="font-bold text-sm mt-2">
+                {badge.level && badge.level > 1 ? `Founder L${badge.level}` : "Founder"}
+              </span>
             )}
           </div>
         </div>
         
         {/* Enhanced glow overlay */}
         {enhanced && (
-          <div className="absolute inset-0 rounded-full bg-yellow-500/20 blur-sm animate-pulse-slow"></div>
+          <div className={cn(
+            "absolute inset-0 rounded-full",
+            isAscended ? "bg-yellow-400/30 blur-lg" : "bg-violet-500/30 blur-md",
+            isAscended ? "animate-pulse-fast" : "animate-pulse-slow"
+          )}></div>
+        )}
+        
+        {/* Gold border for enhanced badges */}
+        {enhanced && (
+          <div className={cn(
+            "absolute inset-0 rounded-full border-2",
+            isAscended ? "border-yellow-300" : "border-violet-300",
+            "opacity-70"
+          )}></div>
         )}
       </div>
       
       {/* Badge info displayed below the badge */}
       <div className="mt-3 text-center">
-        <h3 className="font-bold text-base">{badge.name}</h3>
+        <h3 className={cn(
+          "font-bold text-base",
+          enhanced && "text-gradient bg-gradient-to-r from-purple-600 via-indigo-500 to-blue-500"
+        )}>{badge.name}</h3>
         <p className="text-xs text-muted-foreground">{badge.category}</p>
       </div>
     </div>

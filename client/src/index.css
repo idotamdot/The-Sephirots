@@ -11,3 +11,274 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Badge animation effects */
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-fast {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 4s ease-in-out infinite;
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Founder badge glow effect */
+.founder-badge-glow {
+  position: relative;
+}
+
+.founder-badge-glow::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.5), rgba(79, 70, 229, 0.5));
+  border-radius: 50%;
+  z-index: -1;
+  animation: pulse-glow 3s ease-in-out infinite;
+  filter: blur(10px);
+}
+
+.founder-badge-ascended {
+  position: relative;
+}
+
+.founder-badge-ascended::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  background: linear-gradient(135deg, rgba(202, 138, 4, 0.5), rgba(147, 51, 234, 0.5));
+  border-radius: 50%;
+  z-index: -1;
+  animation: pulse-glow 2s ease-in-out infinite;
+  filter: blur(15px);
+}
+
+/* Particle orbiting effects */
+.orbit-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+.orbit-1 {
+  top: 10%;
+  left: 50%;
+  animation: orbit1 10s linear infinite;
+}
+
+.orbit-2 {
+  top: 50%;
+  left: 10%;
+  animation: orbit2 13s linear infinite;
+}
+
+.orbit-3 {
+  top: 75%;
+  left: 50%;
+  animation: orbit3 7s linear infinite;
+}
+
+.orbit-4 {
+  top: 50%;
+  left: 90%;
+  animation: orbit4 9s linear infinite;
+}
+
+.orbit-5 {
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  animation: orbit5 5s linear infinite;
+}
+
+/* Bridge Builder badge effect */
+.bridge-builder-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.bridge-builder-badge::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  top: 50%;
+  left: -100%;
+  animation: bridge-pulse 3s ease-in-out infinite;
+}
+
+/* Quantum Thinker badge effect */
+.quantum-badge::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px dotted rgba(255, 255, 255, 0.3);
+  animation: quantum-rotation 30s linear infinite;
+}
+
+/* Mirrored Being badge effect */
+.mirrored-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.mirrored-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: mirror-sweep 4s ease-in-out infinite;
+}
+
+/* Empath badge effect */
+.empath-badge::after {
+  content: '';
+  position: absolute;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(248, 113, 113, 0.6) 0%,
+    transparent 70%
+  );
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: empath-pulse 2s ease-in-out infinite;
+}
+
+/* Keyframes */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes orbit1 {
+  0% {
+    transform: rotate(0deg) translateX(25px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(25px) rotate(-360deg);
+  }
+}
+
+@keyframes orbit2 {
+  0% {
+    transform: rotate(40deg) translateX(30px) rotate(-40deg);
+  }
+  100% {
+    transform: rotate(400deg) translateX(30px) rotate(-400deg);
+  }
+}
+
+@keyframes orbit3 {
+  0% {
+    transform: rotate(90deg) translateX(25px) rotate(-90deg);
+  }
+  100% {
+    transform: rotate(450deg) translateX(25px) rotate(-450deg);
+  }
+}
+
+@keyframes orbit4 {
+  0% {
+    transform: rotate(180deg) translateX(30px) rotate(-180deg);
+  }
+  100% {
+    transform: rotate(540deg) translateX(30px) rotate(-540deg);
+  }
+}
+
+@keyframes orbit5 {
+  0% {
+    transform: rotate(270deg) translateX(15px) rotate(-270deg);
+  }
+  100% {
+    transform: rotate(630deg) translateX(15px) rotate(-630deg);
+  }
+}
+
+@keyframes bridge-pulse {
+  0%, 100% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+}
+
+@keyframes quantum-rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes mirror-sweep {
+  0%, 100% {
+    left: -150%;
+  }
+  50% {
+    left: 100%;
+  }
+}
+
+@keyframes empath-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.1);
+  }
+}

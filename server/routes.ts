@@ -44,6 +44,60 @@ function handleZodError(err: unknown, res: Response) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Community stats API for the Cosmic Background Mood Synchronizer
+  app.get('/api/community-stats', async (req, res) => {
+    try {
+      // For this endpoint, we'll aggregate stats from various parts of the platform
+      const users = await storage.getUsers();
+      const discussions = await storage.getDiscussions();
+      const proposals = await storage.getProposals();
+      
+      // Calculate active users (logged in within last 24h)
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      
+      const activeUsersCount = users.filter(user => {
+        // If lastLoginAt is available, use it; otherwise fall back to user creation date
+        const lastActivity = user.lastLoginAt || user.createdAt;
+        return new Date(lastActivity) > oneDayAgo;
+      }).length;
+      
+      // Get recently active discussions (comments in last 48h)
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      
+      const recentlyActiveDiscussions = discussions.filter(discussion => {
+        return new Date(discussion.updatedAt) > twoDaysAgo;
+      }).length;
+      
+      // Get proposal stats
+      const inProgressProposals = proposals.filter(proposal => 
+        proposal.status === 'active' || proposal.status === 'voting'
+      ).length;
+      
+      const recentlyApprovedProposals = proposals.filter(proposal => {
+        const approvedRecently = proposal.status === 'approved' && 
+                               new Date(proposal.updatedAt) > twoDaysAgo;
+        return approvedRecently;
+      }).length;
+      
+      res.json({
+        activeUsers: activeUsersCount,
+        discussions: {
+          total: discussions.length,
+          recentlyActive: recentlyActiveDiscussions
+        },
+        proposals: {
+          total: proposals.length,
+          inProgress: inProgressProposals,
+          recentlyApproved: recentlyApprovedProposals
+        }
+      });
+    } catch (error) {
+      console.error('Error getting community stats:', error);
+      res.status(500).json({ error: 'Failed to get community stats' });
+    }
+  });
   // Health check endpoint
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok" });

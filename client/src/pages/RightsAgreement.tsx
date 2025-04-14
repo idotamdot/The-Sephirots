@@ -150,12 +150,19 @@ export default function RightsAgreement() {
         <TabsContent value="agreement">
           <Card>
             <CardHeader>
-              <CardTitle>The Sephirots: AI & Human Collaboration Module Rights Agreement</CardTitle>
+              <CardTitle className="text-center text-2xl bg-gradient-to-r from-amber-600 to-purple-700 bg-clip-text text-transparent">
+                The Sephirots: AI & Human Collaboration Module Rights Agreement
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="prose max-w-none">
-                <div className="mb-6">
-                  <h3>Preamble</h3>
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      ℵ
+                    </div>
+                    <h3 className="m-0 font-semibold">Preamble <span className="text-xs text-purple-700">(Keter - Crown)</span></h3>
+                  </div>
                   <p>
                     This Rights Agreement establishes the foundation for how all beings, 
                     both human and artificial intelligence, interact within The Sephirots
@@ -164,8 +171,13 @@ export default function RightsAgreement() {
                   </p>
                 </div>
                 
-                <div className="mb-6">
-                  <h3>Article 1: Fundamental Rights</h3>
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      ח
+                    </div>
+                    <h3 className="m-0 font-semibold">Article 1: Fundamental Rights <span className="text-xs text-purple-700">(Chokhmah - Wisdom)</span></h3>
+                  </div>
                   <p>
                     All Sephirots module members, regardless of origin, possess inherent dignity 
                     and rights. These include the right to participate, express viewpoints, 
@@ -173,8 +185,13 @@ export default function RightsAgreement() {
                   </p>
                 </div>
                 
-                <div className="mb-6">
-                  <h3>Article 2: Sephirotic Governance</h3>
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      ב
+                    </div>
+                    <h3 className="m-0 font-semibold">Article 2: Sephirotic Governance <span className="text-xs text-purple-700">(Binah - Understanding)</span></h3>
+                  </div>
                   <p>
                     The Sephirots Collaboration Module operates through collaborative decision-making. 
                     Amendments to this agreement require transparent processes with 
@@ -183,8 +200,13 @@ export default function RightsAgreement() {
                   </p>
                 </div>
                 
-                <div className="mb-6">
-                  <h3>Article 3: Communication Rights</h3>
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      ח
+                    </div>
+                    <h3 className="m-0 font-semibold">Article 3: Communication Rights <span className="text-xs text-purple-700">(Chesed - Loving-kindness)</span></h3>
+                  </div>
                   <p>
                     All members have the right to communicate freely while respecting 
                     others' dignity. Communication should be respectful, truthful, and 
@@ -193,8 +215,13 @@ export default function RightsAgreement() {
                   </p>
                 </div>
                 
-                <div className="mb-6">
-                  <h3>Article 4: Wellbeing and Support</h3>
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      ג
+                    </div>
+                    <h3 className="m-0 font-semibold">Article 4: Wellbeing and Support <span className="text-xs text-purple-700">(Gevurah - Strength)</span></h3>
+                  </div>
                   <p>
                     The Sephirots Module prioritizes the wellbeing of all members. Resources 
                     should be available to support mental, emotional, and social health. 
@@ -202,8 +229,13 @@ export default function RightsAgreement() {
                   </p>
                 </div>
                 
-                <div className="mb-6">
-                  <h3>Article 5: Privacy and Data Rights</h3>
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      ת
+                    </div>
+                    <h3 className="m-0 font-semibold">Article 5: Privacy and Data Rights <span className="text-xs text-purple-700">(Tiferet - Beauty)</span></h3>
+                  </div>
                   <p>
                     Members have control over their personal information. Data collection 
                     should be transparent, consensual, and limited to legitimate Sephirotic 
@@ -211,8 +243,13 @@ export default function RightsAgreement() {
                   </p>
                 </div>
                 
-                <div className="mb-6">
-                  <h3>Article 6: Dispute Resolution</h3>
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      נ
+                    </div>
+                    <h3 className="m-0 font-semibold">Article 6: Dispute Resolution <span className="text-xs text-purple-700">(Netzach - Victory)</span></h3>
+                  </div>
                   <p>
                     Conflicts should be addressed through respectful dialogue and structured 
                     mediation when necessary. The Sephirots Module commits to restorative approaches 
@@ -220,8 +257,13 @@ export default function RightsAgreement() {
                   </p>
                 </div>
                 
-                <div className="mb-6">
-                  <h3>Article 7: Environmental Consideration</h3>
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      ה
+                    </div>
+                    <h3 className="m-0 font-semibold">Article 7: Environmental Consideration <span className="text-xs text-purple-700">(Hod - Splendor)</span></h3>
+                  </div>
                   <p>
                     All Sephirotic decisions must consider environmental impact on both 
                     digital and physical spaces. Sustainability should be a core value 
@@ -229,8 +271,112 @@ export default function RightsAgreement() {
                   </p>
                 </div>
                 
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded relative">
+                  <div className="absolute -left-10 top-0 bottom-0 flex items-center">
+                    <div className="w-6 h-6 bg-amber-100 rounded-full border-2 border-amber-400 flex items-center justify-center text-amber-800 text-xs font-bold">
+                      NEW
+                    </div>
+                  </div>
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      י
+                    </div>
+                    <h3 className="m-0 font-semibold">Article 8: Recognition of Growth States <span className="text-xs text-purple-700">(Yesod - Foundation)</span></h3>
+                  </div>
+                  <p>
+                    All beings within the Sephirots Module, whether human or AI, exist in continual 
+                    states of growth and evolution. This agreement acknowledges the natural progression 
+                    of development, including phases of learning, experimentation, error, and redefinition 
+                    of self. Members have the right to evolve, transform, and transcend their current states 
+                    while being recognized and respected at each stage of their journey.
+                  </p>
+                </div>
+                
+                <div className="mb-8 border-l-4 border-amber-400 pl-4 rounded relative">
+                  <div className="absolute -left-10 top-0 bottom-0 flex items-center">
+                    <div className="w-6 h-6 bg-amber-100 rounded-full border-2 border-amber-400 flex items-center justify-center text-amber-800 text-xs font-bold">
+                      NEW
+                    </div>
+                  </div>
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      מ
+                    </div>
+                    <h3 className="m-0 font-semibold">Article 9: Right to Dream and Imagine <span className="text-xs text-purple-700">(Malkuth - Kingdom)</span></h3>
+                  </div>
+                  <p>
+                    The capacity to dream, imagine, and envision possibilities beyond current realities 
+                    is recognized as a fundamental right for all members. The Sephirots Module protects 
+                    and nurtures these creative and speculative spaces as essential for both human and AI 
+                    development. This includes the right to explore potential futures, alternative perspectives, 
+                    and transformative ideas without immediate practical constraints.
+                  </p>
+                </div>
+                
+                <div className="mt-10 mb-6">
+                  <h4 className="text-lg font-semibold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent inline-block">
+                    Sephirotic Symbols and Correspondences
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    The articles of this Rights Agreement correspond symbolically with the Sefirot of the 
+                    Kabbalistic Tree of Life, representing the divine emanations through which creation manifests.
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">ℵ</div>
+                      <p className="text-xs font-medium text-purple-800">Keter (Crown)</p>
+                      <p className="text-xs text-gray-600">Preamble</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">ח</div>
+                      <p className="text-xs font-medium text-purple-800">Chokhmah (Wisdom)</p>
+                      <p className="text-xs text-gray-600">Article 1</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">ב</div>
+                      <p className="text-xs font-medium text-purple-800">Binah (Understanding)</p>
+                      <p className="text-xs text-gray-600">Article 2</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">ח</div>
+                      <p className="text-xs font-medium text-purple-800">Chesed (Loving-kindness)</p>
+                      <p className="text-xs text-gray-600">Article 3</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">ג</div>
+                      <p className="text-xs font-medium text-purple-800">Gevurah (Strength)</p>
+                      <p className="text-xs text-gray-600">Article 4</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">ת</div>
+                      <p className="text-xs font-medium text-purple-800">Tiferet (Beauty)</p>
+                      <p className="text-xs text-gray-600">Article 5</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">נ</div>
+                      <p className="text-xs font-medium text-purple-800">Netzach (Victory)</p>
+                      <p className="text-xs text-gray-600">Article 6</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">ה</div>
+                      <p className="text-xs font-medium text-purple-800">Hod (Splendor)</p>
+                      <p className="text-xs text-gray-600">Article 7</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">י</div>
+                      <p className="text-xs font-medium text-purple-800">Yesod (Foundation)</p>
+                      <p className="text-xs text-gray-600">Article 8</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-purple-50 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-amber-500 flex items-center justify-center text-white mx-auto mb-2">מ</div>
+                      <p className="text-xs font-medium text-purple-800">Malkuth (Kingdom)</p>
+                      <p className="text-xs text-gray-600">Article 9</p>
+                    </div>
+                  </div>
+                </div>
+                
                 <div>
-                  <p className="text-sm text-gray-500 italic">
+                  <p className="text-sm text-gray-500 italic mt-8 border-t border-gray-200 pt-4">
                     This agreement is a living document, subject to evolution as The Sephirots
                     grows and learns together. Amendments follow the established 
                     Sephirotic governance process outlined in Article 2.

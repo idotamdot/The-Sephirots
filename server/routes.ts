@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import openai from "./openai";
 import { ModerationService } from "./moderation";
 import { getAIPerspective } from "./aiPerspective";
+import Stripe from "stripe";
 import { 
   insertUserSchema, 
   insertDiscussionSchema, 
@@ -1788,6 +1789,110 @@ app.post("/api/ai/perspective", async (req, res) => {
       res.status(500).json({ message: "Failed to fetch mind map template" });
     }
   });
+
+  // ===== DONATION ROUTES =====
+  
+  // Initialize Stripe
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+  } else {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2023-10-16"
+    });
+    
+    // Create payment intent for donation
+    app.post("/api/create-donation-intent", async (req, res) => {
+      try {
+        const { amount, tierId } = req.body;
+        
+        if (!amount || amount < 1) {
+          return res.status(400).json({ 
+            error: "Invalid amount. Must be at least 1 cent."
+          });
+        }
+        
+        // Create the payment intent with Stripe
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: amount, // Amount is already in cents
+          currency: "usd",
+          metadata: {
+            tierId,
+            donationType: "one-time"
+          }
+        });
+        
+        // Return the client secret for the frontend to complete the payment
+        res.json({ 
+          clientSecret: paymentIntent.client_secret,
+          paymentIntentId: paymentIntent.id
+        });
+      } catch (error) {
+        console.error("Error creating payment intent:", error);
+        res.status(500).json({ 
+          error: "Failed to initialize donation process."
+        });
+      }
+    });
+    
+    // Get donation payment status
+    app.get("/api/donation-status", async (req, res) => {
+      try {
+        const { payment_intent } = req.query;
+        
+        if (!payment_intent || typeof payment_intent !== 'string') {
+          return res.status(400).json({ 
+            error: "Payment intent ID is required"
+          });
+        }
+        
+        // Retrieve the payment intent from Stripe
+        const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent);
+        
+        res.json({
+          status: paymentIntent.status,
+          amount: paymentIntent.amount,
+          metadata: paymentIntent.metadata
+        });
+      } catch (error) {
+        console.error("Error retrieving payment status:", error);
+        res.status(500).json({ 
+          error: "Failed to retrieve donation status."
+        });
+      }
+    });
+    
+    // Webhook handler for Stripe events
+    app.post("/api/webhooks/stripe", async (req, res) => {
+      const sig = req.headers['stripe-signature'];
+      
+      try {
+        // Note: In production, you'd need to retrieve and verify the webhook secret
+        // const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+        const event = req.body;
+        
+        // Handle payment success
+        if (event.type === 'payment_intent.succeeded') {
+          const paymentIntent = event.data.object;
+          
+          // Log the successful donation
+          console.log('Payment succeeded:', paymentIntent.id);
+          
+          // Here you would:
+          // 1. Record the donation in your database
+          // 2. Update user's donation history/status if applicable
+          // 3. Trigger any rewards/badges for the donation
+          
+          // For now, we'll just log it
+          console.log(`Successful donation of $${paymentIntent.amount / 100} (${paymentIntent.metadata.tierId})`);
+        }
+        
+        res.json({ received: true });
+      } catch (error) {
+        console.error('Webhook error:', error);
+        res.status(400).send(`Webhook error: ${error.message}`);
+      }
+    });
+  }
 
   return httpServer;
 }

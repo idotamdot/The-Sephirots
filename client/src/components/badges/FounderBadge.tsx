@@ -50,7 +50,7 @@ export default function FounderBadge({
       <div
         className={cn(
           "relative rounded-full flex items-center justify-center",
-          "bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600",
+          "bg-gradient-to-r from-sephirot-keter-dark via-sephirot-keter-DEFAULT to-sephirot-keter-light",
           "hover:scale-105 transition-transform duration-300 ease-in-out",
           sizeClasses[size],
           enhanced && "founder-badge",
@@ -75,7 +75,7 @@ export default function FounderBadge({
         {/* Orb in the center */}
         <div className={cn(
           "absolute w-3/4 h-3/4 rounded-full",
-          "bg-gradient-to-br from-violet-600 to-indigo-700",
+          "bg-gradient-to-br from-amber-500 to-yellow-600",
           "flex items-center justify-center",
           "shadow-inner",
           enhanced && "animate-subtle-pulse"
@@ -94,7 +94,7 @@ export default function FounderBadge({
         {enhanced && (
           <div className={cn(
             "absolute inset-0 rounded-full",
-            isAscended ? "bg-yellow-400/30 blur-lg" : "bg-violet-500/30 blur-md",
+            isAscended ? "bg-sephirot-keter-light/40 blur-lg" : "bg-sephirot-keter-DEFAULT/30 blur-md",
             isAscended ? "animate-pulse-fast" : "animate-pulse-slow"
           )}></div>
         )}
@@ -103,7 +103,7 @@ export default function FounderBadge({
         {enhanced && (
           <div className={cn(
             "absolute -inset-2 rounded-full opacity-40",
-            isAscended ? "bg-yellow-400/20 blur-xl" : "bg-violet-500/20 blur-xl",
+            isAscended ? "bg-sephirot-keter-light/30 blur-xl" : "bg-sephirot-keter-DEFAULT/20 blur-xl",
             "animate-pulse-slow"
           )}></div>
         )}
@@ -112,7 +112,7 @@ export default function FounderBadge({
         {enhanced && (
           <div className={cn(
             "absolute inset-0 rounded-full border-2",
-            isAscended ? "border-yellow-300" : "border-violet-300",
+            isAscended ? "border-sephirot-keter-light" : "border-sephirot-keter-DEFAULT",
             "opacity-70"
           )}></div>
         )}
@@ -122,7 +122,7 @@ export default function FounderBadge({
       <div className="mt-3 text-center">
         <h3 className={cn(
           "font-bold text-base",
-          enhanced && "text-gradient bg-gradient-to-r from-purple-600 via-indigo-500 to-blue-500"
+          enhanced && "text-gradient bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-400"
         )}>{badge.name}</h3>
         <p className="text-xs text-muted-foreground">{badge.category}</p>
       </div>
@@ -130,7 +130,7 @@ export default function FounderBadge({
   );
 }
 
-// Custom dove icon for the Harmony Founder badge
+// Custom dove icon for the Sephirots Founder (Keter) badge
 function DoveIcon({ className }: { className?: string }) {
   return (
     <svg 

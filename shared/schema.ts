@@ -471,5 +471,129 @@ export type InsertModerationAppeal = z.infer<typeof insertModerationAppealSchema
 export type ModerationSetting = typeof moderationSettings.$inferSelect;
 export type InsertModerationSetting = z.infer<typeof insertModerationSettingSchema>;
 
+// MindMap schema
+export const mindMapNodeTypeEnum = pgEnum("mindmap_node_type", [
+  "concept",
+  "insight",
+  "question",
+  "experience",
+  "connection"
+]);
+
+export const mindMaps = pgTable("mind_maps", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  createdBy: integer("created_by").notNull(), // User ID
+  category: text("category").notNull(),
+  isPublic: boolean("is_public").notNull().default(true),
+  isCollaborative: boolean("is_collaborative").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertMindMapSchema = createInsertSchema(mindMaps).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const mindMapNodes = pgTable("mindmap_nodes", {
+  id: serial("id").primaryKey(),
+  mindMapId: integer("mindmap_id").notNull(),
+  nodeId: text("node_id").notNull(), // Client-side UUID for easy reference
+  type: mindMapNodeTypeEnum("type").notNull(),
+  content: text("content").notNull(),
+  x: integer("x").notNull(),
+  y: integer("y").notNull(),
+  color: text("color").notNull(),
+  size: integer("size").notNull().default(100),
+  createdBy: integer("created_by").notNull(),
+  attributes: text("attributes").notNull().default("{}"), // Stored as JSON string
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertMindMapNodeSchema = createInsertSchema(mindMapNodes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const connectionStyleEnum = pgEnum("connection_style", [
+  "solid",
+  "dashed",
+  "dotted",
+  "wavy"
+]);
+
+export const mindMapConnections = pgTable("mindmap_connections", {
+  id: serial("id").primaryKey(),
+  mindMapId: integer("mindmap_id").notNull(),
+  connectionId: text("connection_id").notNull(), // Client-side UUID for easy reference
+  sourceNodeId: text("source_node_id").notNull(), // References nodeId from mindMapNodes
+  targetNodeId: text("target_node_id").notNull(), // References nodeId from mindMapNodes
+  label: text("label"),
+  color: text("color").notNull(),
+  thickness: integer("thickness").notNull().default(2),
+  style: connectionStyleEnum("style").notNull().default("solid"),
+  createdBy: integer("created_by").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertMindMapConnectionSchema = createInsertSchema(mindMapConnections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const mindMapCollaborators = pgTable("mindmap_collaborators", {
+  id: serial("id").primaryKey(),
+  mindMapId: integer("mindmap_id").notNull(),
+  userId: integer("user_id").notNull(),
+  canEdit: boolean("can_edit").notNull().default(true),
+  addedBy: integer("added_by").notNull(),
+  addedAt: timestamp("added_at").notNull().defaultNow(),
+});
+
+export const insertMindMapCollaboratorSchema = createInsertSchema(mindMapCollaborators).omit({
+  id: true,
+  addedAt: true,
+});
+
+export const mindMapTemplates = pgTable("mindmap_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(),
+  createdBy: integer("created_by").notNull(),
+  nodeData: text("node_data").notNull(), // JSON string of node templates
+  connectionData: text("connection_data").notNull(), // JSON string of connection templates
+  isPublic: boolean("is_public").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertMindMapTemplateSchema = createInsertSchema(mindMapTemplates).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Export mindmap types
+export type MindMap = typeof mindMaps.$inferSelect;
+export type InsertMindMap = z.infer<typeof insertMindMapSchema>;
+
+export type MindMapNode = typeof mindMapNodes.$inferSelect;
+export type InsertMindMapNode = z.infer<typeof insertMindMapNodeSchema>;
+
+export type MindMapConnection = typeof mindMapConnections.$inferSelect;
+export type InsertMindMapConnection = z.infer<typeof insertMindMapConnectionSchema>;
+
+export type MindMapCollaborator = typeof mindMapCollaborators.$inferSelect;
+export type InsertMindMapCollaborator = z.infer<typeof insertMindMapCollaboratorSchema>;
+
+export type MindMapTemplate = typeof mindMapTemplates.$inferSelect;
+export type InsertMindMapTemplate = z.infer<typeof insertMindMapTemplateSchema>;
+
 // We'll define relationships between tables later when needed
 // For now, this basic schema is sufficient for creating the tables

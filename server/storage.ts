@@ -263,6 +263,12 @@ export class MemStorage implements IStorage {
   private mindMapTemplates: Map<number, MindMapTemplate>;
   private mindMapTemplateId: number;
   
+  // Cosmic Reaction related properties
+  private cosmicReactions: Map<number, CosmicReaction>;
+  private cosmicReactionId: number;
+  private cosmicEmojiMetadata: Map<number, CosmicEmojiMetadata>;
+  private cosmicEmojiMetadataId: number;
+  
   constructor() {
     this.users = new Map();
     this.userId = 1;
@@ -330,6 +336,105 @@ export class MemStorage implements IStorage {
     this.mindMapCollaboratorId = 1;
     this.mindMapTemplates = new Map();
     this.mindMapTemplateId = 1;
+    
+    // Initialize cosmic reaction data structures
+    this.cosmicReactions = new Map();
+    this.cosmicReactionId = 1;
+    this.cosmicEmojiMetadata = new Map();
+    this.cosmicEmojiMetadataId = 1;
+    
+    // Add initial cosmic emoji metadata
+    const emojiTypes = [
+      {
+        id: this.cosmicEmojiMetadataId++,
+        emojiType: "star_of_awe",
+        displayEmoji: "✨",
+        tooltip: "Star of Awe - Keter",
+        description: "Represents the crown and highest potential. Share when deeply inspired.",
+        sephiroticPath: "Keter",
+        pointsGranted: 3,
+        animationClass: "star-animation",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: this.cosmicEmojiMetadataId++,
+        emojiType: "crescent_of_peace",
+        displayEmoji: "🌙",
+        tooltip: "Crescent of Peace - Chokhmah",
+        description: "Represents wisdom and harmony. Share when feeling peaceful resonance.",
+        sephiroticPath: "Chokhmah",
+        pointsGranted: 2,
+        animationClass: "crescent-animation",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: this.cosmicEmojiMetadataId++,
+        emojiType: "flame_of_passion",
+        displayEmoji: "🔥",
+        tooltip: "Flame of Passion - Gevurah",
+        description: "Represents strength and passion. Share when feeling energized.",
+        sephiroticPath: "Gevurah",
+        pointsGranted: 2,
+        animationClass: "flame-animation",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: this.cosmicEmojiMetadataId++,
+        emojiType: "drop_of_compassion",
+        displayEmoji: "💧",
+        tooltip: "Drop of Compassion - Chesed",
+        description: "Represents loving-kindness. Share when touched by compassion.",
+        sephiroticPath: "Chesed",
+        pointsGranted: 2,
+        animationClass: "drop-animation",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: this.cosmicEmojiMetadataId++,
+        emojiType: "leaf_of_growth",
+        displayEmoji: "🌱",
+        tooltip: "Leaf of Growth - Netzach",
+        description: "Represents endurance and growth. Share when inspired to grow.",
+        sephiroticPath: "Netzach",
+        pointsGranted: 2,
+        animationClass: "leaf-animation",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: this.cosmicEmojiMetadataId++,
+        emojiType: "spiral_of_mystery",
+        displayEmoji: "🌀",
+        tooltip: "Spiral of Mystery - Yesod",
+        description: "Represents the foundation and mystery. Share when encountering profound mystery.",
+        sephiroticPath: "Yesod",
+        pointsGranted: 2,
+        animationClass: "spiral-animation",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: this.cosmicEmojiMetadataId++,
+        emojiType: "mirror_of_insight",
+        displayEmoji: "🪞",
+        tooltip: "Mirror of Insight - Binah",
+        description: "Represents understanding and insight. Share when experiencing a revelation.",
+        sephiroticPath: "Binah",
+        pointsGranted: 2,
+        animationClass: "mirror-animation",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+    
+    // Store emoji metadata
+    emojiTypes.forEach(emoji => {
+      this.cosmicEmojiMetadata.set(emoji.id, emoji);
+    });
     
     // Add a sample user
     const user: User = {
@@ -1455,6 +1560,145 @@ export class MemStorage implements IStorage {
     
     this.mindMapTemplates.set(id, mindMapTemplate);
     return mindMapTemplate;
+  }
+  
+  // Cosmic Reaction methods
+  async getCosmicReactionsByContent(contentId: number, contentType: string): Promise<CosmicReaction[]> {
+    return Array.from(this.cosmicReactions.values()).filter(
+      reaction => reaction.contentId === contentId && reaction.contentType === contentType
+    );
+  }
+  
+  async getUserCosmicReactionOnContent(userId: number, contentId: number, contentType: string, emojiType: string): Promise<CosmicReaction | undefined> {
+    return Array.from(this.cosmicReactions.values()).find(
+      reaction => 
+        reaction.userId === userId && 
+        reaction.contentId === contentId && 
+        reaction.contentType === contentType &&
+        reaction.emojiType === emojiType
+    );
+  }
+  
+  async createCosmicReaction(reaction: InsertCosmicReaction): Promise<CosmicReaction> {
+    // Check if the user already reacted with this emoji type on this content
+    const existingReaction = await this.getUserCosmicReactionOnContent(
+      reaction.userId, 
+      reaction.contentId, 
+      reaction.contentType,
+      reaction.emojiType
+    );
+    
+    if (existingReaction) {
+      // If the user already reacted, return existing reaction
+      return existingReaction;
+    }
+    
+    // Create new reaction
+    const newReaction: CosmicReaction = {
+      id: this.cosmicReactionId++,
+      ...reaction,
+      createdAt: new Date()
+    };
+    this.cosmicReactions.set(newReaction.id, newReaction);
+    
+    // Update user points if there's emoji metadata with points
+    const emojiMetadata = Array.from(this.cosmicEmojiMetadata.values()).find(
+      meta => meta.emojiType === reaction.emojiType
+    );
+    
+    if (emojiMetadata && reaction.contentType === "discussion") {
+      // Get the discussion to find the author
+      const discussion = this.discussions.get(reaction.contentId);
+      if (discussion) {
+        // Add points to the discussion author
+        await this.updateUserPoints(discussion.userId, emojiMetadata.pointsGranted);
+      }
+    } else if (emojiMetadata && reaction.contentType === "comment") {
+      // Get the comment to find the author
+      const comment = this.comments.get(reaction.contentId);
+      if (comment) {
+        // Add points to the comment author
+        await this.updateUserPoints(comment.userId, emojiMetadata.pointsGranted);
+      }
+    }
+    
+    return newReaction;
+  }
+  
+  async deleteCosmicReaction(id: number): Promise<void> {
+    // Get the reaction first to access its data before deletion
+    const reaction = this.cosmicReactions.get(id);
+    if (!reaction) {
+      throw new Error(`Cosmic reaction with ID ${id} not found`);
+    }
+    
+    // Delete the reaction
+    this.cosmicReactions.delete(id);
+    
+    // Remove points if there's emoji metadata with points
+    const emojiMetadata = Array.from(this.cosmicEmojiMetadata.values()).find(
+      meta => meta.emojiType === reaction.emojiType
+    );
+    
+    if (emojiMetadata && reaction.contentType === "discussion") {
+      // Get the discussion to find the author
+      const discussion = this.discussions.get(reaction.contentId);
+      if (discussion) {
+        // Remove points from the discussion author (negative points)
+        await this.updateUserPoints(discussion.userId, -emojiMetadata.pointsGranted);
+      }
+    } else if (emojiMetadata && reaction.contentType === "comment") {
+      // Get the comment to find the author
+      const comment = this.comments.get(reaction.contentId);
+      if (comment) {
+        // Remove points from the comment author (negative points)
+        await this.updateUserPoints(comment.userId, -emojiMetadata.pointsGranted);
+      }
+    }
+  }
+  
+  // Cosmic Emoji Metadata methods
+  async getCosmicEmojiMetadata(): Promise<CosmicEmojiMetadata[]> {
+    return Array.from(this.cosmicEmojiMetadata.values());
+  }
+  
+  async getCosmicEmojiMetadataByType(emojiType: string): Promise<CosmicEmojiMetadata | undefined> {
+    return Array.from(this.cosmicEmojiMetadata.values()).find(
+      metadata => metadata.emojiType === emojiType
+    );
+  }
+  
+  async createCosmicEmojiMetadata(metadata: InsertCosmicEmojiMetadata): Promise<CosmicEmojiMetadata> {
+    // Check if metadata for this emoji type already exists
+    const existingMetadata = await this.getCosmicEmojiMetadataByType(metadata.emojiType);
+    if (existingMetadata) {
+      return existingMetadata;
+    }
+    
+    const timestamp = new Date();
+    const newMetadata: CosmicEmojiMetadata = {
+      id: this.cosmicEmojiMetadataId++,
+      ...metadata,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    this.cosmicEmojiMetadata.set(newMetadata.id, newMetadata);
+    return newMetadata;
+  }
+  
+  async updateCosmicEmojiMetadata(id: number, metadata: Partial<CosmicEmojiMetadata>): Promise<CosmicEmojiMetadata> {
+    const existingMetadata = this.cosmicEmojiMetadata.get(id);
+    if (!existingMetadata) {
+      throw new Error(`Cosmic emoji metadata with ID ${id} not found`);
+    }
+    
+    const updatedMetadata = { 
+      ...existingMetadata, 
+      ...metadata, 
+      updatedAt: new Date() 
+    };
+    this.cosmicEmojiMetadata.set(id, updatedMetadata);
+    return updatedMetadata;
   }
 }
 

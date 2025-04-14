@@ -413,6 +413,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+  
+  // Get all rights agreement versions
+  app.get("/api/rights-agreement/versions", async (_req, res) => {
+    try {
+      const agreements = await storage.getRightsAgreements();
+      
+      if (!agreements || agreements.length === 0) {
+        return res.status(404).json({ error: "No rights agreements found" });
+      }
+      
+      // Sort by version number (descending)
+      const sortedAgreements = agreements.sort((a, b) => {
+        return parseFloat(b.version) - parseFloat(a.version);
+      });
+      
+      // Return basic info for each version
+      const versions = sortedAgreements.map(agreement => ({
+        id: agreement.id,
+        title: agreement.title,
+        version: agreement.version,
+        status: agreement.status,
+        createdAt: agreement.createdAt
+      }));
+      
+      res.json(versions);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get specific rights agreement by ID
+  app.get("/api/rights-agreement/:id", async (req, res) => {
+    try {
+      const agreementId = parseInt(req.params.id);
+      const agreement = await storage.getRightsAgreement(agreementId);
+      
+      if (!agreement) {
+        return res.status(404).json({ error: "Rights agreement not found" });
+      }
+      
+      // Get amendments for this agreement
+      const amendments = await storage.getAmendmentsByAgreement(agreement.id);
+      
+      res.json({
+        ...agreement,
+        amendments
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
 
   // Create rights agreement
   app.post("/api/rights-agreement", async (req, res) => {

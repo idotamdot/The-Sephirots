@@ -562,10 +562,6 @@ export class MemStorage implements IStorage {
   }
 
   // RightsAgreement methods
-  async getRightsAgreements(): Promise<RightsAgreement[]> {
-    return Array.from(this.rightsAgreements.values());
-  }
-
   async getLatestRightsAgreement(): Promise<RightsAgreement | undefined> {
     const agreements = Array.from(this.rightsAgreements.values());
     if (agreements.length === 0) return undefined;
@@ -574,6 +570,10 @@ export class MemStorage implements IStorage {
     return agreements.sort((a, b) => 
       b.createdAt.getTime() - a.createdAt.getTime()
     )[0];
+  }
+
+  async getRightsAgreements(): Promise<RightsAgreement[]> {
+    return Array.from(this.rightsAgreements.values());
   }
 
   async getRightsAgreement(id: number): Promise<RightsAgreement | undefined> {

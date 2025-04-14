@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { useState } from "react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface DiscussionPageProps {
   id: number;
@@ -23,7 +25,36 @@ export default function Discussion({ id }: DiscussionPageProps) {
     queryKey: ["/api/users/me"],
   });
   const [aiReply, setAiReply] = useState<string | null>(null);
-const [loadingAI, setLoadingAI] = useState(false);
+  const [loadingAI, setLoadingAI] = useState(false);
+  
+  // Function to request AI perspective
+  const requestAIPerspective = async () => {
+    if (!discussion) return;
+    
+    setLoadingAI(true);
+    try {
+      const response = await apiRequest('POST', '/api/ai/perspective', {
+        discussionText: discussion.content,
+        badges: ['Conversationalist', 'Bridge Builder'],
+        userContext: {
+          username: currentUser?.username || 'guest'
+        },
+        style: 'inspirational'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAiReply(data.message);
+      } else {
+        console.error('Error requesting AI perspective');
+      }
+    } catch (error) {
+      console.error('Error requesting AI perspective:', error);
+    } finally {
+      setLoadingAI(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 md:p-6 space-y-6">
@@ -73,32 +104,28 @@ const [loadingAI, setLoadingAI] = useState(false);
           </Link>
         </Button>
       </div>
+      
+      {/* AI Perspective Section */}
       {currentUser && (
-        <div className="mb-4 flex items-center gap-4">
-          <Button onClick={requestAIPerspective} disabled={loadingAI}>
+        <div className="mb-4 flex flex-col gap-4">
+          <Button onClick={requestAIPerspective} disabled={loadingAI} className="self-start">
             {loadingAI ? "Asking Harmony AI..." : "Request AI Perspective"}
           </Button>
-{currentUser && (
-  <div className="mb-4 flex items-center gap-4">
-    <Button onClick={requestAIPerspective} disabled={loadingAI}>
-      {loadingAI ? "Asking Harmony AI..." : "Request AI Perspective"}
-    </Button>
 
-    {aiReply && (
-      <div className="bg-skyglow-light border border-skyglow-dark text-blue-900 p-6 rounded-xl shadow-xl animate-subtle-pulse max-w-2xl">
-        <i className="ri-sparkling-fill mr-2" />
-        Harmony AI: {aiReply}
-      </div>
-    )}
-</div>
-)}
+          {aiReply && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-900 p-6 rounded-xl shadow-xl max-w-2xl">
+              <i className="ri-sparkling-fill mr-2" />
+              Harmony AI: {aiReply}
+            </div>
+          )}
+        </div>
+      )}
           
-<DiscussionDetail discussion={discussion} />
+      <DiscussionDetail discussion={discussion} />
 
-<Card>
-  <CardHeader>
-    <CardTitle className="text-xl">
-
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">
             {discussion.comments?.length || 0} Responses
           </CardTitle>
         </CardHeader>

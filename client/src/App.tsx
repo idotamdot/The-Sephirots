@@ -6,6 +6,7 @@ import RightsAgreement from "@/pages/RightsAgreement";
 import CommunityNeeds from "@/pages/CommunityNeeds";
 import Wellbeing from "@/pages/Wellbeing";
 import Achievements from "@/pages/Achievements";
+import MysticalProgress from "@/pages/MysticalProgress";
 import Profile from "@/pages/Profile";
 import Governance from "@/pages/Governance";
 import ProposalDetail from "@/pages/ProposalDetail";

@@ -163,19 +163,21 @@ export default function BadgeGrid({
                           isBadgeEarned(badge.id) && badge.name === "Empath" && "empath-badge"
                         )}>
                           {/* Select the appropriate icon based on badge name */}
-                          {badge.name === "Conversationalist" ? (
-                            <MessageCircle className="h-6 w-6" />
-                          ) : badge.name === "Seeker" ? (
-                            <Search className="h-6 w-6" />
-                          ) : badge.name === "Contributor" ? (
-                            <Edit className="h-6 w-6" />
-                          ) : badge.name === "Activist" ? (
-                            <FileText className="h-6 w-6" />
-                          ) : badge.name === "Empath" ? (
-                            <Heart className="h-6 w-6" />
-                          ) : (
-                            <Award className="h-6 w-6" />
-                          )}
+                          <div className={isBadgeEarned(badge.id) ? "text-white" : ""}>
+                            {badge.name === "Conversationalist" ? (
+                              <MessageCircle className="h-6 w-6" />
+                            ) : badge.name === "Seeker" ? (
+                              <Search className="h-6 w-6" />
+                            ) : badge.name === "Contributor" ? (
+                              <Edit className="h-6 w-6" />
+                            ) : badge.name === "Activist" ? (
+                              <FileText className="h-6 w-6" />
+                            ) : badge.name === "Empath" ? (
+                              <Heart className="h-6 w-6" />
+                            ) : (
+                              <Award className="h-6 w-6" />
+                            )}
+                          </div>
                         </div>
                         <div className="mt-1 text-center">
                           <div className="text-xs font-medium">{badge.name}</div>
@@ -228,19 +230,21 @@ export default function BadgeGrid({
                       isBadgeEarned(badge.id) && badge.name === "Empath" && "empath-badge"
                     )}>
                       {/* Select the appropriate icon based on badge name */}
-                      {badge.name === "Conversationalist" ? (
-                        <MessageCircle className="h-6 w-6" />
-                      ) : badge.name === "Seeker" ? (
-                        <Search className="h-6 w-6" />
-                      ) : badge.name === "Contributor" ? (
-                        <Edit className="h-6 w-6" />
-                      ) : badge.name === "Activist" ? (
-                        <FileText className="h-6 w-6" />
-                      ) : badge.name === "Empath" ? (
-                        <Heart className="h-6 w-6" />
-                      ) : (
-                        <Award className="h-6 w-6" />
-                      )}
+                      <div className={isBadgeEarned(badge.id) ? "text-white" : ""}>
+                        {badge.name === "Conversationalist" ? (
+                          <MessageCircle className="h-6 w-6" />
+                        ) : badge.name === "Seeker" ? (
+                          <Search className="h-6 w-6" />
+                        ) : badge.name === "Contributor" ? (
+                          <Edit className="h-6 w-6" />
+                        ) : badge.name === "Activist" ? (
+                          <FileText className="h-6 w-6" />
+                        ) : badge.name === "Empath" ? (
+                          <Heart className="h-6 w-6" />
+                        ) : (
+                          <Award className="h-6 w-6" />
+                        )}
+                      </div>
                     </div>
                     <div className="mt-1 text-center">
                       <div className="text-xs font-medium">{badge.name}</div>

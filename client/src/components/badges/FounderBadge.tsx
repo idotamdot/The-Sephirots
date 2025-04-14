@@ -99,6 +99,15 @@ export default function FounderBadge({
           )}></div>
         )}
         
+        {/* Extra outer glow for more prominence - only for enhanced badges */}
+        {enhanced && (
+          <div className={cn(
+            "absolute -inset-2 rounded-full opacity-40",
+            isAscended ? "bg-yellow-400/20 blur-xl" : "bg-violet-500/20 blur-xl",
+            "animate-pulse-slow"
+          )}></div>
+        )}
+        
         {/* Gold border for enhanced badges */}
         {enhanced && (
           <div className={cn(

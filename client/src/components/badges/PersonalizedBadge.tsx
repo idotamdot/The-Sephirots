@@ -118,7 +118,7 @@ export default function PersonalizedBadge({
   const [personalizedSymbol, setPersonalizedSymbol] = useState<string | null>(null);
   
   const { data: userBadges } = useQuery({
-    queryKey: user ? [`/api/users/${user.id}/badges`] : null,
+    queryKey: user ? [`/api/users/${user.id}/badges`] : ["/api/badges/dummy"],
     enabled: !!user
   });
 
@@ -136,11 +136,11 @@ export default function PersonalizedBadge({
     if (user && badge) {
       // In a real implementation, would make API call to generate personalized symbol
       // For demo, we'll use a placeholder based on badge tier and user data
-      setPersonalizedSymbol(`${badge.tier.charAt(0).toUpperCase()}${user.id}`);
+      setPersonalizedSymbol(`${(badge.tier || 'bronze').charAt(0).toUpperCase()}${user.id}`);
     }
   }, [user, badge]);
 
-  const tierColors = BADGE_COLORS[badge.tier as keyof typeof BADGE_COLORS];
+  const tierColors = BADGE_COLORS[(badge.tier || 'bronze') as keyof typeof BADGE_COLORS];
   const sephirotColor = getSephirotColor(badge);
   const badgeSize = getBadgeSize(size);
   const category = extractCategoryFromName(badge);

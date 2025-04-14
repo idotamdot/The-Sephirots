@@ -52,18 +52,31 @@ export default function Register() {
     
     setIsLoading(true);
     try {
-      const response = await apiRequest("POST", "/api/register", {
-        username,
-        displayName,
-        password,
+      // Updated to use the new authentication endpoint
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          displayName,
+          password,
+          level: 1,
+          points: 0,
+          isAi: false
+        }),
+        credentials: "include" // Important for cookies/session
       });
       
       if (response.ok) {
+        const userData = await response.json();
         toast({
           title: "Registration Successful",
-          description: "Welcome to The Sephirots! You can now log in.",
+          description: `Welcome to The Sephirots, ${userData.displayName || username}!`,
         });
-        navigate("/login");
+        // User is now automatically logged in with a session
+        navigate("/");
       } else {
         const data = await response.json();
         throw new Error(data.error || "Registration failed");

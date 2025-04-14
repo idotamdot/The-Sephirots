@@ -29,16 +29,26 @@ export default function Login() {
     
     setIsLoading(true);
     try {
-      const response = await apiRequest("POST", "/api/login", {
-        username,
-        password,
+      // Updated to use the new authentication endpoint
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+        credentials: "include" // Important for cookies/session
       });
       
       if (response.ok) {
+        const userData = await response.json();
         toast({
           title: "Login Successful",
-          description: "Welcome back to The Sephirots!",
+          description: `Welcome back, ${userData.displayName || username}!`,
         });
+        // User is now logged in with a session, redirect to home
         navigate("/");
       } else {
         const data = await response.json();

@@ -32,6 +32,7 @@ import { User } from "@/lib/types";
 import { AudioProvider } from "@/components/audio/AudioContext";
 import AudioControl from "@/components/audio/AudioControl";
 import CosmicBackgroundSynchronizer from "@/components/cosmic/CosmicBackgroundSynchronizer";
+import { AuthProvider } from "@/hooks/use-auth";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -66,17 +67,18 @@ function App() {
   };
   
   return (
-    <AudioProvider>
-      <div className="relative min-h-screen overflow-hidden">
-        {/* Audio Control */}
-        <AudioControl />
-        
-        {/* ✨ Cosmic Background Mood Synchronizer */}
-        <CosmicBackgroundSynchronizer 
-          moodOverride={getMoodForPage()}
-          intensity={75}
-          interactive={true}
-        >
+    <AuthProvider>
+      <AudioProvider>
+        <div className="relative min-h-screen overflow-hidden">
+          {/* Audio Control */}
+          <AudioControl />
+          
+          {/* ✨ Cosmic Background Mood Synchronizer */}
+          <CosmicBackgroundSynchronizer 
+            moodOverride={getMoodForPage()}
+            intensity={75}
+            interactive={true}
+          >
           <div className="relative flex h-screen overflow-hidden z-10">
             {/* Sidebar */}
             <Sidebar open={sidebarOpen} onClose={closeSidebar} currentUser={currentUser} />
@@ -137,6 +139,7 @@ function App() {
         </CosmicBackgroundSynchronizer>
       </div>
     </AudioProvider>
+    </AuthProvider>
   );
 }
 

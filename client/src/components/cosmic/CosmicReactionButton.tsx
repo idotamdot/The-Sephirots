@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
+import './CosmicReactions.css';
 
 interface CosmicReactionButtonProps {
   emojiType: string;
@@ -23,23 +24,31 @@ const CosmicReactionButton = ({
   initialReacted = false,
   onReactionChange
 }: CosmicReactionButtonProps) => {
-  const [hasReacted, setHasReacted] = useState(initialReacted);
-  const [reactionCount, setReactionCount] = useState(count);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const { user, isAuthenticated } = useAuth();
+  const [reactionCount, setReactionCount] = useState<number>(count);
+  const [hasReacted, setHasReacted] = useState<boolean>(initialReacted);
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const { isAuthenticated } = useAuth();
 
-  // Apply animation class based on reaction count
+  // Set milestone class based on reaction count
   const getMilestoneClass = () => {
-    if (reactionCount >= 50) return 'milestone-3';
-    if (reactionCount >= 20) return 'milestone-2';
-    if (reactionCount >= 10) return 'milestone-1';
+    if (reactionCount >= 25) return 'milestone-3';
+    if (reactionCount >= 10) return 'milestone-2';
+    if (reactionCount >= 5) return 'milestone-1';
     return '';
   };
 
-  const toggleReaction = async () => {
+  // Get the CSS class for the emoji based on its type
+  const getEmojiClass = () => {
+    const baseClass = 'reaction-emoji';
+    // Convert the emoji type to a CSS-friendly class name
+    const typeClass = emojiType.replace(/_/g, '-');
+    return `${baseClass} ${typeClass}`;
+  };
+
+  const handleReaction = async () => {
     if (!isAuthenticated) {
-      // Optionally show login prompt
-      alert('Please log in to react to content');
+      // Handle non-authenticated user case
+      alert('Please sign in to react to content');
       return;
     }
 
@@ -47,58 +56,46 @@ const CosmicReactionButton = ({
       const response = await apiRequest('POST', '/api/cosmic-reactions/toggle', {
         emojiType,
         contentId,
-        contentType,
-        userId: user?.id
+        contentType
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const newHasReacted = !hasReacted;
-        const newCount = hasReacted ? reactionCount - 1 : reactionCount + 1;
-        
-        setHasReacted(newHasReacted);
-        setReactionCount(newCount);
-        
-        // Trigger animation when adding a reaction
-        if (newHasReacted) {
-          setIsAnimating(true);
-          setTimeout(() => setIsAnimating(false), 500);
-        }
-
-        // Notify parent component if callback provided
-        if (onReactionChange) {
-          onReactionChange(newCount, newHasReacted);
-        }
+      const data = await response.json();
+      
+      // Update state
+      setReactionCount(data.count);
+      setHasReacted(data.hasReacted);
+      setIsAnimating(true);
+      
+      // Notify parent component if callback provided
+      if (onReactionChange) {
+        onReactionChange(data.count, data.hasReacted);
       }
+      
+      // Reset animation flag after animation completes
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 500);
     } catch (error) {
       console.error('Error toggling reaction:', error);
     }
   };
 
-  // Animation class for the emoji
-  const getAnimationClass = () => {
-    if (isAnimating) return 'reaction-just-added';
-    return hasReacted ? `${emojiType.replace(/_/g, '-')} active` : '';
-  };
+  const buttonClasses = [
+    'cosmic-reaction-btn',
+    hasReacted ? 'reacted' : '',
+    getMilestoneClass(),
+    isAnimating ? 'reaction-just-added' : ''
+  ].filter(Boolean).join(' ');
 
   return (
-    <div 
-      className={`cosmic-reaction-btn ${hasReacted ? 'reacted' : ''} ${getMilestoneClass()}`}
-      onClick={toggleReaction}
-    >
-      <span className={`reaction-emoji ${getAnimationClass()}`}>
+    <div className={buttonClasses} onClick={handleReaction}>
+      <div className={getEmojiClass()}>
         {displayEmoji}
-      </span>
-      
-      {reactionCount > 0 && (
-        <span className="cosmic-reaction-count">
-          {reactionCount}
-        </span>
-      )}
-      
-      <div className="cosmic-tooltip">
-        {tooltip}
       </div>
+      {reactionCount > 0 && (
+        <div className="cosmic-reaction-count">{reactionCount}</div>
+      )}
+      <div className="cosmic-tooltip">{tooltip}</div>
     </div>
   );
 };

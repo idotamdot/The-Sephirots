@@ -75,6 +75,8 @@ export interface Amendment {
   createdAt: string;
 }
 
+export type BadgeTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'founder';
+
 export interface Badge {
   id: number;
   name: string;
@@ -82,6 +84,13 @@ export interface Badge {
   icon: string;
   requirement: string;
   category: string;
+  tier?: BadgeTier;
+  level?: number;
+  points?: number;
+  symbolism?: string;
+  isLimited?: boolean;
+  maxSupply?: number;
+  createdAt?: string;
 }
 
 export interface Event {
@@ -98,6 +107,9 @@ export interface UserBadge {
   userId: number;
   badgeId: number;
   earnedAt: string;
+  enhanced?: boolean;
+  completedCriteria?: string; // JSON string of completed criteria
+  issuedBy?: number; // User ID who issued this badge
 }
 
 export interface AmendmentAnalysis {

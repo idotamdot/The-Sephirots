@@ -2,6 +2,7 @@ import { Badge } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import FounderBadge from "@/components/badges/FounderBadge";
 
 interface BadgeGridProps {
   badges: Badge[];

@@ -24,15 +24,26 @@ import { useQuery } from "@tanstack/react-query";
 import { User } from "@/lib/types";
 import { AudioProvider } from "@/components/audio/AudioContext";
 import AudioControl from "@/components/audio/AudioControl";
+import StarfieldBackground from "@/components/mindmap/StarfieldBackground";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [starfieldSeed, setStarfieldSeed] = useState<number>(Date.now());
 
   const { data: currentUser, isLoading } = useQuery<User>({
     queryKey: ["/api/users/me"],
   });
 
   const closeSidebar = () => setSidebarOpen(false);
+
+  // Update starfield every hour
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStarfieldSeed(Date.now());
+    }, 60 * 60 * 1000); // 1 hour
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
@@ -50,11 +61,15 @@ function App() {
         {/* Audio Control */}
         <AudioControl />
         
-        {/* ✨ Particle Glow Background Layer */}
+        {/* ✨ Cosmic Starfield Background */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-skyglow-glow rounded-full opacity-40 blur-3xl animate-pulse-slow"></div>
-          <div className="absolute bottom-10 right-10 w-80 h-80 bg-skyglow-dark rounded-full opacity-30 blur-2xl animate-orbit"></div>
-          <div className="absolute top-10 right-1/3 w-72 h-72 bg-sephirot-purple-light rounded-full opacity-20 blur-2xl animate-pulse-fast"></div>
+          <StarfieldBackground 
+            starsCount={450}
+            speed={0.05}
+            backgroundColor="rgba(4, 3, 20, 0.85)"
+            interactive={true}
+            seed={starfieldSeed}
+          />
         </div>
 
         <div className="relative flex h-screen overflow-hidden z-10">

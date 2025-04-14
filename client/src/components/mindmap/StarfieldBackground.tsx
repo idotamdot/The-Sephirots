@@ -9,6 +9,7 @@ interface StarfieldBackgroundProps {
   starColor?: string;
   interactive?: boolean;
   className?: string;
+  seed?: number; // Used to regenerate stars pattern
 }
 
 export default function StarfieldBackground({
@@ -20,6 +21,7 @@ export default function StarfieldBackground({
   starColor = '#ffffff',
   interactive = true,
   className = '',
+  seed = Date.now(),
 }: StarfieldBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stars = useRef<any[]>([]);
@@ -212,7 +214,7 @@ export default function StarfieldBackground({
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [speed, depth, size, interactive, backgroundColor, starColor]);
+  }, [speed, depth, size, interactive, backgroundColor, starColor, seed]);
 
   return (
     <canvas 

@@ -16,16 +16,6 @@ export default function Rewards() {
 
   return (
     <div className="container py-6 max-w-7xl mx-auto relative">
-      {/* Starfield Background */}
-      <div className="absolute inset-0 -m-6 z-0 overflow-hidden rounded-lg">
-        <StarfieldBackground 
-          starsCount={350}
-          speed={0.08}
-          backgroundColor="rgba(8, 3, 30, 0.97)"
-          interactive={true}
-        />
-      </div>
-      
       <div className="relative z-10">
         {/* Page header */}
         <div className="flex flex-col mb-6">

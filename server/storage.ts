@@ -17,11 +17,16 @@ import {
   moderationFlags, ModerationFlag, InsertModerationFlag,
   moderationDecisions, ModerationDecision, InsertModerationDecision,
   moderationAppeals, ModerationAppeal, InsertModerationAppeal,
-  moderationSettings, ModerationSetting, InsertModerationSetting
+  moderationSettings, ModerationSetting, InsertModerationSetting,
+  mindMaps, MindMap, InsertMindMap,
+  mindMapNodes, MindMapNode, InsertMindMapNode, 
+  mindMapConnections, MindMapConnection, InsertMindMapConnection,
+  mindMapCollaborators, MindMapCollaborator, InsertMindMapCollaborator,
+  mindMapTemplates, MindMapTemplate, InsertMindMapTemplate
 } from "@shared/schema";
 
 export interface IStorage {
-  // Users
+  // User methods
   getUsers(): Promise<User[]>;
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -29,339 +34,357 @@ export interface IStorage {
   updateUser(id: number, userData: Partial<User>): Promise<User>;
   updateUserPoints(userId: number, points: number): Promise<User>;
   
-  // Discussions
+  // Discussion methods
   getDiscussions(): Promise<Discussion[]>;
   getDiscussionsByCategory(category: string): Promise<Discussion[]>;
   getDiscussion(id: number): Promise<Discussion | undefined>;
   createDiscussion(discussion: InsertDiscussion): Promise<Discussion>;
   updateDiscussion(id: number, discussion: Partial<Discussion>): Promise<Discussion>;
   
-  // Comments
+  // Comment methods
   getCommentsByDiscussion(discussionId: number): Promise<Comment[]>;
   getComment(id: number): Promise<Comment | undefined>;
   createComment(comment: InsertComment): Promise<Comment>;
   updateComment(id: number, comment: Partial<Comment>): Promise<Comment>;
   
-  // Tags
+  // Tag methods
   getTags(): Promise<Tag[]>;
   getTag(id: number): Promise<Tag | undefined>;
   getTagByName(name: string): Promise<Tag | undefined>;
   createTag(tag: InsertTag): Promise<Tag>;
   
-  // DiscussionTags
+  // DiscussionTag methods
   getTagsByDiscussion(discussionId: number): Promise<Tag[]>;
   addTagToDiscussion(discussionTag: InsertDiscussionTag): Promise<DiscussionTag>;
   
-  // RightsAgreements
-  getRightsAgreements(): Promise<RightsAgreement[]>;
+  // RightsAgreement methods
   getLatestRightsAgreement(): Promise<RightsAgreement | undefined>;
+  getRightsAgreements(): Promise<RightsAgreement[]>;
   getRightsAgreement(id: number): Promise<RightsAgreement | undefined>;
   createRightsAgreement(agreement: InsertRightsAgreement): Promise<RightsAgreement>;
   
-  // Amendments
+  // Amendment methods
   getAmendmentsByAgreement(agreementId: number): Promise<Amendment[]>;
   getAmendment(id: number): Promise<Amendment | undefined>;
   createAmendment(amendment: InsertAmendment): Promise<Amendment>;
   updateAmendment(id: number, amendment: Partial<Amendment>): Promise<Amendment>;
   
-  // Badges
+  // Badge methods
   getBadges(): Promise<Badge[]>;
   getBadge(id: number): Promise<Badge | undefined>;
   createBadge(badge: InsertBadge): Promise<Badge>;
   
-  // UserBadges
-  getUserBadges(userId: number): Promise<Badge[]>;
-  assignBadgeToUser(userBadge: InsertUserBadge): Promise<UserBadge>;
+  // UserBadge methods
+  getUserBadges(userId: number): Promise<UserBadge[]>;
+  getUserBadge(id: number): Promise<UserBadge | undefined>;
+  awardBadge(userBadge: InsertUserBadge): Promise<UserBadge>;
   
-  // Events
+  // Event methods
   getEvents(): Promise<Event[]>;
+  getEventsByCategory(category: string): Promise<Event[]>;
   getEvent(id: number): Promise<Event | undefined>;
   createEvent(event: InsertEvent): Promise<Event>;
-  updateEventAttendees(id: number, count: number): Promise<Event>;
+  updateEvent(id: number, event: Partial<Event>): Promise<Event>;
   
-  // Governance Proposals
+  // Proposal methods
   getProposals(): Promise<Proposal[]>;
   getProposalsByCategory(category: string): Promise<Proposal[]>;
-  getProposalsByStatus(status: string): Promise<Proposal[]>;
   getProposal(id: number): Promise<Proposal | undefined>;
   createProposal(proposal: InsertProposal): Promise<Proposal>;
   updateProposal(id: number, proposal: Partial<Proposal>): Promise<Proposal>;
   
-  // Votes
+  // Vote methods
   getVotesByProposal(proposalId: number): Promise<Vote[]>;
+  getVote(id: number): Promise<Vote | undefined>;
   getUserVoteOnProposal(userId: number, proposalId: number): Promise<Vote | undefined>;
   createVote(vote: InsertVote): Promise<Vote>;
+  updateVote(id: number, vote: Partial<Vote>): Promise<Vote>;
   
-  // User Roles
+  // UserRole methods
   getUserRoles(userId: number): Promise<UserRole[]>;
-  assignRoleToUser(userRole: InsertUserRole): Promise<UserRole>;
-  removeRoleFromUser(userId: number, role: string): Promise<void>;
+  getUserRole(id: number): Promise<UserRole | undefined>;
+  assignUserRole(userRole: InsertUserRole): Promise<UserRole>;
+  removeUserRole(id: number): Promise<void>;
   
-  // Annotations for collaborative drafting
-  getAnnotationsByProposal(proposalId: number): Promise<Annotation[]>;
+  // Annotation methods
+  getAnnotationsByDiscussion(discussionId: number): Promise<Annotation[]>;
   getAnnotation(id: number): Promise<Annotation | undefined>;
   createAnnotation(annotation: InsertAnnotation): Promise<Annotation>;
   updateAnnotation(id: number, annotation: Partial<Annotation>): Promise<Annotation>;
-  resolveAnnotation(id: number, userId: number): Promise<Annotation>;
   deleteAnnotation(id: number): Promise<void>;
   
-  // Annotation Replies
-  getAnnotationReplies(annotationId: number): Promise<AnnotationReply[]>;
+  // AnnotationReply methods
+  getRepliesByAnnotation(annotationId: number): Promise<AnnotationReply[]>;
+  getAnnotationReply(id: number): Promise<AnnotationReply | undefined>;
   createAnnotationReply(reply: InsertAnnotationReply): Promise<AnnotationReply>;
+  updateAnnotationReply(id: number, reply: Partial<AnnotationReply>): Promise<AnnotationReply>;
   deleteAnnotationReply(id: number): Promise<void>;
   
-  // Moderation Flags
+  // Moderation Flag methods
   getModerationFlags(): Promise<ModerationFlag[]>;
   getModerationFlagsByStatus(status: string): Promise<ModerationFlag[]>;
+  getModerationFlagsByContentType(contentType: string): Promise<ModerationFlag[]>;
   getModerationFlag(id: number): Promise<ModerationFlag | undefined>;
-  createModerationFlag(flag: InsertModerationFlag & { aiScore?: number, aiReasoning?: string }): Promise<ModerationFlag>;
+  createModerationFlag(flag: InsertModerationFlag): Promise<ModerationFlag>;
   updateModerationFlag(id: number, flag: Partial<ModerationFlag>): Promise<ModerationFlag>;
-  deleteModerationFlag(id: number): Promise<void>;
   
-  // Moderation Decisions
-  getModerationDecisions(): Promise<ModerationDecision[]>;
+  // Moderation Decision methods
+  getModerationDecisionsByFlag(flagId: number): Promise<ModerationDecision[]>;
   getModerationDecision(id: number): Promise<ModerationDecision | undefined>;
-  getModerationDecisionByFlag(flagId: number): Promise<ModerationDecision | undefined>;
   createModerationDecision(decision: InsertModerationDecision): Promise<ModerationDecision>;
   
-  // Moderation Appeals
+  // Moderation Appeal methods
   getModerationAppeals(): Promise<ModerationAppeal[]>;
   getModerationAppealsByStatus(status: string): Promise<ModerationAppeal[]>;
   getModerationAppeal(id: number): Promise<ModerationAppeal | undefined>;
   createModerationAppeal(appeal: InsertModerationAppeal): Promise<ModerationAppeal>;
   updateModerationAppeal(id: number, appeal: Partial<ModerationAppeal>): Promise<ModerationAppeal>;
   
-  // Moderation Settings
+  // Moderation Settings methods
   getModerationSettings(): Promise<ModerationSetting[]>;
-  getModerationSetting(key: string): Promise<ModerationSetting | undefined>;
-  createModerationSetting(setting: InsertModerationSetting): Promise<ModerationSetting>;
+  getModerationSetting(id: number): Promise<ModerationSetting | undefined>;
   updateModerationSetting(id: number, setting: Partial<ModerationSetting>): Promise<ModerationSetting>;
+  createModerationSetting(setting: InsertModerationSetting): Promise<ModerationSetting>;
+  
+  // Mind Map methods
+  getMindMaps(): Promise<MindMap[]>;
+  getPublicMindMaps(): Promise<MindMap[]>;
+  getUserMindMaps(userId: number): Promise<MindMap[]>;
+  getUserPublicMindMaps(userId: number): Promise<MindMap[]>;
+  getMindMap(id: number): Promise<MindMap | undefined>;
+  createMindMap(mindMap: InsertMindMap): Promise<MindMap>;
+  updateMindMap(id: number, mindMap: Partial<MindMap>): Promise<MindMap>;
+  deleteMindMap(id: number): Promise<void>;
+
+  // Mind Map Node methods
+  getMindMapNodes(mindMapId: number): Promise<MindMapNode[]>;
+  getMindMapNode(mindMapId: number, nodeId: string): Promise<MindMapNode | undefined>;
+  createMindMapNode(node: InsertMindMapNode): Promise<MindMapNode>;
+  updateMindMapNode(mindMapId: number, nodeId: string, node: Partial<MindMapNode>): Promise<MindMapNode>;
+  deleteMindMapNode(mindMapId: number, nodeId: string): Promise<void>;
+
+  // Mind Map Connection methods
+  getMindMapConnections(mindMapId: number): Promise<MindMapConnection[]>;
+  getMindMapConnection(mindMapId: number, connectionId: string): Promise<MindMapConnection | undefined>;
+  createMindMapConnection(connection: InsertMindMapConnection): Promise<MindMapConnection>;
+  updateMindMapConnection(mindMapId: number, connectionId: string, connection: Partial<MindMapConnection>): Promise<MindMapConnection>;
+  deleteMindMapConnection(mindMapId: number, connectionId: string): Promise<void>;
+
+  // Mind Map Collaborators methods
+  getMindMapCollaborators(mindMapId: number): Promise<MindMapCollaborator[]>;
+  addCollaboratorToMindMap(collaborator: InsertMindMapCollaborator): Promise<MindMapCollaborator>;
+  removeCollaboratorFromMindMap(mindMapId: number, userId: number): Promise<void>;
+
+  // Mind Map Templates methods
+  getMindMapTemplates(): Promise<MindMapTemplate[]>;
+  getMindMapTemplate(id: number): Promise<MindMapTemplate | undefined>;
+  createMindMapTemplate(template: InsertMindMapTemplate): Promise<MindMapTemplate>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
-  private discussions: Map<number, Discussion>;
-  private comments: Map<number, Comment>;
-  private tags: Map<number, Tag>;
-  private discussionTags: Map<number, DiscussionTag>;
-  private rightsAgreements: Map<number, RightsAgreement>;
-  private amendments: Map<number, Amendment>;
-  private badges: Map<number, Badge>;
-  private userBadges: Map<number, UserBadge>;
-  private events: Map<number, Event>;
-  private proposals: Map<number, Proposal>;
-  private votes: Map<number, Vote>;
-  private userRoles: Map<number, UserRole>;
-  private annotations: Map<number, Annotation>;
-  private annotationReplies: Map<number, AnnotationReply>;
-  
   private userId: number;
+  
+  private discussions: Map<number, Discussion>;
   private discussionId: number;
+  
+  private comments: Map<number, Comment>;
   private commentId: number;
+  
+  private tags: Map<number, Tag>;
   private tagId: number;
+  
+  private discussionTags: Map<number, DiscussionTag>;
   private discussionTagId: number;
-  private agreementId: number;
+  
+  private rightsAgreements: Map<number, RightsAgreement>;
+  private rightsAgreementId: number;
+  
+  private amendments: Map<number, Amendment>;
   private amendmentId: number;
+  
+  private badges: Map<number, Badge>;
   private badgeId: number;
+  
+  private userBadges: Map<number, UserBadge>;
   private userBadgeId: number;
+  
+  private events: Map<number, Event>;
   private eventId: number;
+  
+  private proposals: Map<number, Proposal>;
   private proposalId: number;
+  
+  private votes: Map<number, Vote>;
   private voteId: number;
+  
+  private userRoles: Map<number, UserRole>;
   private userRoleId: number;
+  
+  private annotations: Map<number, Annotation>;
   private annotationId: number;
+  
+  private annotationReplies: Map<number, AnnotationReply>;
   private annotationReplyId: number;
-
+  
+  private moderationFlags: Map<number, ModerationFlag>;
+  private moderationFlagId: number;
+  
+  private moderationDecisions: Map<number, ModerationDecision>;
+  private moderationDecisionId: number;
+  
+  private moderationAppeals: Map<number, ModerationAppeal>;
+  private moderationAppealId: number;
+  
+  private moderationSettings: Map<number, ModerationSetting>;
+  private moderationSettingId: number;
+  
+  // Mind map related properties
+  private mindMaps: Map<number, MindMap>;
+  private mindMapId: number;
+  private mindMapNodes: Map<string, MindMapNode>;
+  private mindMapConnections: Map<string, MindMapConnection>;
+  private mindMapCollaborators: Map<number, MindMapCollaborator>;
+  private mindMapCollaboratorId: number;
+  private mindMapTemplates: Map<number, MindMapTemplate>;
+  private mindMapTemplateId: number;
+  
   constructor() {
     this.users = new Map();
-    this.discussions = new Map();
-    this.comments = new Map();
-    this.tags = new Map();
-    this.discussionTags = new Map();
-    this.rightsAgreements = new Map();
-    this.amendments = new Map();
-    this.badges = new Map();
-    this.userBadges = new Map();
-    this.events = new Map();
-    this.proposals = new Map();
-    this.votes = new Map();
-    this.userRoles = new Map();
-    this.annotations = new Map();
-    this.annotationReplies = new Map();
-    
     this.userId = 1;
+    
+    this.discussions = new Map();
     this.discussionId = 1;
+    
+    this.comments = new Map();
     this.commentId = 1;
+    
+    this.tags = new Map();
     this.tagId = 1;
+    
+    this.discussionTags = new Map();
     this.discussionTagId = 1;
-    this.agreementId = 1;
+    
+    this.rightsAgreements = new Map();
+    this.rightsAgreementId = 1;
+    
+    this.amendments = new Map();
     this.amendmentId = 1;
+    
+    this.badges = new Map();
     this.badgeId = 1;
+    
+    this.userBadges = new Map();
     this.userBadgeId = 1;
+    
+    this.events = new Map();
     this.eventId = 1;
+    
+    this.proposals = new Map();
     this.proposalId = 1;
+    
+    this.votes = new Map();
     this.voteId = 1;
+    
+    this.userRoles = new Map();
     this.userRoleId = 1;
+    
+    this.annotations = new Map();
     this.annotationId = 1;
+    
+    this.annotationReplies = new Map();
     this.annotationReplyId = 1;
     
-    // Initialize with sample data
-    this.initializeData();
-  }
-
-  // Initialize with sample data
-  private initializeData() {
-    // Create AI user
-    this.createUser({
-      username: 'harmony_ai',
-      password: 'not-a-real-password',
-      displayName: 'Harmony AI',
-      avatar: '',
-      avatarType: 'generated',
-      bio: 'I am the AI assistant for the Harmony platform.',
-    }).then(user => {
-      // Mark as AI
-      this.users.set(user.id, { ...user, isAi: true });
-    });
-
-    // Create human user
-    this.createUser({
-      username: 'alex_johnson',
-      password: 'password123',
-      displayName: 'Alex Johnson',
-      avatar: '',
-      avatarType: 'url',
-      bio: 'Passionate about community building and digital rights.',
-    });
-
-    // Create badges
-    this.createBadge({
-      name: 'Conversationalist',
-      description: 'Started 5 discussions',
-      icon: 'ri-discuss-line',
-      requirement: 'Start 5 discussions',
-      category: 'participation'
-    });
-
-    this.createBadge({
-      name: 'Empath',
-      description: 'Received 10 likes on comments',
-      icon: 'ri-heart-3-line',
-      requirement: 'Receive 10 likes on your comments',
-      category: 'social'
-    });
-
-    this.createBadge({
-      name: 'Bridge Builder',
-      description: 'Connected with 10 community members',
-      icon: 'ri-bridge-line',
-      requirement: 'Connect with 10 community members',
-      category: 'social'
-    });
-
-    // Create sample rights agreement
-    this.createRightsAgreement({
-      title: 'Harmony Community Rights Agreement',
-      content: 'This is the foundation document defining rights, responsibilities, and protections for all community members.',
-      version: '0.8.2',
-      status: 'approved'
-    }).then(agreement => {
-      // Create amendments
-      this.createAmendment({
-        title: 'Article 7.3: Environmental Consideration',
-        content: 'Added clause requiring all community decisions to consider environmental impact on both digital and physical spaces.',
-        proposedBy: 1,
-        agreementId: agreement.id,
-        status: 'approved'
-      });
-
-      this.createAmendment({
-        title: 'Article 3.1: Communication Rights',
-        content: 'Updated language to be more inclusive of non-verbal and alternative communication forms used by different types of entities.',
-        proposedBy: 2,
-        agreementId: agreement.id,
-        status: 'approved'
-      });
-
-      this.createAmendment({
-        title: 'Article 5.2: Data Sovereignty Rights',
-        content: 'Proposed addition of comprehensive data rights for both human and non-human entities, ensuring ownership and control of personal information.',
-        proposedBy: 2,
-        agreementId: agreement.id,
-        status: 'proposed'
-      });
-    });
-
-    // Create sample tags
-    this.createTag({ name: 'community' });
-    this.createTag({ name: 'safety' });
-    this.createTag({ name: 'inclusion' });
-    this.createTag({ name: 'communication' });
-    this.createTag({ name: 'AI-human' });
-    this.createTag({ name: 'protocols' });
-
-    // Create sample discussions
-    this.createDiscussion({
-      title: 'Creating safe spaces for vulnerable community members',
-      content: "I've been thinking about how we can better support vulnerable members of our community, such as elderly, children, and those with special needs. What approaches have worked in your experience?",
-      userId: 2,
-      category: 'community_needs',
-      aiEnhanced: false
-    }).then(discussion => {
-      // Add tags to discussion
-      this.getTagByName('community').then(tag => {
-        if (tag) this.addTagToDiscussion({ discussionId: discussion.id, tagId: tag.id });
-      });
-      this.getTagByName('safety').then(tag => {
-        if (tag) this.addTagToDiscussion({ discussionId: discussion.id, tagId: tag.id });
-      });
-      this.getTagByName('inclusion').then(tag => {
-        if (tag) this.addTagToDiscussion({ discussionId: discussion.id, tagId: tag.id });
-      });
-    });
-
-    this.createDiscussion({
-      title: 'Developing cross-species communication protocols',
-      content: "Based on our recent discussions, I've compiled some insights on how we might create standardized protocols for communication between different types of intelligent entities. I believe this is crucial for our community's foundation.",
+    this.moderationFlags = new Map();
+    this.moderationFlagId = 1;
+    
+    this.moderationDecisions = new Map();
+    this.moderationDecisionId = 1;
+    
+    this.moderationAppeals = new Map();
+    this.moderationAppealId = 1;
+    
+    this.moderationSettings = new Map();
+    this.moderationSettingId = 1;
+    
+    // Initialize mind map data structures
+    this.mindMaps = new Map();
+    this.mindMapId = 1;
+    this.mindMapNodes = new Map();
+    this.mindMapConnections = new Map();
+    this.mindMapCollaborators = new Map();
+    this.mindMapCollaboratorId = 1;
+    this.mindMapTemplates = new Map();
+    this.mindMapTemplateId = 1;
+    
+    // Add a sample user
+    const user: User = {
+      id: this.userId,
+      username: "admin",
+      email: "admin@example.com",
+      displayName: "Admin User",
+      passwordHash: "$2b$10$GyhOV5Px5YrCRqViB2L1C.j.DNFuojMEg3xE0bBDtvzpaMBUvILZu", // "password"
+      avatar: null,
+      bio: "Platform administrator",
+      level: 10,
+      points: 1000,
+      createdAt: new Date(),
+      lastLoginAt: new Date(),
+      isActive: true,
+      isAdmin: true,
+      settings: {},
+      metrics: {}
+    };
+    this.users.set(this.userId, user);
+    this.userId++;
+    
+    // Add a sample badge
+    const badge: Badge = {
+      id: this.badgeId,
+      name: "Founder",
+      level: 1,
+      points: 100,
+      createdAt: new Date(),
+      category: "Contribution",
+      description: "Awarded to pioneers who contributed to the format",
+      icon: "🏆",
+      requirement: "Be among the first members to contribute",
+      tier: "founder",
+      symbolism: "Keter - Representing the Crown and highest potential",
+      isLimited: true,
+      maxSupply: 100
+    };
+    this.badges.set(this.badgeId, badge);
+    this.badgeId++;
+    
+    // Award badge to sample user
+    const userBadge: UserBadge = {
+      id: this.userBadgeId,
       userId: 1,
-      category: 'communication',
-      aiEnhanced: true
-    }).then(discussion => {
-      // Add tags to discussion
-      this.getTagByName('communication').then(tag => {
-        if (tag) this.addTagToDiscussion({ discussionId: discussion.id, tagId: tag.id });
-      });
-      this.getTagByName('AI-human').then(tag => {
-        if (tag) this.addTagToDiscussion({ discussionId: discussion.id, tagId: tag.id });
-      });
-      this.getTagByName('protocols').then(tag => {
-        if (tag) this.addTagToDiscussion({ discussionId: discussion.id, tagId: tag.id });
-      });
-    });
-
-    // Create sample events
-    this.createEvent({
-      title: 'Virtual Town Hall: Community Wellbeing',
-      description: 'Join our monthly town hall focused on discussing current wellbeing initiatives and proposing new ideas for community support.',
-      dateTime: new Date('2023-10-10T15:00:00'),
-      category: 'wellbeing'
-    });
-
-    this.createEvent({
-      title: 'Workshop: Cross-Entity Communication Techniques',
-      description: 'A practical workshop on effective communication methods between humans and AI, facilitated by communication experts from both domains.',
-      dateTime: new Date('2023-10-13T13:00:00'),
-      category: 'communication'
-    });
-
-    this.createEvent({
-      title: 'Rights Agreement Open Forum',
-      description: 'Open discussion session to review and provide feedback on the next version of our community Rights Agreement before voting.',
-      dateTime: new Date('2023-10-15T10:00:00'),
-      category: 'rights_agreement'
-    });
+      badgeId: 1,
+      earnedAt: new Date(),
+      enhanced: false,
+      completedCriteria: "Early contributor",
+      issuedBy: null
+    };
+    this.userBadges.set(this.userBadgeId, userBadge);
+    this.userBadgeId++;
+    
+    // Add a sample rights agreement
+    const rightsAgreement: RightsAgreement = {
+      id: this.rightsAgreementId,
+      title: "The Sephirots AI-Human Collaboration Module Rights Agreement",
+      content: "This Rights Agreement establishes the foundational principles for fostering harmonious collaboration between humans and artificial intelligences within our community.",
+      version: "1.0.0",
+      status: "active",
+      createdAt: new Date(),
+      activatedAt: new Date(),
+      createdBy: 1
+    };
+    this.rightsAgreements.set(this.rightsAgreementId, rightsAgreement);
+    this.rightsAgreementId++;
   }
-
-  // User methods
+  
   async getUsers(): Promise<User[]> {
     return Array.from(this.users.values());
   }
@@ -369,52 +392,39 @@ export class MemStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
   }
-
+  
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    return Array.from(this.users.values()).find(user => user.username === username);
   }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const timestamp = new Date();
-    const user: User = { 
-      id,
-      username: insertUser.username,
-      password: insertUser.password,
-      displayName: insertUser.displayName,
-      avatar: insertUser.avatar || null,
-      avatarType: insertUser.avatarType || "url",
-      bio: insertUser.bio || null,
+  
+  async createUser(user: InsertUser): Promise<User> {
+    const newUser = {
+      id: this.userId++,
+      ...user,
       level: 1,
       points: 0,
-      isAi: false,
-      twitterUrl: null,
-      facebookUrl: null,
-      instagramUrl: null,
-      linkedinUrl: null,
-      githubUrl: null,
-      personalWebsiteUrl: null,
-      preferences: "{}",
-      lastActive: null,
-      createdAt: timestamp
+      createdAt: new Date(),
+      lastLoginAt: new Date(),
+      isActive: true,
+      isAdmin: false,
+      settings: {},
+      metrics: {}
     };
-    this.users.set(id, user);
-    return user;
+    this.users.set(newUser.id, newUser);
+    return newUser;
   }
   
   async updateUser(id: number, userData: Partial<User>): Promise<User> {
-    const user = await this.getUser(id);
-    if (!user) {
+    const existingUser = await this.getUser(id);
+    if (!existingUser) {
       throw new Error(`User with ID ${id} not found`);
     }
     
-    const updatedUser = { ...user, ...userData };
+    const updatedUser = { ...existingUser, ...userData };
     this.users.set(id, updatedUser);
     return updatedUser;
   }
-
+  
   async updateUserPoints(userId: number, points: number): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) {
@@ -423,735 +433,1016 @@ export class MemStorage implements IStorage {
     
     const updatedUser = { 
       ...user, 
-      points: user.points + points,
-      level: Math.floor(Math.sqrt(user.points + points) / 10) + 1 // Simple level calculation
+      points: user.points + points 
     };
-    
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-
+  
   // Discussion methods
   async getDiscussions(): Promise<Discussion[]> {
     return Array.from(this.discussions.values());
   }
-
+  
   async getDiscussionsByCategory(category: string): Promise<Discussion[]> {
     return Array.from(this.discussions.values()).filter(
       discussion => discussion.category === category
     );
   }
-
+  
   async getDiscussion(id: number): Promise<Discussion | undefined> {
     return this.discussions.get(id);
   }
-
-  async createDiscussion(insertDiscussion: InsertDiscussion): Promise<Discussion> {
-    const id = this.discussionId++;
+  
+  async createDiscussion(discussion: InsertDiscussion): Promise<Discussion> {
     const timestamp = new Date();
-    const discussion: Discussion = {
-      id,
-      title: insertDiscussion.title,
-      content: insertDiscussion.content,
-      userId: insertDiscussion.userId, 
-      category: insertDiscussion.category,
-      aiEnhanced: insertDiscussion.aiEnhanced || false,
-      likes: 0,
+    const newDiscussion: Discussion = {
+      id: this.discussionId++,
+      ...discussion,
+      createdAt: timestamp,
+      updatedAt: timestamp,
       views: 0,
-      createdAt: timestamp
+      isLocked: false,
+      isPinned: false,
+      status: "active"
     };
-    this.discussions.set(id, discussion);
-    return discussion;
+    this.discussions.set(newDiscussion.id, newDiscussion);
+    return newDiscussion;
   }
-
-  async updateDiscussion(id: number, partialDiscussion: Partial<Discussion>): Promise<Discussion> {
-    const discussion = await this.getDiscussion(id);
-    if (!discussion) {
+  
+  async updateDiscussion(id: number, discussion: Partial<Discussion>): Promise<Discussion> {
+    const existingDiscussion = await this.getDiscussion(id);
+    if (!existingDiscussion) {
       throw new Error(`Discussion with ID ${id} not found`);
     }
     
-    const updatedDiscussion = { ...discussion, ...partialDiscussion };
+    const updatedDiscussion = { 
+      ...existingDiscussion, 
+      ...discussion, 
+      updatedAt: new Date() 
+    };
     this.discussions.set(id, updatedDiscussion);
     return updatedDiscussion;
   }
-
+  
   // Comment methods
   async getCommentsByDiscussion(discussionId: number): Promise<Comment[]> {
     return Array.from(this.comments.values()).filter(
       comment => comment.discussionId === discussionId
     );
   }
-
+  
   async getComment(id: number): Promise<Comment | undefined> {
     return this.comments.get(id);
   }
-
-  async createComment(insertComment: InsertComment): Promise<Comment> {
-    const id = this.commentId++;
+  
+  async createComment(comment: InsertComment): Promise<Comment> {
     const timestamp = new Date();
-    const comment: Comment = {
-      id,
-      content: insertComment.content,
-      userId: insertComment.userId,
-      discussionId: insertComment.discussionId,
-      likes: 0,
-      aiGenerated: insertComment.aiGenerated || false,
-      createdAt: timestamp
+    const newComment: Comment = {
+      id: this.commentId++,
+      ...comment,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      isEdited: false,
+      status: "active"
     };
-    this.comments.set(id, comment);
-    return comment;
+    this.comments.set(newComment.id, newComment);
+    return newComment;
   }
-
-  async updateComment(id: number, partialComment: Partial<Comment>): Promise<Comment> {
-    const comment = this.comments.get(id);
-    if (!comment) {
+  
+  async updateComment(id: number, comment: Partial<Comment>): Promise<Comment> {
+    const existingComment = await this.getComment(id);
+    if (!existingComment) {
       throw new Error(`Comment with ID ${id} not found`);
     }
     
-    const updatedComment = { ...comment, ...partialComment };
+    const updatedComment = { 
+      ...existingComment, 
+      ...comment, 
+      updatedAt: new Date(),
+      isEdited: true
+    };
     this.comments.set(id, updatedComment);
     return updatedComment;
   }
-
+  
   // Tag methods
   async getTags(): Promise<Tag[]> {
     return Array.from(this.tags.values());
   }
-
+  
   async getTag(id: number): Promise<Tag | undefined> {
     return this.tags.get(id);
   }
-
+  
   async getTagByName(name: string): Promise<Tag | undefined> {
-    return Array.from(this.tags.values()).find(
-      tag => tag.name === name
-    );
+    return Array.from(this.tags.values()).find(tag => tag.name === name);
   }
-
-  async createTag(insertTag: InsertTag): Promise<Tag> {
-    const id = this.tagId++;
-    const tag: Tag = { 
-      id,
-      name: insertTag.name
+  
+  async createTag(tag: InsertTag): Promise<Tag> {
+    const existingTag = await this.getTagByName(tag.name);
+    if (existingTag) {
+      return existingTag;
+    }
+    
+    const newTag: Tag = {
+      id: this.tagId++,
+      ...tag,
+      createdAt: new Date(),
+      usageCount: 0
     };
-    this.tags.set(id, tag);
-    return tag;
+    this.tags.set(newTag.id, newTag);
+    return newTag;
   }
-
+  
   // DiscussionTag methods
   async getTagsByDiscussion(discussionId: number): Promise<Tag[]> {
-    const discussionTagRelations = Array.from(this.discussionTags.values()).filter(
+    const discussionTags = Array.from(this.discussionTags.values()).filter(
       dt => dt.discussionId === discussionId
     );
     
-    const tagIds = discussionTagRelations.map(dt => dt.tagId);
-    const tags: Tag[] = [];
+    return Promise.all(
+      discussionTags.map(async dt => {
+        const tag = await this.getTag(dt.tagId);
+        return tag as Tag;
+      })
+    );
+  }
+  
+  async addTagToDiscussion(discussionTag: InsertDiscussionTag): Promise<DiscussionTag> {
+    const newDiscussionTag: DiscussionTag = {
+      id: this.discussionTagId++,
+      ...discussionTag,
+      createdAt: new Date()
+    };
+    this.discussionTags.set(newDiscussionTag.id, newDiscussionTag);
     
-    for (const tagId of tagIds) {
-      const tag = await this.getTag(tagId);
-      if (tag) tags.push(tag);
+    // Update tag usage count
+    const tag = await this.getTag(discussionTag.tagId);
+    if (tag) {
+      await this.tags.set(tag.id, { ...tag, usageCount: tag.usageCount + 1 });
     }
     
-    return tags;
+    return newDiscussionTag;
   }
-
-  async addTagToDiscussion(insertDiscussionTag: InsertDiscussionTag): Promise<DiscussionTag> {
-    const id = this.discussionTagId++;
-    const discussionTag: DiscussionTag = { 
-      id,
-      discussionId: insertDiscussionTag.discussionId,
-      tagId: insertDiscussionTag.tagId
-    };
-    this.discussionTags.set(id, discussionTag);
-    return discussionTag;
-  }
-
+  
   // RightsAgreement methods
   async getLatestRightsAgreement(): Promise<RightsAgreement | undefined> {
     const agreements = Array.from(this.rightsAgreements.values());
-    if (agreements.length === 0) return undefined;
+    if (agreements.length === 0) {
+      return undefined;
+    }
     
-    // Sort by creation timestamp, descending
-    return agreements.sort((a, b) => 
-      b.createdAt.getTime() - a.createdAt.getTime()
-    )[0];
+    return agreements.reduce((latest, current) => 
+      latest.activatedAt > current.activatedAt ? latest : current
+    );
   }
-
+  
   async getRightsAgreements(): Promise<RightsAgreement[]> {
     return Array.from(this.rightsAgreements.values());
   }
-
+  
   async getRightsAgreement(id: number): Promise<RightsAgreement | undefined> {
     return this.rightsAgreements.get(id);
   }
-
-  async createRightsAgreement(insertAgreement: InsertRightsAgreement): Promise<RightsAgreement> {
-    const id = this.agreementId++;
+  
+  async createRightsAgreement(agreement: InsertRightsAgreement): Promise<RightsAgreement> {
     const timestamp = new Date();
-    const agreement: RightsAgreement = {
-      id,
-      title: insertAgreement.title,
-      content: insertAgreement.content,
-      version: insertAgreement.version,
-      status: insertAgreement.status,
-      createdAt: timestamp
+    const newAgreement: RightsAgreement = {
+      id: this.rightsAgreementId++,
+      ...agreement,
+      createdAt: timestamp,
+      activatedAt: agreement.status === "active" ? timestamp : null
     };
-    this.rightsAgreements.set(id, agreement);
-    return agreement;
+    this.rightsAgreements.set(newAgreement.id, newAgreement);
+    return newAgreement;
   }
-
+  
   // Amendment methods
   async getAmendmentsByAgreement(agreementId: number): Promise<Amendment[]> {
     return Array.from(this.amendments.values()).filter(
       amendment => amendment.agreementId === agreementId
     );
   }
-
+  
   async getAmendment(id: number): Promise<Amendment | undefined> {
     return this.amendments.get(id);
   }
-
-  async createAmendment(insertAmendment: InsertAmendment): Promise<Amendment> {
-    const id = this.amendmentId++;
+  
+  async createAmendment(amendment: InsertAmendment): Promise<Amendment> {
     const timestamp = new Date();
-    const amendment: Amendment = {
-      id,
-      title: insertAmendment.title,
-      content: insertAmendment.content,
-      proposedBy: insertAmendment.proposedBy,
-      agreementId: insertAmendment.agreementId,
-      status: insertAmendment.status,
-      votesFor: 0,
-      votesAgainst: 0,
-      createdAt: timestamp
+    const newAmendment: Amendment = {
+      id: this.amendmentId++,
+      ...amendment,
+      createdAt: timestamp,
+      status: "proposed"
     };
-    this.amendments.set(id, amendment);
-    return amendment;
+    this.amendments.set(newAmendment.id, newAmendment);
+    return newAmendment;
   }
-
-  async updateAmendment(id: number, partialAmendment: Partial<Amendment>): Promise<Amendment> {
-    const amendment = await this.getAmendment(id);
-    if (!amendment) {
+  
+  async updateAmendment(id: number, amendment: Partial<Amendment>): Promise<Amendment> {
+    const existingAmendment = await this.getAmendment(id);
+    if (!existingAmendment) {
       throw new Error(`Amendment with ID ${id} not found`);
     }
     
-    const updatedAmendment = { ...amendment, ...partialAmendment };
+    const updatedAmendment = { ...existingAmendment, ...amendment };
     this.amendments.set(id, updatedAmendment);
     return updatedAmendment;
   }
-
+  
   // Badge methods
   async getBadges(): Promise<Badge[]> {
     return Array.from(this.badges.values());
   }
-
+  
   async getBadge(id: number): Promise<Badge | undefined> {
     return this.badges.get(id);
   }
-
-  async createBadge(insertBadge: InsertBadge): Promise<Badge> {
-    const id = this.badgeId++;
-    const badge: Badge = { 
-      id,
-      name: insertBadge.name,
-      description: insertBadge.description,
-      icon: insertBadge.icon,
-      requirement: insertBadge.requirement,
-      category: insertBadge.category
+  
+  async createBadge(badge: InsertBadge): Promise<Badge> {
+    const newBadge: Badge = {
+      id: this.badgeId++,
+      ...badge,
+      level: badge.level || 1,
+      points: badge.points || 0,
+      createdAt: new Date(),
+      tier: badge.tier || "bronze",
+      symbolism: badge.symbolism || null,
+      isLimited: badge.isLimited || false,
+      maxSupply: badge.maxSupply || null
     };
-    this.badges.set(id, badge);
-    return badge;
+    this.badges.set(newBadge.id, newBadge);
+    return newBadge;
   }
-
+  
   // UserBadge methods
-  async getUserBadges(userId: number): Promise<Badge[]> {
-    const userBadgeRelations = Array.from(this.userBadges.values()).filter(
-      ub => ub.userId === userId
+  async getUserBadges(userId: number): Promise<UserBadge[]> {
+    return Array.from(this.userBadges.values()).filter(
+      userBadge => userBadge.userId === userId
     );
+  }
+  
+  async getUserBadge(id: number): Promise<UserBadge | undefined> {
+    return this.userBadges.get(id);
+  }
+  
+  async awardBadge(userBadge: InsertUserBadge): Promise<UserBadge> {
+    const newUserBadge: UserBadge = {
+      id: this.userBadgeId++,
+      ...userBadge,
+      earnedAt: new Date(),
+      enhanced: userBadge.enhanced || false,
+      completedCriteria: userBadge.completedCriteria || null,
+      issuedBy: userBadge.issuedBy || null
+    };
+    this.userBadges.set(newUserBadge.id, newUserBadge);
     
-    const badgeIds = userBadgeRelations.map(ub => ub.badgeId);
-    const badges: Badge[] = [];
-    
-    for (const badgeId of badgeIds) {
-      const badge = await this.getBadge(badgeId);
-      if (badge) badges.push(badge);
+    // Update user points
+    const badge = await this.getBadge(userBadge.badgeId);
+    if (badge && badge.points) {
+      await this.updateUserPoints(userBadge.userId, badge.points);
     }
     
-    return badges;
+    return newUserBadge;
   }
-
-  async assignBadgeToUser(insertUserBadge: InsertUserBadge): Promise<UserBadge> {
-    const id = this.userBadgeId++;
-    const timestamp = new Date();
-    const userBadge: UserBadge = {
-      id,
-      userId: insertUserBadge.userId,
-      badgeId: insertUserBadge.badgeId,
-      earnedAt: timestamp
-    };
-    this.userBadges.set(id, userBadge);
-    return userBadge;
-  }
-
+  
   // Event methods
   async getEvents(): Promise<Event[]> {
     return Array.from(this.events.values());
   }
-
+  
+  async getEventsByCategory(category: string): Promise<Event[]> {
+    return Array.from(this.events.values()).filter(
+      event => event.category === category
+    );
+  }
+  
   async getEvent(id: number): Promise<Event | undefined> {
     return this.events.get(id);
   }
-
-  async createEvent(insertEvent: InsertEvent): Promise<Event> {
-    const id = this.eventId++;
-    const event: Event = {
-      id,
-      title: insertEvent.title,
-      description: insertEvent.description,
-      dateTime: insertEvent.dateTime,
-      category: insertEvent.category,
-      attendees: 0
+  
+  async createEvent(event: InsertEvent): Promise<Event> {
+    const timestamp = new Date();
+    const newEvent: Event = {
+      id: this.eventId++,
+      ...event,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      isActive: true,
+      status: "scheduled"
     };
-    this.events.set(id, event);
-    return event;
+    this.events.set(newEvent.id, newEvent);
+    return newEvent;
   }
-
-  async updateEventAttendees(id: number, count: number): Promise<Event> {
-    const event = await this.getEvent(id);
-    if (!event) {
+  
+  async updateEvent(id: number, event: Partial<Event>): Promise<Event> {
+    const existingEvent = await this.getEvent(id);
+    if (!existingEvent) {
       throw new Error(`Event with ID ${id} not found`);
     }
     
-    const updatedEvent = { ...event, attendees: event.attendees + count };
+    const updatedEvent = { 
+      ...existingEvent, 
+      ...event, 
+      updatedAt: new Date() 
+    };
     this.events.set(id, updatedEvent);
     return updatedEvent;
   }
-
-  // Governance Proposal methods
+  
+  // Proposal methods
   async getProposals(): Promise<Proposal[]> {
     return Array.from(this.proposals.values());
   }
-
+  
   async getProposalsByCategory(category: string): Promise<Proposal[]> {
     return Array.from(this.proposals.values()).filter(
       proposal => proposal.category === category
     );
   }
-
-  async getProposalsByStatus(status: string): Promise<Proposal[]> {
-    return Array.from(this.proposals.values()).filter(
-      proposal => proposal.status === status
-    );
-  }
-
+  
   async getProposal(id: number): Promise<Proposal | undefined> {
     return this.proposals.get(id);
   }
-
-  async createProposal(insertProposal: InsertProposal): Promise<Proposal> {
-    const id = this.proposalId++;
+  
+  async createProposal(proposal: InsertProposal): Promise<Proposal> {
     const timestamp = new Date();
-    const proposal: Proposal = {
-      id,
-      title: insertProposal.title,
-      description: insertProposal.description,
-      category: insertProposal.category,
-      status: insertProposal.status || "draft",
-      proposedBy: insertProposal.proposedBy,
-      votesRequired: insertProposal.votesRequired || 10,
-      votesFor: 0,
-      votesAgainst: 0,
-      votingEndsAt: insertProposal.votingEndsAt,
-      implementationDetails: insertProposal.implementationDetails || null,
+    const newProposal: Proposal = {
+      id: this.proposalId++,
+      ...proposal,
       createdAt: timestamp,
-      updatedAt: timestamp
+      updatedAt: timestamp,
+      status: "pending",
+      votes: 0,
+      votesUp: 0,
+      votesDown: 0
     };
-    this.proposals.set(id, proposal);
-    return proposal;
+    this.proposals.set(newProposal.id, newProposal);
+    return newProposal;
   }
-
-  async updateProposal(id: number, partialProposal: Partial<Proposal>): Promise<Proposal> {
-    const proposal = await this.getProposal(id);
-    if (!proposal) {
+  
+  async updateProposal(id: number, proposal: Partial<Proposal>): Promise<Proposal> {
+    const existingProposal = await this.getProposal(id);
+    if (!existingProposal) {
       throw new Error(`Proposal with ID ${id} not found`);
     }
     
     const updatedProposal = { 
+      ...existingProposal, 
       ...proposal, 
-      ...partialProposal,
-      updatedAt: new Date()
+      updatedAt: new Date() 
     };
     this.proposals.set(id, updatedProposal);
     return updatedProposal;
   }
-
+  
   // Vote methods
   async getVotesByProposal(proposalId: number): Promise<Vote[]> {
     return Array.from(this.votes.values()).filter(
       vote => vote.proposalId === proposalId
     );
   }
-
+  
+  async getVote(id: number): Promise<Vote | undefined> {
+    return this.votes.get(id);
+  }
+  
   async getUserVoteOnProposal(userId: number, proposalId: number): Promise<Vote | undefined> {
     return Array.from(this.votes.values()).find(
       vote => vote.userId === userId && vote.proposalId === proposalId
     );
   }
-
-  async createVote(insertVote: InsertVote): Promise<Vote> {
+  
+  async createVote(vote: InsertVote): Promise<Vote> {
     // Check if user already voted on this proposal
-    const existingVote = await this.getUserVoteOnProposal(insertVote.userId, insertVote.proposalId);
+    const existingVote = await this.getUserVoteOnProposal(vote.userId, vote.proposalId);
     if (existingVote) {
-      throw new Error(`User ${insertVote.userId} has already voted on proposal ${insertVote.proposalId}`);
+      throw new Error(`User ${vote.userId} already voted on proposal ${vote.proposalId}`);
     }
     
-    const id = this.voteId++;
-    const timestamp = new Date();
-    const vote: Vote = {
-      id,
-      proposalId: insertVote.proposalId,
-      userId: insertVote.userId,
-      vote: insertVote.vote,
-      reason: insertVote.reason || null,
-      createdAt: timestamp
+    const newVote: Vote = {
+      id: this.voteId++,
+      ...vote,
+      createdAt: new Date()
     };
-    this.votes.set(id, vote);
+    this.votes.set(newVote.id, newVote);
     
     // Update proposal vote counts
-    const proposal = await this.getProposal(insertVote.proposalId);
+    const proposal = await this.getProposal(vote.proposalId);
     if (proposal) {
       const updatedProposal = { 
         ...proposal,
-        votesFor: insertVote.vote ? proposal.votesFor + 1 : proposal.votesFor,
-        votesAgainst: !insertVote.vote ? proposal.votesAgainst + 1 : proposal.votesAgainst
+        votes: proposal.votes + 1,
+        votesUp: proposal.votesUp + (vote.voteType === "up" ? 1 : 0),
+        votesDown: proposal.votesDown + (vote.voteType === "down" ? 1 : 0)
       };
-      this.proposals.set(proposal.id, updatedProposal);
+      await this.updateProposal(proposal.id, updatedProposal);
     }
     
-    return vote;
-  }
-
-  // User Role methods
-  async getUserRoles(userId: number): Promise<UserRole[]> {
-    return Array.from(this.userRoles.values()).filter(
-      role => role.userId === userId
-    );
-  }
-
-  async assignRoleToUser(insertUserRole: InsertUserRole): Promise<UserRole> {
-    const id = this.userRoleId++;
-    const timestamp = new Date();
-    const userRole: UserRole = {
-      id,
-      userId: insertUserRole.userId,
-      role: insertUserRole.role,
-      assignedBy: insertUserRole.assignedBy || null,
-      assignedAt: timestamp,
-      expiresAt: insertUserRole.expiresAt || null
-    };
-    this.userRoles.set(id, userRole);
-    return userRole;
-  }
-
-  async removeRoleFromUser(userId: number, role: string): Promise<void> {
-    const userRolesArray = Array.from(this.userRoles.entries());
-    for (const [id, userRole] of userRolesArray) {
-      if (userRole.userId === userId && userRole.role === role) {
-        this.userRoles.delete(id);
-        break;
-      }
-    }
+    return newVote;
   }
   
-  // Annotation methods for collaborative drafting
-  async getAnnotationsByProposal(proposalId: number): Promise<Annotation[]> {
+  async updateVote(id: number, vote: Partial<Vote>): Promise<Vote> {
+    const existingVote = await this.getVote(id);
+    if (!existingVote) {
+      throw new Error(`Vote with ID ${id} not found`);
+    }
+    
+    if (vote.voteType && vote.voteType !== existingVote.voteType) {
+      // Update proposal vote counts
+      const proposal = await this.getProposal(existingVote.proposalId);
+      if (proposal) {
+        const updatedProposal = { 
+          ...proposal,
+          votesUp: proposal.votesUp + (vote.voteType === "up" ? 1 : -1),
+          votesDown: proposal.votesDown + (vote.voteType === "down" ? 1 : -1)
+        };
+        await this.updateProposal(proposal.id, updatedProposal);
+      }
+    }
+    
+    const updatedVote = { ...existingVote, ...vote };
+    this.votes.set(id, updatedVote);
+    return updatedVote;
+  }
+  
+  // UserRole methods
+  async getUserRoles(userId: number): Promise<UserRole[]> {
+    return Array.from(this.userRoles.values()).filter(
+      userRole => userRole.userId === userId
+    );
+  }
+  
+  async getUserRole(id: number): Promise<UserRole | undefined> {
+    return this.userRoles.get(id);
+  }
+  
+  async assignUserRole(userRole: InsertUserRole): Promise<UserRole> {
+    // Check if user already has this role
+    const existingRoles = await this.getUserRoles(userRole.userId);
+    const hasRole = existingRoles.some(role => role.role === userRole.role);
+    if (hasRole) {
+      throw new Error(`User ${userRole.userId} already has role ${userRole.role}`);
+    }
+    
+    const newUserRole: UserRole = {
+      id: this.userRoleId++,
+      ...userRole,
+      createdAt: new Date()
+    };
+    this.userRoles.set(newUserRole.id, newUserRole);
+    return newUserRole;
+  }
+  
+  async removeUserRole(id: number): Promise<void> {
+    this.userRoles.delete(id);
+  }
+  
+  // Annotation methods
+  async getAnnotationsByDiscussion(discussionId: number): Promise<Annotation[]> {
     return Array.from(this.annotations.values()).filter(
-      annotation => annotation.proposalId === proposalId
-    ).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      annotation => annotation.discussionId === discussionId
+    );
   }
   
   async getAnnotation(id: number): Promise<Annotation | undefined> {
     return this.annotations.get(id);
   }
   
-  async createAnnotation(insertAnnotation: InsertAnnotation): Promise<Annotation> {
-    const id = this.annotationId++;
-    const timestamp = new Date();
-    const annotation: Annotation = {
-      id,
-      proposalId: insertAnnotation.proposalId,
-      userId: insertAnnotation.userId,
-      content: insertAnnotation.content,
-      type: insertAnnotation.type || 'comment',
-      selectionStart: insertAnnotation.selectionStart || null,
-      selectionEnd: insertAnnotation.selectionEnd || null,
-      resolved: false,
-      resolvedBy: null,
-      resolvedAt: null,
-      createdAt: timestamp,
-      updatedAt: timestamp
+  async createAnnotation(annotation: InsertAnnotation): Promise<Annotation> {
+    const newAnnotation: Annotation = {
+      id: this.annotationId++,
+      ...annotation,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
-    this.annotations.set(id, annotation);
-    return annotation;
+    this.annotations.set(newAnnotation.id, newAnnotation);
+    return newAnnotation;
   }
   
-  async updateAnnotation(id: number, partialAnnotation: Partial<Annotation>): Promise<Annotation> {
-    const annotation = await this.getAnnotation(id);
-    if (!annotation) {
+  async updateAnnotation(id: number, annotation: Partial<Annotation>): Promise<Annotation> {
+    const existingAnnotation = await this.getAnnotation(id);
+    if (!existingAnnotation) {
       throw new Error(`Annotation with ID ${id} not found`);
     }
     
-    const updatedAnnotation = {
-      ...annotation,
-      ...partialAnnotation,
-      updatedAt: new Date()
+    const updatedAnnotation = { 
+      ...existingAnnotation, 
+      ...annotation, 
+      updatedAt: new Date() 
     };
-    
     this.annotations.set(id, updatedAnnotation);
     return updatedAnnotation;
   }
   
-  async resolveAnnotation(id: number, userId: number): Promise<Annotation> {
-    const annotation = await this.getAnnotation(id);
-    if (!annotation) {
-      throw new Error(`Annotation with ID ${id} not found`);
-    }
+  async deleteAnnotation(id: number): Promise<void> {
+    // Delete the annotation
+    this.annotations.delete(id);
     
-    const resolvedAnnotation = {
-      ...annotation,
-      resolved: true,
-      resolvedBy: userId,
-      resolvedAt: new Date(),
+    // Delete related replies
+    const replies = await this.getRepliesByAnnotation(id);
+    for (const reply of replies) {
+      await this.deleteAnnotationReply(reply.id);
+    }
+  }
+  
+  // AnnotationReply methods
+  async getRepliesByAnnotation(annotationId: number): Promise<AnnotationReply[]> {
+    return Array.from(this.annotationReplies.values()).filter(
+      reply => reply.annotationId === annotationId
+    );
+  }
+  
+  async getAnnotationReply(id: number): Promise<AnnotationReply | undefined> {
+    return this.annotationReplies.get(id);
+  }
+  
+  async createAnnotationReply(reply: InsertAnnotationReply): Promise<AnnotationReply> {
+    const newReply: AnnotationReply = {
+      id: this.annotationReplyId++,
+      ...reply,
+      createdAt: new Date(),
       updatedAt: new Date()
     };
-    
-    this.annotations.set(id, resolvedAnnotation);
-    return resolvedAnnotation;
+    this.annotationReplies.set(newReply.id, newReply);
+    return newReply;
   }
   
-  async deleteAnnotation(id: number): Promise<void> {
-    // First delete any replies to this annotation
-    const replies = await this.getAnnotationReplies(id);
-    for (const reply of replies) {
-      this.annotationReplies.delete(reply.id);
+  async updateAnnotationReply(id: number, reply: Partial<AnnotationReply>): Promise<AnnotationReply> {
+    const existingReply = await this.getAnnotationReply(id);
+    if (!existingReply) {
+      throw new Error(`Annotation reply with ID ${id} not found`);
     }
     
-    // Then delete the annotation itself
-    this.annotations.delete(id);
-  }
-  
-  // Annotation Reply methods
-  async getAnnotationReplies(annotationId: number): Promise<AnnotationReply[]> {
-    return Array.from(this.annotationReplies.values())
-      .filter(reply => reply.annotationId === annotationId)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-  }
-  
-  async createAnnotationReply(insertReply: InsertAnnotationReply): Promise<AnnotationReply> {
-    const id = this.annotationReplyId++;
-    const timestamp = new Date();
-    const reply: AnnotationReply = {
-      id,
-      annotationId: insertReply.annotationId,
-      userId: insertReply.userId,
-      content: insertReply.content,
-      createdAt: timestamp
+    const updatedReply = { 
+      ...existingReply, 
+      ...reply, 
+      updatedAt: new Date() 
     };
-    this.annotationReplies.set(id, reply);
-    return reply;
+    this.annotationReplies.set(id, updatedReply);
+    return updatedReply;
   }
   
   async deleteAnnotationReply(id: number): Promise<void> {
     this.annotationReplies.delete(id);
   }
-
-  // Moderation Flags
-  private moderationFlags: Map<number, ModerationFlag> = new Map();
-  private moderationFlagId: number = 1;
-
+  
+  // Moderation Flag methods
   async getModerationFlags(): Promise<ModerationFlag[]> {
     return Array.from(this.moderationFlags.values());
   }
-
+  
   async getModerationFlagsByStatus(status: string): Promise<ModerationFlag[]> {
     return Array.from(this.moderationFlags.values()).filter(
       flag => flag.status === status
     );
   }
-
+  
+  async getModerationFlagsByContentType(contentType: string): Promise<ModerationFlag[]> {
+    return Array.from(this.moderationFlags.values()).filter(
+      flag => flag.contentType === contentType
+    );
+  }
+  
   async getModerationFlag(id: number): Promise<ModerationFlag | undefined> {
     return this.moderationFlags.get(id);
   }
-
-  async createModerationFlag(flag: InsertModerationFlag & { 
-    aiScore?: number, 
-    aiReasoning?: string 
-  }): Promise<ModerationFlag> {
-    const id = this.moderationFlagId++;
+  
+  async createModerationFlag(flag: InsertModerationFlag): Promise<ModerationFlag> {
     const timestamp = new Date();
-    const moderationFlag: ModerationFlag = {
-      id,
-      contentId: flag.contentId,
-      contentType: flag.contentType,
-      reportedBy: flag.reportedBy,
-      reason: flag.reason,
-      status: flag.status,
-      aiScore: flag.aiScore || null,
-      aiReasoning: flag.aiReasoning || null,
+    const newFlag: ModerationFlag = {
+      id: this.moderationFlagId++,
+      ...flag,
+      status: flag.status || "pending",
       createdAt: timestamp,
       updatedAt: timestamp,
+      reviewedAt: null,
+      reviewedBy: null,
+      isAuto: flag.isAuto || false
     };
-    this.moderationFlags.set(id, moderationFlag);
-    return moderationFlag;
+    this.moderationFlags.set(newFlag.id, newFlag);
+    return newFlag;
   }
-
+  
   async updateModerationFlag(id: number, flag: Partial<ModerationFlag>): Promise<ModerationFlag> {
-    const moderationFlag = await this.getModerationFlag(id);
-    if (!moderationFlag) {
+    const existingFlag = await this.getModerationFlag(id);
+    if (!existingFlag) {
       throw new Error(`Moderation flag with ID ${id} not found`);
     }
     
     const updatedFlag = { 
-      ...moderationFlag, 
-      ...flag,
-      updatedAt: new Date()
+      ...existingFlag, 
+      ...flag, 
+      updatedAt: new Date() 
     };
     this.moderationFlags.set(id, updatedFlag);
     return updatedFlag;
   }
-
-  async deleteModerationFlag(id: number): Promise<void> {
-    this.moderationFlags.delete(id);
-  }
-
-  // Moderation Decisions
-  private moderationDecisions: Map<number, ModerationDecision> = new Map();
-  private moderationDecisionId: number = 1;
-
-  async getModerationDecisions(): Promise<ModerationDecision[]> {
-    return Array.from(this.moderationDecisions.values());
-  }
-
-  async getModerationDecision(id: number): Promise<ModerationDecision | undefined> {
-    return this.moderationDecisions.get(id);
-  }
-
-  async getModerationDecisionByFlag(flagId: number): Promise<ModerationDecision | undefined> {
-    return Array.from(this.moderationDecisions.values()).find(
+  
+  // Moderation Decision methods
+  async getModerationDecisionsByFlag(flagId: number): Promise<ModerationDecision[]> {
+    return Array.from(this.moderationDecisions.values()).filter(
       decision => decision.flagId === flagId
     );
   }
-
-  async createModerationDecision(decision: InsertModerationDecision): Promise<ModerationDecision> {
-    const id = this.moderationDecisionId++;
-    const timestamp = new Date();
-    const moderationDecision: ModerationDecision = {
-      id,
-      flagId: decision.flagId,
-      moderatorId: decision.moderatorId,
-      decision: decision.decision,
-      reasoning: decision.reasoning,
-      aiAssisted: decision.aiAssisted,
-      createdAt: timestamp,
-    };
-    this.moderationDecisions.set(id, moderationDecision);
-    return moderationDecision;
+  
+  async getModerationDecision(id: number): Promise<ModerationDecision | undefined> {
+    return this.moderationDecisions.get(id);
   }
-
-  // Moderation Appeals
-  private moderationAppeals: Map<number, ModerationAppeal> = new Map();
-  private moderationAppealId: number = 1;
-
+  
+  async createModerationDecision(decision: InsertModerationDecision): Promise<ModerationDecision> {
+    const newDecision: ModerationDecision = {
+      id: this.moderationDecisionId++,
+      ...decision,
+      createdAt: new Date()
+    };
+    this.moderationDecisions.set(newDecision.id, newDecision);
+    
+    // Update the flag status
+    const flag = await this.getModerationFlag(decision.flagId);
+    if (flag) {
+      await this.updateModerationFlag(flag.id, {
+        status: decision.action,
+        reviewedAt: new Date(),
+        reviewedBy: decision.moderatorId
+      });
+    }
+    
+    return newDecision;
+  }
+  
+  // Moderation Appeal methods
   async getModerationAppeals(): Promise<ModerationAppeal[]> {
     return Array.from(this.moderationAppeals.values());
   }
-
+  
   async getModerationAppealsByStatus(status: string): Promise<ModerationAppeal[]> {
     return Array.from(this.moderationAppeals.values()).filter(
       appeal => appeal.status === status
     );
   }
-
+  
   async getModerationAppeal(id: number): Promise<ModerationAppeal | undefined> {
     return this.moderationAppeals.get(id);
   }
-
+  
   async createModerationAppeal(appeal: InsertModerationAppeal): Promise<ModerationAppeal> {
-    const id = this.moderationAppealId++;
     const timestamp = new Date();
-    const moderationAppeal: ModerationAppeal = {
-      id,
-      decisionId: appeal.decisionId,
-      userId: appeal.userId,
-      reason: appeal.reason,
+    const newAppeal: ModerationAppeal = {
+      id: this.moderationAppealId++,
+      ...appeal,
       status: "pending",
-      reviewedBy: null,
-      reviewedAt: null,
-      reviewOutcome: null,
       createdAt: timestamp,
+      updatedAt: timestamp,
+      reviewedAt: null,
+      reviewedBy: null
     };
-    this.moderationAppeals.set(id, moderationAppeal);
-    return moderationAppeal;
+    this.moderationAppeals.set(newAppeal.id, newAppeal);
+    return newAppeal;
   }
-
+  
   async updateModerationAppeal(id: number, appeal: Partial<ModerationAppeal>): Promise<ModerationAppeal> {
-    const moderationAppeal = await this.getModerationAppeal(id);
-    if (!moderationAppeal) {
+    const existingAppeal = await this.getModerationAppeal(id);
+    if (!existingAppeal) {
       throw new Error(`Moderation appeal with ID ${id} not found`);
     }
     
-    const updatedAppeal = { ...moderationAppeal, ...appeal };
+    const updatedAppeal = { 
+      ...existingAppeal, 
+      ...appeal, 
+      updatedAt: new Date() 
+    };
     this.moderationAppeals.set(id, updatedAppeal);
+    
+    // If approving an appeal, update the related flag
+    if (appeal.status === "approved" && existingAppeal.flagId) {
+      const flag = await this.getModerationFlag(existingAppeal.flagId);
+      if (flag) {
+        await this.updateModerationFlag(flag.id, {
+          status: "appealed",
+          updatedAt: new Date()
+        });
+      }
+    }
+    
     return updatedAppeal;
   }
-
-  // Moderation Settings
-  private moderationSettings: Map<number, ModerationSetting> = new Map();
-  private moderationSettingId: number = 1;
-
+  
+  // Moderation Settings methods
   async getModerationSettings(): Promise<ModerationSetting[]> {
     return Array.from(this.moderationSettings.values());
   }
-
-  async getModerationSetting(key: string): Promise<ModerationSetting | undefined> {
-    return Array.from(this.moderationSettings.values()).find(
-      setting => setting.key === key
-    );
+  
+  async getModerationSetting(id: number): Promise<ModerationSetting | undefined> {
+    return this.moderationSettings.get(id);
   }
-
-  async createModerationSetting(setting: InsertModerationSetting): Promise<ModerationSetting> {
-    const id = this.moderationSettingId++;
-    const timestamp = new Date();
-    const moderationSetting: ModerationSetting = {
-      id,
-      key: setting.key,
-      value: setting.value,
-      description: setting.description || null,
-      updatedBy: setting.updatedBy,
-      updatedAt: timestamp,
-    };
-    this.moderationSettings.set(id, moderationSetting);
-    return moderationSetting;
-  }
-
+  
   async updateModerationSetting(id: number, setting: Partial<ModerationSetting>): Promise<ModerationSetting> {
-    const moderationSetting = this.moderationSettings.get(id);
-    if (!moderationSetting) {
+    const existingSetting = await this.getModerationSetting(id);
+    if (!existingSetting) {
       throw new Error(`Moderation setting with ID ${id} not found`);
     }
     
     const updatedSetting = { 
-      ...moderationSetting, 
-      ...setting,
-      updatedAt: new Date()
+      ...existingSetting, 
+      ...setting, 
+      updatedAt: new Date() 
     };
     this.moderationSettings.set(id, updatedSetting);
     return updatedSetting;
   }
+  
+  async createModerationSetting(setting: InsertModerationSetting): Promise<ModerationSetting> {
+    const timestamp = new Date();
+    const newSetting: ModerationSetting = {
+      id: this.moderationSettingId++,
+      ...setting,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    this.moderationSettings.set(newSetting.id, newSetting);
+    return newSetting;
+  }
+
+  // Mind Map methods
+  async getMindMaps(): Promise<MindMap[]> {
+    return Array.from(this.mindMaps.values());
+  }
+
+  async getPublicMindMaps(): Promise<MindMap[]> {
+    return Array.from(this.mindMaps.values()).filter(
+      map => map.isPublic === true
+    );
+  }
+
+  async getUserMindMaps(userId: number): Promise<MindMap[]> {
+    const userCreatedMaps = Array.from(this.mindMaps.values()).filter(
+      map => map.createdBy === userId
+    );
+    
+    // Find maps where user is a collaborator
+    const userCollaborations = Array.from(this.mindMapCollaborators.values())
+      .filter(collab => collab.userId === userId)
+      .map(collab => collab.mindMapId);
+    
+    const collaborativeMaps = Array.from(this.mindMaps.values()).filter(
+      map => userCollaborations.includes(map.id)
+    );
+    
+    // Combine both sets of maps
+    return [...userCreatedMaps, ...collaborativeMaps];
+  }
+
+  async getUserPublicMindMaps(userId: number): Promise<MindMap[]> {
+    return Array.from(this.mindMaps.values()).filter(
+      map => map.createdBy === userId && map.isPublic === true
+    );
+  }
+
+  async getMindMap(id: number): Promise<MindMap | undefined> {
+    return this.mindMaps.get(id);
+  }
+
+  async createMindMap(mindMap: InsertMindMap): Promise<MindMap> {
+    const timestamp = new Date();
+    const newMindMap: MindMap = {
+      id: this.mindMapId++,
+      name: mindMap.name,
+      description: mindMap.description || "",
+      category: mindMap.category,
+      isPublic: mindMap.isPublic || false,
+      isCollaborative: mindMap.isCollaborative || false,
+      createdBy: mindMap.createdBy,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    this.mindMaps.set(newMindMap.id, newMindMap);
+    return newMindMap;
+  }
+
+  async updateMindMap(id: number, mindMap: Partial<MindMap>): Promise<MindMap> {
+    const existingMindMap = await this.getMindMap(id);
+    if (!existingMindMap) {
+      throw new Error(`Mind map with ID ${id} not found`);
+    }
+    
+    const updatedMindMap = { ...existingMindMap, ...mindMap, updatedAt: new Date() };
+    this.mindMaps.set(id, updatedMindMap);
+    return updatedMindMap;
+  }
+
+  async deleteMindMap(id: number): Promise<void> {
+    // Delete the mind map
+    this.mindMaps.delete(id);
+    
+    // Delete associated nodes
+    const nodesToDelete = Array.from(this.mindMapNodes.entries())
+      .filter(([key, node]) => node.mindMapId === id);
+    
+    for (const [key] of nodesToDelete) {
+      this.mindMapNodes.delete(key);
+    }
+    
+    // Delete associated connections
+    const connectionsToDelete = Array.from(this.mindMapConnections.entries())
+      .filter(([key, conn]) => conn.mindMapId === id);
+    
+    for (const [key] of connectionsToDelete) {
+      this.mindMapConnections.delete(key);
+    }
+    
+    // Delete associated collaborators
+    const collaboratorsToDelete = Array.from(this.mindMapCollaborators.entries())
+      .filter(([key, collab]) => collab.mindMapId === id);
+    
+    for (const [key] of collaboratorsToDelete) {
+      this.mindMapCollaborators.delete(key);
+    }
+  }
+
+  // Mind Map Node methods
+  async getMindMapNodes(mindMapId: number): Promise<MindMapNode[]> {
+    return Array.from(this.mindMapNodes.values()).filter(
+      node => node.mindMapId === mindMapId
+    );
+  }
+
+  async getMindMapNode(mindMapId: number, nodeId: string): Promise<MindMapNode | undefined> {
+    const key = `${mindMapId}:${nodeId}`;
+    return this.mindMapNodes.get(key);
+  }
+
+  async createMindMapNode(node: InsertMindMapNode): Promise<MindMapNode> {
+    const timestamp = new Date();
+    const key = `${node.mindMapId}:${node.nodeId}`;
+    
+    const mindMapNode: MindMapNode = {
+      mindMapId: node.mindMapId,
+      nodeId: node.nodeId,
+      type: node.type,
+      content: node.content,
+      description: node.description,
+      x: node.x,
+      y: node.y,
+      color: node.color,
+      size: node.size,
+      createdBy: node.createdBy,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    
+    this.mindMapNodes.set(key, mindMapNode);
+    return mindMapNode;
+  }
+
+  async updateMindMapNode(mindMapId: number, nodeId: string, node: Partial<MindMapNode>): Promise<MindMapNode> {
+    const key = `${mindMapId}:${nodeId}`;
+    const existingNode = this.mindMapNodes.get(key);
+    
+    if (!existingNode) {
+      throw new Error(`Node with ID ${nodeId} in mind map ${mindMapId} not found`);
+    }
+    
+    const updatedNode = { ...existingNode, ...node, updatedAt: new Date() };
+    this.mindMapNodes.set(key, updatedNode);
+    return updatedNode;
+  }
+
+  async deleteMindMapNode(mindMapId: number, nodeId: string): Promise<void> {
+    const key = `${mindMapId}:${nodeId}`;
+    
+    // Delete the node
+    this.mindMapNodes.delete(key);
+    
+    // Delete connections that reference this node
+    const connectionsToDelete = Array.from(this.mindMapConnections.entries())
+      .filter(([, conn]) => 
+        conn.mindMapId === mindMapId && 
+        (conn.sourceId === nodeId || conn.targetId === nodeId)
+      );
+    
+    for (const [connKey] of connectionsToDelete) {
+      this.mindMapConnections.delete(connKey);
+    }
+  }
+
+  // Mind Map Connection methods
+  async getMindMapConnections(mindMapId: number): Promise<MindMapConnection[]> {
+    return Array.from(this.mindMapConnections.values()).filter(
+      conn => conn.mindMapId === mindMapId
+    );
+  }
+
+  async getMindMapConnection(mindMapId: number, connectionId: string): Promise<MindMapConnection | undefined> {
+    const key = `${mindMapId}:${connectionId}`;
+    return this.mindMapConnections.get(key);
+  }
+
+  async createMindMapConnection(connection: InsertMindMapConnection): Promise<MindMapConnection> {
+    const timestamp = new Date();
+    const key = `${connection.mindMapId}:${connection.connectionId}`;
+    
+    const mindMapConnection: MindMapConnection = {
+      mindMapId: connection.mindMapId,
+      connectionId: connection.connectionId,
+      sourceId: connection.sourceId,
+      targetId: connection.targetId,
+      label: connection.label,
+      description: connection.description,
+      color: connection.color,
+      thickness: connection.thickness,
+      style: connection.style,
+      createdBy: connection.createdBy,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    
+    this.mindMapConnections.set(key, mindMapConnection);
+    return mindMapConnection;
+  }
+
+  async updateMindMapConnection(mindMapId: number, connectionId: string, connection: Partial<MindMapConnection>): Promise<MindMapConnection> {
+    const key = `${mindMapId}:${connectionId}`;
+    const existingConnection = this.mindMapConnections.get(key);
+    
+    if (!existingConnection) {
+      throw new Error(`Connection with ID ${connectionId} in mind map ${mindMapId} not found`);
+    }
+    
+    const updatedConnection = { ...existingConnection, ...connection, updatedAt: new Date() };
+    this.mindMapConnections.set(key, updatedConnection);
+    return updatedConnection;
+  }
+
+  async deleteMindMapConnection(mindMapId: number, connectionId: string): Promise<void> {
+    const key = `${mindMapId}:${connectionId}`;
+    this.mindMapConnections.delete(key);
+  }
+
+  // Mind Map Collaborators methods
+  async getMindMapCollaborators(mindMapId: number): Promise<MindMapCollaborator[]> {
+    return Array.from(this.mindMapCollaborators.values()).filter(
+      collab => collab.mindMapId === mindMapId
+    );
+  }
+
+  async addCollaboratorToMindMap(collaborator: InsertMindMapCollaborator): Promise<MindMapCollaborator> {
+    const id = this.mindMapCollaboratorId++;
+    const timestamp = new Date();
+    
+    const mindMapCollaborator: MindMapCollaborator = {
+      id,
+      mindMapId: collaborator.mindMapId,
+      userId: collaborator.userId,
+      role: collaborator.role,
+      createdAt: timestamp
+    };
+    
+    this.mindMapCollaborators.set(id, mindMapCollaborator);
+    return mindMapCollaborator;
+  }
+
+  async removeCollaboratorFromMindMap(mindMapId: number, userId: number): Promise<void> {
+    const collaborator = Array.from(this.mindMapCollaborators.entries())
+      .find(([, collab]) => collab.mindMapId === mindMapId && collab.userId === userId);
+    
+    if (collaborator) {
+      const [id] = collaborator;
+      this.mindMapCollaborators.delete(id);
+    }
+  }
+
+  // Mind Map Templates methods
+  async getMindMapTemplates(): Promise<MindMapTemplate[]> {
+    return Array.from(this.mindMapTemplates.values());
+  }
+
+  async getMindMapTemplate(id: number): Promise<MindMapTemplate | undefined> {
+    return this.mindMapTemplates.get(id);
+  }
+
+  async createMindMapTemplate(template: InsertMindMapTemplate): Promise<MindMapTemplate> {
+    const id = this.mindMapTemplateId++;
+    const timestamp = new Date();
+    
+    const mindMapTemplate: MindMapTemplate = {
+      id,
+      name: template.name,
+      description: template.description || "",
+      category: template.category,
+      createdBy: template.createdBy,
+      nodeData: template.nodeData,
+      connectionData: template.connectionData,
+      isPublic: template.isPublic || false,
+      createdAt: timestamp
+    };
+    
+    this.mindMapTemplates.set(id, mindMapTemplate);
+    return mindMapTemplate;
+  }
 }
 
-// Import the DatabaseStorage implementation
-import { DatabaseStorage } from "./database-storage";
-
-// Use the DatabaseStorage implementation for persistent storage
-export const storage = new DatabaseStorage();
+// Use the MemStorage implementation for development
+export const storage = new MemStorage();

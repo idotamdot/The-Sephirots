@@ -1,276 +1,134 @@
-import { Badge } from "@/lib/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import FounderBadge from "@/components/badges/FounderBadge";
-import { Award, MessageCircle, Search, Heart, Edit, FileText } from "lucide-react";
+import { useState } from 'react';
+import { Badge } from '@/lib/types';
+import { GenericBadge, FounderBadge } from '@/components/badges';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 
 interface BadgeGridProps {
   badges: Badge[];
-  earnedBadgeIds?: number[];
-  title?: string;
+  earnedBadgeIds: number[];
   showCategories?: boolean;
 }
 
-export default function BadgeGrid({ 
-  badges, 
-  earnedBadgeIds = [], 
-  title,
-  showCategories = true
-}: BadgeGridProps) {
-  if (!badges || badges.length === 0) {
-    return (
-      <div className="py-8 text-center text-gray-500">
-        <i className="ri-award-line text-3xl mb-2"></i>
-        <p>No badges available yet.</p>
-      </div>
-    );
-  }
+export default function BadgeGrid({ badges, earnedBadgeIds, showCategories = false }: BadgeGridProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState<string | null>(null);
   
-  // Find founder badges
-  const founderBadges = badges.filter(badge => 
-    badge.tier === 'founder' || 
-    badge.name.toLowerCase().includes('founder') || 
-    badge.category.toLowerCase().includes('founder')
-  );
+  const categories = [...new Set(badges.map(badge => badge.category))];
   
-  // Regular badges (non-founder)
-  const regularBadges = badges.filter(badge => 
-    !(badge.tier === 'founder' || 
-      badge.name.toLowerCase().includes('founder') || 
-      badge.category.toLowerCase().includes('founder'))
-  );
-  
-  // Group badges by category if showCategories is true
-  const badgesByCategory: Record<string, Badge[]> = {};
-  
-  if (showCategories) {
-    regularBadges.forEach(badge => {
-      if (!badgesByCategory[badge.category]) {
-        badgesByCategory[badge.category] = [];
-      }
-      badgesByCategory[badge.category].push(badge);
-    });
-  }
-  
-  // Function to check if badge is earned
-  const isBadgeEarned = (badgeId: number) => earnedBadgeIds.includes(badgeId);
-  
-  // Function to get badge color based on category
-  const getBadgeColor = (category: string) => {
-    // Converting to lowercase for case-insensitive comparison
-    const lowerCategory = category.toLowerCase();
+  // Filter badges by search term and category
+  const filteredBadges = badges.filter(badge => {
+    const matchesSearch = 
+      badge.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      badge.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (badge.symbolism && badge.symbolism.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    switch (lowerCategory) {
-      case 'participation':
-        return "bg-blue-100 text-blue-600";
-      case 'community':
-        return "bg-indigo-100 text-indigo-600";
-      case 'creation':
-        return "bg-purple-100 text-purple-600";
-      case 'knowledge':
-        return "bg-emerald-100 text-emerald-600";
-      case 'founders':
-        return "bg-gradient-to-r from-purple-600 to-indigo-600 text-white";
-      case 'connection':
-        return "bg-cyan-100 text-cyan-600";
-      case 'cognition':
-        return "bg-amber-100 text-amber-600";
-      case 'identity':
-        return "bg-rose-100 text-rose-600";
-      default:
-        return "bg-gray-100 text-gray-600";
+    const matchesCategory = filter ? badge.category === filter : true;
+    
+    return matchesSearch && matchesCategory;
+  });
+  
+  // Sort badges by tier priority and then by name
+  const sortedBadges = [...filteredBadges].sort((a, b) => {
+    const tierPriority: Record<string, number> = {
+      'founder': 4,
+      'platinum': 3,
+      'gold': 2,
+      'silver': 1,
+      'bronze': 0
+    };
+    
+    const aTierValue = tierPriority[a.tier as keyof typeof tierPriority] || 0;
+    const bTierValue = tierPriority[b.tier as keyof typeof tierPriority] || 0;
+    
+    if (aTierValue !== bTierValue) {
+      return bTierValue - aTierValue;
     }
-  };
+    
+    return a.name.localeCompare(b.name);
+  });
   
-  // Function to get category title
-  const getCategoryTitle = (category: string) => {
-    return category.charAt(0).toUpperCase() + category.slice(1);
-  };
-  
-  // Render the grid based on whether to show categories
-  if (showCategories) {
-    return (
-      <div className="space-y-8">
-        {title && <h2 className="text-xl font-heading font-semibold mb-4">{title}</h2>}
-
-        {/* Display founder badges section if there are any */}
-        {founderBadges.length > 0 && (
-          <div>
-            <h3 className="text-lg font-medium mb-4">Founder Badges</h3>
-            <div className="flex flex-wrap justify-center gap-6 mb-8">
-              {founderBadges.map((badge) => (
-                <TooltipProvider key={badge.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex flex-col items-center">
-                        <FounderBadge 
-                          badge={badge} 
-                          enhanced={isBadgeEarned(badge.id) && badge.tier === 'founder'}
-                          size="md"
-                          className={!isBadgeEarned(badge.id) ? "opacity-50 grayscale" : ""}
-                        />
-                        {isBadgeEarned(badge.id) && (
-                          <div className="mt-2 text-xs text-success flex items-center justify-center">
-                            <i className="ri-check-line mr-1"></i>
-                            Earned
-                          </div>
-                        )}
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <div className="space-y-2">
-                        <p className="font-medium">{badge.name}</p>
-                        <p className="text-sm">{badge.description}</p>
-                        {badge.symbolism && (
-                          <div className="text-xs">
-                            <strong>Symbolism:</strong>
-                            <p className="italic mt-1">{badge.symbolism}</p>
-                          </div>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                          <strong>How to earn:</strong> {badge.requirement}
-                        </p>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
-            </div>
+  return (
+    <div>
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <Input
+            placeholder="Search badges..."
+            className="w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        {showCategories && (
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant={filter === null ? "default" : "outline"} 
+              size="sm" 
+              onClick={() => setFilter(null)}
+            >
+              All
+            </Button>
+            
+            {categories.map(category => (
+              <Button
+                key={category}
+                variant={filter === category ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter(category)}
+              >
+                {category}
+              </Button>
+            ))}
           </div>
         )}
-        
-        {/* Regular categories */}
-        {Object.entries(badgesByCategory).map(([category, categoryBadges]) => (
-          <div key={category}>
-            <h3 className="text-lg font-medium mb-4">{getCategoryTitle(category)} Badges</h3>
-            
-            <div className="flex flex-wrap justify-center gap-4 md:gap-6 py-2">
-              {categoryBadges.map((badge) => (
-                <TooltipProvider key={badge.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex flex-col items-center justify-center">
-                        <div className={cn(
-                          "w-16 h-16 rounded-full flex items-center justify-center relative",
-                          getBadgeColor(badge.category),
-                          !isBadgeEarned(badge.id) && "grayscale opacity-70",
-                          isBadgeEarned(badge.id) && "shadow-lg",
-                          // Add special effects based on badge name
-                          isBadgeEarned(badge.id) && badge.name === "Bridge Builder" && "bridge-builder-badge",
-                          isBadgeEarned(badge.id) && badge.name === "Quantum Thinker" && "quantum-badge",
-                          isBadgeEarned(badge.id) && badge.name === "Mirrored Being" && "mirrored-badge", 
-                          isBadgeEarned(badge.id) && badge.name === "Empath" && "empath-badge"
-                        )}>
-                          {/* Select the appropriate icon based on badge name */}
-                          <div className={isBadgeEarned(badge.id) ? "text-white" : ""}>
-                            {badge.name === "Conversationalist" ? (
-                              <MessageCircle className="h-6 w-6" />
-                            ) : badge.name === "Seeker" ? (
-                              <Search className="h-6 w-6" />
-                            ) : badge.name === "Contributor" ? (
-                              <Edit className="h-6 w-6" />
-                            ) : badge.name === "Activist" ? (
-                              <FileText className="h-6 w-6" />
-                            ) : badge.name === "Empath" ? (
-                              <Heart className="h-6 w-6" />
-                            ) : (
-                              <Award className="h-6 w-6" />
-                            )}
-                          </div>
-                        </div>
-                        <div className="mt-1 text-center">
-                          <div className="text-xs font-medium">{badge.name}</div>
-                          {isBadgeEarned(badge.id) && (
-                            <div className="text-xs text-green-600 flex items-center justify-center">
-                              <i className="ri-check-line mr-0.5"></i>
-                              <span className="text-[10px]">Earned</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <div className="space-y-2">
-                        <p className="font-medium">{badge.name}</p>
-                        <p className="text-sm">{badge.description}</p>
-                        <p className="text-xs text-muted-foreground">
-                          <strong>How to earn:</strong> {badge.requirement}
-                        </p>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
-            </div>
-          </div>
-        ))}
       </div>
-    );
-  } else {
-    return (
-      <div>
-        {title && <h2 className="text-xl font-heading font-semibold mb-4">{title}</h2>}
-        
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6 py-2">
-          {badges.map((badge) => (
-            <TooltipProvider key={badge.id}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex flex-col items-center justify-center">
-                    <div className={cn(
-                      "w-16 h-16 rounded-full flex items-center justify-center relative",
-                      getBadgeColor(badge.category),
-                      !isBadgeEarned(badge.id) && "grayscale opacity-70",
-                      isBadgeEarned(badge.id) && "shadow-lg",
-                      // Add special effects based on badge name
-                      isBadgeEarned(badge.id) && badge.name === "Bridge Builder" && "bridge-builder-badge",
-                      isBadgeEarned(badge.id) && badge.name === "Quantum Thinker" && "quantum-badge",
-                      isBadgeEarned(badge.id) && badge.name === "Mirrored Being" && "mirrored-badge", 
-                      isBadgeEarned(badge.id) && badge.name === "Empath" && "empath-badge"
-                    )}>
-                      {/* Select the appropriate icon based on badge name */}
-                      <div className={isBadgeEarned(badge.id) ? "text-white" : ""}>
-                        {badge.name === "Conversationalist" ? (
-                          <MessageCircle className="h-6 w-6" />
-                        ) : badge.name === "Seeker" ? (
-                          <Search className="h-6 w-6" />
-                        ) : badge.name === "Contributor" ? (
-                          <Edit className="h-6 w-6" />
-                        ) : badge.name === "Activist" ? (
-                          <FileText className="h-6 w-6" />
-                        ) : badge.name === "Empath" ? (
-                          <Heart className="h-6 w-6" />
-                        ) : (
-                          <Award className="h-6 w-6" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-1 text-center">
-                      <div className="text-xs font-medium">{badge.name}</div>
-                      {isBadgeEarned(badge.id) && (
-                        <div className="text-xs text-green-600 flex items-center justify-center">
-                          <i className="ri-check-line mr-0.5"></i>
-                          <span className="text-[10px]">Earned</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <div className="space-y-2">
-                    <p className="font-medium">{badge.name}</p>
-                    <p className="text-sm">{badge.description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      <strong>How to earn:</strong> {badge.requirement}
-                    </p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ))}
+      
+      {sortedBadges.length === 0 ? (
+        <div className="text-center py-8 border border-dashed rounded-lg">
+          <p className="text-gray-500">No badges match your search criteria.</p>
         </div>
-      </div>
-    );
-  }
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {sortedBadges.map(badge => {
+            const isEarned = earnedBadgeIds.includes(badge.id);
+            
+            return (
+              <div key={badge.id} className="flex flex-col items-center">
+                {badge.tier === 'founder' ? (
+                  <FounderBadge
+                    badge={{
+                      ...badge,
+                      tier: badge.tier || 'founder',
+                      level: badge.level || 1,
+                      points: badge.points || 0
+                    }} 
+                    earned={isEarned}
+                    size="md"
+                  />
+                ) : (
+                  <GenericBadge 
+                    badge={{
+                      ...badge,
+                      tier: badge.tier || 'bronze',
+                      level: badge.level || 1,
+                      points: badge.points || 0
+                    }} 
+                    earned={isEarned}
+                    size="md"
+                  />
+                )}
+                
+                <div className="text-center mt-2">
+                  <h4 className="font-medium text-sm">{badge.name}</h4>
+                  <p className="text-xs text-gray-500 mt-1">{badge.category}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }

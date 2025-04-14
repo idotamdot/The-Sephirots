@@ -8,8 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { calculatePointsToNextLevel } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Award, Sparkles } from "lucide-react";
+import { Award, Sparkles, Star } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import AchievementProjector from "@/components/achievements/AchievementProjector";
+import { Button } from "@/components/ui/button";
 
 export default function Achievements() {
   // Get current user
@@ -259,6 +261,107 @@ export default function Achievements() {
         userName={currentUser.displayName || currentUser.username}
       />
       
+      {/* Holographic Achievement Projector */}
+      <Card className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 to-amber-700/5 pointer-events-none" />
+        <CardHeader className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-amber-500" />
+                Holographic Achievement Projector
+              </CardTitle>
+              <CardDescription>
+                Experience your badges in a stunning 3D visualization
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="hidden md:inline-flex">
+                <i className="ri-download-line mr-1"></i>
+                Export
+              </Button>
+              <Button variant="outline" size="sm" className="hidden md:inline-flex">
+                <i className="ri-share-line mr-1"></i>
+                Share
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="earned">
+            <div className="flex justify-between items-center mb-4">
+              <TabsList>
+                <TabsTrigger value="earned">Your Badges</TabsTrigger>
+                <TabsTrigger value="orbit">Orbit View</TabsTrigger>
+                <TabsTrigger value="pyramid">Pyramid View</TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <TabsContent value="earned">
+              <div className="mb-8">
+                {userBadges && userBadges.length > 0 ? (
+                  <AchievementProjector 
+                    badges={userBadges} 
+                    title="Your Earned Badges" 
+                    layout="grid"
+                  />
+                ) : (
+                  <div className="text-center py-12 border border-dashed rounded-lg">
+                    <Award className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                    <h3 className="text-lg font-medium mb-2">No Badges Earned Yet</h3>
+                    <p className="text-gray-500 max-w-md mx-auto">
+                      Participate in discussions, contribute to proposals, and engage with 
+                      the community to earn your first badge.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="orbit">
+              <div className="mb-8">
+                {userBadges && userBadges.length > 0 ? (
+                  <AchievementProjector 
+                    badges={userBadges} 
+                    title="Orbital Achievement View" 
+                    layout="orbit"
+                  />
+                ) : (
+                  <div className="text-center py-12 border border-dashed rounded-lg">
+                    <i className="ri-planet-line text-4xl text-gray-400 mb-3"></i>
+                    <h3 className="text-lg font-medium mb-2">Orbit View Unavailable</h3>
+                    <p className="text-gray-500 max-w-md mx-auto">
+                      Earn badges to unlock the interactive orbital achievement view.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="pyramid">
+              <div className="mb-8">
+                {userBadges && userBadges.length > 0 ? (
+                  <AchievementProjector 
+                    badges={userBadges} 
+                    title="Sephirotic Tree Structure" 
+                    layout="pyramid"
+                  />
+                ) : (
+                  <div className="text-center py-12 border border-dashed rounded-lg">
+                    <i className="ri-ancient-gate-line text-4xl text-gray-400 mb-3"></i>
+                    <h3 className="text-lg font-medium mb-2">Pyramid View Unavailable</h3>
+                    <p className="text-gray-500 max-w-md mx-auto">
+                      Earn badges to unlock the hierarchical pyramid achievement view.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+      
+      {/* Regular Badge Collection */}
       <Card>
         <CardHeader>
           <CardTitle>Badge Collection</CardTitle>

@@ -170,6 +170,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok" });
   });
+  
+  // Development-only route for testing profile functionality
+  app.get("/api/dev/login-test-user", async (req, res) => {
+    if (process.env.NODE_ENV !== "development") {
+      return res.status(404).json({ error: "Not found" });
+    }
+    
+    try {
+      // Look for existing test user or create one
+      let testUser = await storage.getUserByUsername("testuser");
+      
+      if (!testUser) {
+        // Create a test user if none exists
+        testUser = await storage.createUser({
+          username: "testuser",
+          displayName: "Test User",
+          password: hashPassword("password"),
+          avatar: null,
+          bio: "This is a test user account for development.",
+          level: 3,
+          points: 150,
+          isAi: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+      
+      // Log the user in
+      req.login(testUser, (err) => {
+        if (err) {
+          return res.status(500).json({ error: "Failed to log in test user" });
+        }
+        
+        const { password, ...userWithoutPassword } = testUser;
+        return res.json(userWithoutPassword);
+      });
+    } catch (error) {
+      console.error("Error logging in test user:", error);
+      res.status(500).json({ error: "Failed to log in test user" });
+    }
+  });
 
   // ===== AUTH ROUTES =====
   

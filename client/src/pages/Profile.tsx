@@ -422,10 +422,12 @@ export default function Profile({ currentUser }: ProfileProps) {
         </TabsContent>
         
         <TabsContent value="badges" className="mt-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-medium">Earned Badges</h3>
+          </div>
           <BadgeGrid 
             badges={userBadges || []} 
-            earnedBadgeIds={userBadges?.map(b => b.id) || []}
-            title="Earned Badges" 
+            earnedBadgeIds={(userBadges || []).map(b => b.id)}
             showCategories={false}
           />
         </TabsContent>

@@ -5,6 +5,7 @@ export interface User {
   username: string;
   displayName: string;
   avatar?: string;
+  avatarType?: 'url' | 'generated' | 'upload';
   bio?: string;
   level: number;
   points: number;

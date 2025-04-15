@@ -105,7 +105,10 @@ export default function AuthStatus() {
 
   return (
     <div className="flex items-center">
-      <div className="mr-4 flex items-center">
+      <button 
+        className="mr-4 flex items-center cursor-pointer hover:opacity-80"
+        onClick={() => navigate("/profile")}
+      >
         {user.avatar ? (
           <img 
             src={user.avatar}
@@ -119,7 +122,7 @@ export default function AuthStatus() {
           <span className="font-medium text-amber-800">{user.displayName}</span>
           <span className="text-xs text-gray-500">Level {user.level} • {user.points} points</span>
         </div>
-      </div>
+      </button>
       <Button 
         variant="ghost" 
         size="icon" 

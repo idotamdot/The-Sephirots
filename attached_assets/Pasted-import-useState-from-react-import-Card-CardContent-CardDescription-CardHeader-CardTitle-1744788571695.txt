@@ -139,7 +139,7 @@ export default function AICompanion() {
                       <CardTitle className="text-lg text-purple-600">Growth Trajectory</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm">You're following a spiral path of wisdom — revisiting key soul lessons with new understanding.</p>
+                      <p className="text-sm">You’re following a spiral path of wisdom — revisiting key soul lessons with new understanding.</p>
                     </CardContent>
                   </Card>
                 </div>

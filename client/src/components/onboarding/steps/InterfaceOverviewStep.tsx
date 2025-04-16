@@ -6,101 +6,108 @@ interface StepProps {
 }
 
 export default function InterfaceOverviewStep({ onNext }: StepProps) {
-  const interfaceElements = [
-    {
-      icon: '🌠',
-      title: 'Cosmic Background',
-      description: 'Responsive energy field that shifts with community activity and your own journey',
-    },
-    {
-      icon: '🧭',
-      title: 'Navigation Sidebar',
-      description: 'Your portal to different dimensions of The Sephirots platform',
-    },
-    {
-      icon: '🎵',
-      title: 'Audio Landscape',
-      description: 'Ambient soundscapes that enhance your cosmic experience',
-    },
-    {
-      icon: '👤',
-      title: 'Profile & Journey',
-      description: 'Track your spiritual evolution and cosmic achievements',
-    },
-  ];
-
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      <motion.h2 
-        className="text-2xl font-semibold text-center text-amber-300"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
-        The Cosmic Interface
-      </motion.h2>
-      
-      <motion.p
-        className="text-gray-300 text-center"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
-        The Sephirots interface is designed to be intuitive, immersive, and spiritually resonant. 
-        Let's explore the key elements that will guide your journey.
-      </motion.p>
-      
       <motion.div 
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="text-center"
       >
-        {interfaceElements.map((element, index) => (
-          <motion.div
-            key={element.title}
-            className="bg-purple-800/20 p-4 rounded-lg border border-purple-500/30 flex items-start space-x-3"
-            initial={{ x: index % 2 === 0 ? -20 : 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3 + index * 0.1 }}
-          >
-            <div className="text-2xl">{element.icon}</div>
-            <div>
-              <h3 className="font-medium text-amber-200">{element.title}</h3>
-              <p className="text-sm text-gray-300 mt-1">{element.description}</p>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
-      
-      <motion.div
-        className="bg-indigo-900/20 p-6 rounded-lg border border-indigo-500/30 mt-6"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.6 }}
-      >
-        <h3 className="text-xl text-center font-medium text-indigo-300 mb-2">Energy-Responsive Design</h3>
-        <p className="text-gray-300 text-center">
-          The interface adapts and responds to your energy, intentions, and the collective consciousness of the community.
-          As you engage more deeply, you'll notice subtle shifts in colors, animations, and interactive elements.
+        <h2 className="text-2xl font-bold text-white mb-2">Interface Overview</h2>
+        <p className="text-gray-300">
+          The Sephirots interface is designed for intuitive navigation through the cosmic wisdom landscape.
         </p>
       </motion.div>
       
-      <motion.div
-        className="flex justify-center mt-6"
+      <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.7 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+      >
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-purple-300/20">
+          <div className="flex items-center mb-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center mr-3">
+              <i className="ri-layout-4-line text-white"></i>
+            </div>
+            <h3 className="text-lg font-medium text-amber-300">Cosmic Layout</h3>
+          </div>
+          <p className="text-gray-300 text-sm">
+            The main dashboard presents your path through the Tree of Life with intuitive navigation and personalized insights.
+          </p>
+        </div>
+        
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-purple-300/20">
+          <div className="flex items-center mb-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center mr-3">
+              <i className="ri-navigation-line text-white"></i>
+            </div>
+            <h3 className="text-lg font-medium text-amber-300">Sidebar Navigation</h3>
+          </div>
+          <p className="text-gray-300 text-sm">
+            Access all core areas including discussions, governance, and your AI companion through the intuitive sidebar menu.
+          </p>
+        </div>
+        
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-purple-300/20">
+          <div className="flex items-center mb-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mr-3">
+              <i className="ri-user-settings-line text-white"></i>
+            </div>
+            <h3 className="text-lg font-medium text-amber-300">Profile & Settings</h3>
+          </div>
+          <p className="text-gray-300 text-sm">
+            Manage your cosmic profile, spiritual preferences, and notification settings through your profile menu.
+          </p>
+        </div>
+        
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-purple-300/20">
+          <div className="flex items-center mb-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center mr-3">
+              <i className="ri-notification-3-line text-white"></i>
+            </div>
+            <h3 className="text-lg font-medium text-amber-300">Cosmic Notifications</h3>
+          </div>
+          <p className="text-gray-300 text-sm">
+            Stay connected to community activity, spiritual insights, and important events through the notification system.
+          </p>
+        </div>
+      </motion.div>
+      
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.7, duration: 0.5 }}
+        className="bg-gradient-to-r from-purple-900/30 to-indigo-900/30 rounded-lg p-4 border border-purple-300/20"
+      >
+        <div className="flex items-center mb-2">
+          <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center mr-3 text-indigo-900">
+            <i className="ri-lightbulb-flash-line"></i>
+          </div>
+          <h3 className="text-lg font-medium text-amber-300">Cosmic Insight</h3>
+        </div>
+        <p className="text-gray-300 text-sm">
+          The interface adapts to your energy and spiritual journey, revealing new features and deeper wisdom as you progress through the cosmic levels.
+        </p>
+      </motion.div>
+      
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.9, duration: 0.5 }}
+        className="flex justify-center pt-4"
       >
         <Button
           onClick={onNext}
-          className="bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white px-8"
+          className="bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white px-10 py-6 h-auto text-lg"
         >
-          Continue to Navigation
+          Continue Journey
         </Button>
       </motion.div>
     </motion.div>

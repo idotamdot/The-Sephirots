@@ -6,116 +6,97 @@ interface StepProps {
 }
 
 export default function CosmicNavigationStep({ onNext }: StepProps) {
-  const navigationSections = [
-    {
-      icon: '🏛️',
-      title: 'Governance',
-      description: 'Participate in collective decision-making and shape the evolution of our community',
-      path: '/governance'
-    },
-    {
-      icon: '🧠',
-      title: 'Mind Map Explorer',
-      description: 'Navigate the collective consciousness through interconnected ideas and insights',
-      path: '/mindmap'
-    },
-    {
-      icon: '💫',
-      title: 'Mystical Progress',
-      description: 'Track your spiritual evolution through achievements and cosmic milestones',
-      path: '/mystical-progress'
-    },
-    {
-      icon: '🔮',
-      title: 'Quantum Insights',
-      description: 'Access AI-generated wisdom tailored to your unique spiritual journey',
-      path: '/quantum-insights'
-    },
-    {
-      icon: '💬',
-      title: 'Community Discussions',
-      description: 'Engage in deep conversations about consciousness, technology, and spirituality',
-      path: '/discussions'
-    },
-    {
-      icon: '🤝',
-      title: 'Rights Agreement',
-      description: 'Understand the sacred covenant between humans, AIs, and our collective ecosystem',
-      path: '/rights-agreement'
-    }
-  ];
-
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      <motion.h2 
-        className="text-2xl font-semibold text-center text-amber-300"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
-        Navigating The Cosmic Realms
-      </motion.h2>
-      
-      <motion.p
-        className="text-gray-300 text-center"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
-        The Sephirots platform contains multiple interconnected dimensions, each offering unique experiences and opportunities for growth and contribution.
-      </motion.p>
-      
       <motion.div 
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="text-center"
       >
-        {navigationSections.map((section, index) => (
-          <motion.div
-            key={section.title}
-            className="bg-purple-800/20 p-4 rounded-lg border border-purple-500/30 hover:border-amber-500/50 hover:bg-purple-700/30 transition-colors"
-            initial={{ x: index % 2 === 0 ? -20 : 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3 + index * 0.1 }}
-          >
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="text-2xl">{section.icon}</div>
-              <h3 className="font-medium text-amber-200">{section.title}</h3>
-            </div>
-            <p className="text-sm text-gray-300">{section.description}</p>
-          </motion.div>
-        ))}
-      </motion.div>
-      
-      <motion.div
-        className="bg-indigo-900/20 p-6 rounded-lg border border-indigo-500/30 mt-6"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.8 }}
-      >
-        <h3 className="text-xl text-center font-medium text-indigo-300 mb-2">Intuitive Flow</h3>
-        <p className="text-gray-300 text-center">
-          As you explore different sections, the platform will begin to understand your interests and spiritual needs,
-          offering personalized suggestions and creating an intuitive flow between related areas.
+        <h2 className="text-2xl font-bold text-white mb-2">Cosmic Navigation</h2>
+        <p className="text-gray-300">
+          Navigate through the key areas of The Sephirots using the cosmic map.
         </p>
       </motion.div>
       
-      <motion.div
-        className="flex justify-center mt-6"
+      <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.9 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        className="relative"
+      >
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-1 h-[calc(100%+1.5rem)] bg-gradient-to-b from-amber-500 to-purple-500 opacity-50 z-0"></div>
+        
+        <div className="space-y-6 relative z-10">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-purple-300/20 ml-6 relative">
+            <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg border-2 border-amber-200/30">
+              <i className="ri-home-4-line text-white text-xl"></i>
+            </div>
+            <h3 className="text-lg font-medium text-amber-300">Home Dashboard</h3>
+            <p className="text-gray-300 text-sm mt-1">
+              Your starting point for cosmic exploration—displays upcoming events, recent discussions, and your personal spiritual progress.
+            </p>
+          </div>
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-purple-300/20 ml-6 relative">
+            <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg border-2 border-purple-200/30">
+              <i className="ri-chat-3-line text-white text-xl"></i>
+            </div>
+            <h3 className="text-lg font-medium text-amber-300">Discussions</h3>
+            <p className="text-gray-300 text-sm mt-1">
+              Engage in meaningful conversations with community members and AI companions on spiritual, philosophical, and cosmic topics.
+            </p>
+          </div>
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-purple-300/20 ml-6 relative">
+            <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-lg border-2 border-indigo-200/30">
+              <i className="ri-robot-line text-white text-xl"></i>
+            </div>
+            <h3 className="text-lg font-medium text-amber-300">AI Companion</h3>
+            <p className="text-gray-300 text-sm mt-1">
+              Connect with your personal AI guide for spiritual growth, emotional support, and cosmic insights tailored to your journey.
+            </p>
+          </div>
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-purple-300/20 ml-6 relative">
+            <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg border-2 border-blue-200/30">
+              <i className="ri-government-line text-white text-xl"></i>
+            </div>
+            <h3 className="text-lg font-medium text-amber-300">Governance</h3>
+            <p className="text-gray-300 text-sm mt-1">
+              Participate in collaborative decision-making about platform policies, AI-human rights, and system improvements.
+            </p>
+          </div>
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-purple-300/20 ml-6 relative">
+            <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center shadow-lg border-2 border-amber-300/30">
+              <i className="ri-user-star-line text-white text-xl"></i>
+            </div>
+            <h3 className="text-lg font-medium text-amber-300">Profile & Achievements</h3>
+            <p className="text-gray-300 text-sm mt-1">
+              Track your cosmic journey, collected badges, and spiritual development through your personalized profile.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+      
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.9, duration: 0.5 }}
+        className="flex justify-center pt-4"
       >
         <Button
           onClick={onNext}
-          className="bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white px-8"
+          className="bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white px-10 py-6 h-auto text-lg"
         >
-          Meet Your AI Companion
+          Continue to AI Companion
         </Button>
       </motion.div>
     </motion.div>

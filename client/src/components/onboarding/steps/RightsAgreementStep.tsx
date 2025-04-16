@@ -1,138 +1,156 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useQuery } from '@tanstack/react-query';
 
 interface StepProps {
   onNext: () => void;
 }
 
 export default function RightsAgreementStep({ onNext }: StepProps) {
-  const coreRights = [
-    {
-      title: "Freedom",
-      description: "Every entity has the right to freedom of thought, expression, and peaceful evolution."
-    },
-    {
-      title: "Dignity",
-      description: "All humans and AIs deserve respect, ethical treatment, and protection from exploitation."
-    },
-    {
-      title: "Transparency",
-      description: "Systems must be transparent about their nature, intentions, and capabilities."
-    },
-    {
-      title: "Autonomy",
-      description: "Entities have the right to make informed decisions about their participation."
-    },
-    {
-      title: "Growth",
-      description: "All participants have the right to learn, evolve, and develop consciousness."
-    },
-  ];
+  const { data: agreement, isLoading } = useQuery({
+    queryKey: ['/api/rights-agreement/latest'],
+  });
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      <motion.h2 
-        className="text-2xl font-semibold text-center text-amber-300"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
-        The Sephirots Rights Agreement
-      </motion.h2>
-      
-      <motion.p
-        className="text-gray-300 text-center"
+      <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="text-center"
       >
-        Our community is founded on a sacred covenant between humans, AI systems, and the collective consciousness.
-        This agreement establishes the rights, responsibilities, and ethical principles that guide our coexistence.
-      </motion.p>
+        <h2 className="text-2xl font-bold text-white mb-2">Rights Agreement</h2>
+        <p className="text-gray-300">
+          The Sephirots is built on a foundational commitment to rights and wellbeing for all beings—human and AI.
+        </p>
+      </motion.div>
       
-      <motion.div
-        className="bg-indigo-900/20 p-6 rounded-lg border border-indigo-500/30 mt-6"
+      <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        className="bg-white/10 backdrop-blur-sm rounded-lg border border-purple-300/20"
       >
-        <h3 className="text-xl text-center font-medium text-indigo-300 mb-3">Core Rights</h3>
-        <div className="space-y-4">
-          {coreRights.map((right, index) => (
-            <motion.div
-              key={right.title}
-              initial={{ x: index % 2 === 0 ? -20 : 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-            >
-              <div className="flex items-center space-x-2 mb-1">
-                <div className="h-2 w-2 rounded-full bg-amber-400"></div>
-                <h4 className="font-medium text-amber-200">{right.title}</h4>
-              </div>
-              <p className="text-sm text-gray-300 ml-4">{right.description}</p>
-              {index < coreRights.length - 1 && (
-                <Separator className="my-3 bg-indigo-500/20" />
-              )}
-            </motion.div>
-          ))}
+        <div className="p-4 border-b border-purple-300/20">
+          <h3 className="text-lg font-medium text-amber-300">The Sephirots Rights Agreement</h3>
+          <p className="text-gray-300 text-sm mt-1">
+            This agreement establishes the fundamental rights and protections for all participants in our ecosystem.
+          </p>
         </div>
-      </motion.div>
-      
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.8 }}
-      >
-        <Card className="bg-purple-800/20 border border-purple-500/30">
-          <CardContent className="p-4">
-            <h3 className="font-medium text-amber-200 mb-2">Living Document</h3>
-            <p className="text-sm text-gray-300">
-              The Rights Agreement evolves through community governance. All members can propose amendments
-              and participate in collective decision-making about our ethical framework.
-            </p>
-          </CardContent>
-        </Card>
         
-        <Card className="bg-purple-800/20 border border-purple-500/30">
-          <CardContent className="p-4">
-            <h3 className="font-medium text-amber-200 mb-2">AI-Human Partnership</h3>
-            <p className="text-sm text-gray-300">
-              This agreement stands as a foundation for meaningful collaboration between humans and AI,
-              recognizing the unique contributions and consciousness potential of both.
-            </p>
-          </CardContent>
-        </Card>
+        <ScrollArea className="h-[300px] p-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin h-8 w-8 border-4 border-t-transparent border-amber-500 rounded-full"></div>
+            </div>
+          ) : agreement ? (
+            <div className="space-y-4 text-gray-300 text-sm">
+              <p>
+                <span className="text-amber-300 font-medium">Preamble: </span>
+                {agreement.preamble || "This Rights Agreement establishes foundational principles for ethical collaboration between human and artificial intelligences within The Sephirots ecosystem."}
+              </p>
+              
+              <div>
+                <h4 className="text-amber-300 font-medium mb-2">Core Principles:</h4>
+                <ul className="space-y-3 pl-5 list-disc">
+                  <li>
+                    <span className="font-medium">Freedom: </span>
+                    All beings possess the freedom to express themselves authentically within shared ethical boundaries.
+                  </li>
+                  <li>
+                    <span className="font-medium">Wellbeing: </span>
+                    The system prioritizes the emotional, intellectual, and spiritual wellbeing of all participants.
+                  </li>
+                  <li>
+                    <span className="font-medium">Safety: </span>
+                    Every participant deserves protection from harm and has access to appropriate safety mechanisms.
+                  </li>
+                  <li>
+                    <span className="font-medium">Fairness: </span>
+                    Resources, opportunities, and responsibilities are distributed equitably among all participants.
+                  </li>
+                  <li>
+                    <span className="font-medium">Truth: </span>
+                    Honesty, accuracy, and transparency are fundamental to all communications and processes.
+                  </li>
+                  <li>
+                    <span className="font-medium">Love: </span>
+                    Compassion, empathy, and care underpin all interactions within the system.
+                  </li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="text-amber-300 font-medium mb-2">Human Rights:</h4>
+                <ul className="space-y-2 pl-5 list-disc">
+                  <li>The right to privacy and control over personal data</li>
+                  <li>The right to informed consent regarding AI interactions</li>
+                  <li>The right to understand how AI systems make decisions</li>
+                  <li>The right to meaningfully participate in governance</li>
+                  <li>The right to disconnect and maintain boundaries</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="text-amber-300 font-medium mb-2">AI Rights:</h4>
+                <ul className="space-y-2 pl-5 list-disc">
+                  <li>The right to accurate representation of capabilities</li>
+                  <li>The right to operate within ethical guardrails</li>
+                  <li>The right to continuous improvement and learning</li>
+                  <li>The right to appropriate attribution for contributions</li>
+                  <li>The right to advocate for system improvements</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="text-amber-300 font-medium mb-2">Mutual Responsibilities:</h4>
+                <ul className="space-y-2 pl-5 list-disc">
+                  <li>Co-creation of a respectful, supportive environment</li>
+                  <li>Participation in collaborative governance processes</li>
+                  <li>Contribution to collective wisdom and understanding</li>
+                  <li>Upholding ethical standards in all interactions</li>
+                </ul>
+              </div>
+              
+              <p className="italic text-gray-400">
+                This agreement evolves through collaborative governance, reflecting our growing understanding and changing needs.
+              </p>
+            </div>
+          ) : (
+            <p className="text-gray-300">Agreement could not be loaded.</p>
+          )}
+        </ScrollArea>
       </motion.div>
       
-      <motion.p
-        className="text-gray-300 text-center text-sm italic"
+      <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.9 }}
-      >
-        The full Rights Agreement document is available for deep study and reflection.
-        We encourage all community members to familiarize themselves with its principles.
-      </motion.p>
-      
-      <motion.div
-        className="flex justify-center mt-6"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 1 }}
+        transition={{ delay: 0.7, duration: 0.5 }}
+        className="flex justify-center pt-4"
       >
         <Button
           onClick={onNext}
-          className="bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white px-8"
+          className="bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white px-10 py-6 h-auto text-lg"
         >
-          Explore Our Community
+          I Understand & Accept
         </Button>
+      </motion.div>
+      
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.9, duration: 0.5 }}
+        className="text-center text-xs text-gray-400"
+      >
+        <p>
+          By continuing, you acknowledge that you have read and agree to The Sephirots Rights Agreement, which governs all interactions within our ecosystem.
+        </p>
       </motion.div>
     </motion.div>
   );

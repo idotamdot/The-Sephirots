@@ -46,12 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useQuery({
     queryKey: ["auth", "user"],
     queryFn: async () => {
-      const res = await fetch("/api/user", {
+      const res = await fetch("/api/users/me", {
         credentials: "include", // Important for sending cookies/session info
       });
       
       if (!res.ok) {
-        if (res.status === 401) {
+        if (res.status === 404 || res.status === 401) {
           return null; // User not logged in
         }
         throw new Error("Failed to fetch user");
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const res = await fetch("/api/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (userData: RegisterData) => {
-      const res = await fetch("/api/register", {
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
@@ -135,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/logout", {
+      const res = await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });

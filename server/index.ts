@@ -4,11 +4,18 @@ import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import passport from "passport";
 import bcrypt from "bcrypt";
+import cors from "cors";
 import { storage } from "./storage";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add CORS middleware
+app.use(cors({
+  origin: true, // Allow all origins in development
+  credentials: true // Allow credentials (cookies)
+}));
 
 // Setup session middleware
 app.use(session({

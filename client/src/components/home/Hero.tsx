@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { User } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import StartOnboardingButton from "@/components/onboarding/StartOnboardingButton";
 
 export default function Hero() {
   const { data: currentUser } = useQuery<User>({
@@ -89,6 +90,8 @@ export default function Hero() {
                   Tree of Life Principles
                 </Link>
               </Button>
+              
+              <StartOnboardingButton />
             </div>
             
             {/* Login/Signup Banner */}

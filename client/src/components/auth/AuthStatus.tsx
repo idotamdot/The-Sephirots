@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { UserCircle, LogOut } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 
 interface User {
   id: number;
@@ -90,10 +91,20 @@ export default function AuthStatus() {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
-        toast({
-          title: "Logged in as Test User",
-          description: "You are now logged in as Test User for development purposes.",
-        });
+        
+        // Invalidate queries to refresh data
+        await queryClient.invalidateQueries({ queryKey: ["/api/users/me"] });
+        
+        // Wait a moment for the query to complete
+        setTimeout(() => {
+          // Reload the page to ensure all components reflect the logged-in state
+          window.location.href = "/";
+          
+          toast({
+            title: "Logged in as Test User",
+            description: "You are now logged in as Test User for development purposes.",
+          });
+        }, 300);
       } else {
         throw new Error("Failed to log in test user");
       }

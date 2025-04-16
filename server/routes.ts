@@ -508,7 +508,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create discussion
   app.post("/api/discussions", async (req, res) => {
     try {
-      const discussionData = insertDiscussionSchema.parse(req.body);
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "You must be logged in to create a discussion" });
+      }
+      
+      // Add user ID from authenticated session to the request body
+      const requestData = {
+        ...req.body,
+        userId: req.user.id
+      };
+      
+      const discussionData = insertDiscussionSchema.parse(requestData);
       
       // Optional AI enhancement
       if (req.body.enhance) {

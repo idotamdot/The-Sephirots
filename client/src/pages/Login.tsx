@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import DevLoginButton from "@/components/auth/DevLoginButton";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const { login, isLoading } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,42 +28,23 @@ export default function Login() {
       return;
     }
     
-    setIsLoading(true);
     try {
-      // Updated to use the new authentication endpoint
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
-        credentials: "include" // Important for cookies/session
+      await login({ username, password });
+      
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${username}!`,
       });
       
-      if (response.ok) {
-        const userData = await response.json();
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${userData.displayName || username}!`,
-        });
-        // User is now logged in with a session, redirect to home
-        navigate("/");
-      } else {
-        const data = await response.json();
-        throw new Error(data.error || "Login failed");
-      }
-    } catch (error) {
+      // User is now logged in with a session, redirect to home
+      navigate("/");
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         title: "Login Failed",
         description: error.message || "Invalid username or password. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

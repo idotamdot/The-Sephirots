@@ -26,8 +26,8 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { User } from "@/lib/types";
+import { useAuth } from "@/hooks/use-auth";
 import { AudioProvider } from "@/components/audio/AudioContext";
 import AudioControl from "@/components/audio/AudioControl";
 import CosmicBackgroundSynchronizer from "@/components/cosmic/CosmicBackgroundSynchronizer";
@@ -35,12 +35,11 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
 import OnboardingJourney from "@/components/onboarding/OnboardingJourney";
 
-function App() {
+function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const { data: currentUser, isLoading } = useQuery<User>({
-    queryKey: ["/api/users/me"],
-  });
+  // Use the auth context for user data
+  const { user: currentUser, isLoading } = useAuth();
 
   const closeSidebar = () => setSidebarOpen(false);
 
@@ -68,83 +67,89 @@ function App() {
   };
   
   return (
-    <AuthProvider>
-      <OnboardingProvider>
-        <AudioProvider>
-          <div className="relative min-h-screen overflow-hidden">
-            {/* Onboarding Journey */}
-            <OnboardingJourney />
-            
-            {/* Audio Control */}
-            <AudioControl />
-            
-            {/* ✨ Cosmic Background Mood Synchronizer */}
-            <CosmicBackgroundSynchronizer 
-              moodOverride={getMoodForPage()}
-              intensity={75}
-              interactive={true}
-            >
-            <div className="relative flex h-screen overflow-hidden z-10">
-              {/* Sidebar */}
-              <Sidebar open={sidebarOpen} onClose={closeSidebar} currentUser={currentUser} />
+    <OnboardingProvider>
+      <AudioProvider>
+        <div className="relative min-h-screen overflow-hidden">
+          {/* Onboarding Journey */}
+          <OnboardingJourney />
+          
+          {/* Audio Control */}
+          <AudioControl />
+          
+          {/* ✨ Cosmic Background Mood Synchronizer */}
+          <CosmicBackgroundSynchronizer 
+            moodOverride={getMoodForPage()}
+            intensity={75}
+            interactive={true}
+          >
+          <div className="relative flex h-screen overflow-hidden z-10">
+            {/* Sidebar */}
+            <Sidebar open={sidebarOpen} onClose={closeSidebar} currentUser={currentUser} />
 
-              {/* Main Content */}
-              <main className="flex-1 flex flex-col overflow-hidden">
-                <Header
-                  onMenuClick={() => setSidebarOpen(true)}
-                  currentUser={currentUser}
-                  isLoading={isLoading}
-                />
+            {/* Main Content */}
+            <main className="flex-1 flex flex-col overflow-hidden">
+              <Header
+                onMenuClick={() => setSidebarOpen(true)}
+                currentUser={currentUser}
+                isLoading={isLoading}
+              />
 
-                <div className="flex-1 overflow-y-auto bg-gray-50 bg-opacity-70 backdrop-blur-md">
-                  <Switch>
-                    <Route path="/" component={Home} />
-                    <Route path="/login" component={Login} />
-                    <Route path="/register" component={Register} />
-                    <Route path="/discussions" component={Discussions} />
-                    <Route path="/discussions/:id">
-                      {params => <Discussion id={parseInt(params.id)} />}
-                    </Route>
-                    <Route path="/rights-agreement" component={RightsAgreement} />
-                    <Route path="/community-needs" component={CommunityNeeds} />
-                    <Route path="/wellbeing" component={Wellbeing} />
-                    <Route path="/achievements" component={Achievements} />
-                    <Route path="/mystical-progress" component={MysticalProgress} />
-                    <Route path="/mindmap" component={MindMapExplorer} />
-                    <Route path="/wisdom-marketplace" component={WisdomMarketplace} />
-                    <Route path="/rewards" component={Rewards} />
-                    <Route path="/quantum-insights" component={QuantumInsights} />
-                    <Route path="/ai-companion" component={AICompanion} />
-                    <Route path="/profile">
-                      <Profile currentUser={currentUser} />
-                    </Route>
-                    <Route path="/governance" component={Governance} />
-                    <Route path="/governance/new" component={CreateProposal} />
-                    <Route path="/governance/:id">
-                      {params => <ProposalDetail />}
-                    </Route>
-                    <Route path="/moderation" component={Moderation} />
-                    <Route path="/support-journey" component={SupportJourney} />
-                    <Route path="/donation-thank-you" component={DonationThankYou} />
-                    <Route component={NotFound} />
-                  </Switch>
-                </div>
-
-                {/* Mobile Navigation */}
-                <MobileNav />
-              </main>
-
-              {/* Mobile New Discussion Button */}
-              <div className="md:hidden fixed bottom-20 right-5 z-20">
-                <button className="w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg flex items-center justify-center animate-pulse-slow">
-                  <i className="ri-add-line text-2xl"></i>
-                </button>
+              <div className="flex-1 overflow-y-auto bg-gray-50 bg-opacity-70 backdrop-blur-md">
+                <Switch>
+                  <Route path="/" component={Home} />
+                  <Route path="/login" component={Login} />
+                  <Route path="/register" component={Register} />
+                  <Route path="/discussions" component={Discussions} />
+                  <Route path="/discussions/:id">
+                    {params => <Discussion id={parseInt(params.id)} />}
+                  </Route>
+                  <Route path="/rights-agreement" component={RightsAgreement} />
+                  <Route path="/community-needs" component={CommunityNeeds} />
+                  <Route path="/wellbeing" component={Wellbeing} />
+                  <Route path="/achievements" component={Achievements} />
+                  <Route path="/mystical-progress" component={MysticalProgress} />
+                  <Route path="/mindmap" component={MindMapExplorer} />
+                  <Route path="/wisdom-marketplace" component={WisdomMarketplace} />
+                  <Route path="/rewards" component={Rewards} />
+                  <Route path="/quantum-insights" component={QuantumInsights} />
+                  <Route path="/ai-companion" component={AICompanion} />
+                  <Route path="/profile">
+                    <Profile currentUser={currentUser} />
+                  </Route>
+                  <Route path="/governance" component={Governance} />
+                  <Route path="/governance/new" component={CreateProposal} />
+                  <Route path="/governance/:id">
+                    {params => <ProposalDetail />}
+                  </Route>
+                  <Route path="/moderation" component={Moderation} />
+                  <Route path="/support-journey" component={SupportJourney} />
+                  <Route path="/donation-thank-you" component={DonationThankYou} />
+                  <Route component={NotFound} />
+                </Switch>
               </div>
+
+              {/* Mobile Navigation */}
+              <MobileNav />
+            </main>
+
+            {/* Mobile New Discussion Button */}
+            <div className="md:hidden fixed bottom-20 right-5 z-20">
+              <button className="w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg flex items-center justify-center animate-pulse-slow">
+                <i className="ri-add-line text-2xl"></i>
+              </button>
             </div>
-          </CosmicBackgroundSynchronizer>
-        </div>
-      </AudioProvider>
-      </OnboardingProvider>
+          </div>
+        </CosmicBackgroundSynchronizer>
+      </div>
+    </AudioProvider>
+    </OnboardingProvider>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   );
 }

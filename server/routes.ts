@@ -589,7 +589,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create comment
   app.post("/api/comments", async (req, res) => {
     try {
-      const commentData = insertCommentSchema.parse(req.body);
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "You must be logged in to comment" });
+      }
+      
+      // Add user ID from authenticated session to the request body
+      const requestData = {
+        ...req.body,
+        userId: req.user.id
+      };
+      
+      const commentData = insertCommentSchema.parse(requestData);
       
       // Check if AI should respond
       if (req.body.requestAiResponse) {
@@ -985,7 +996,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create proposal
   app.post("/api/proposals", async (req, res) => {
     try {
-      const proposalData = insertProposalSchema.parse(req.body);
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "You must be logged in to create a proposal" });
+      }
+      
+      // Add user ID from authenticated session to the request body
+      const requestData = {
+        ...req.body,
+        proposedBy: req.user.id
+      };
+      
+      const proposalData = insertProposalSchema.parse(requestData);
       
       // Use OpenAI to analyze the proposal content
       const analysis = await openai.analyzeRightsProposal(proposalData.description);
@@ -1037,6 +1059,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Vote on proposal
   app.post("/api/proposals/:id/vote", async (req, res) => {
     try {
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "You must be logged in to vote" });
+      }
+      
       const proposalId = parseInt(req.params.id);
       const proposal = await storage.getProposal(proposalId);
       
@@ -1050,17 +1077,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const voteSchema = z.object({
-        userId: z.number(),
         vote: z.boolean(),
         reason: z.string().optional()
       });
       
       const voteData = voteSchema.parse(req.body);
       
-      // Create the vote
+      // Create the vote using the authenticated user's ID
       const vote = await storage.createVote({
         proposalId,
-        userId: voteData.userId,
+        userId: req.user.id,
         vote: voteData.vote,
         reason: voteData.reason
       });
@@ -1076,7 +1102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Award points to the user for voting
-      await storage.updateUserPoints(voteData.userId, 5);
+      await storage.updateUserPoints(req.user.id, 5);
       
       res.status(201).json(vote);
     } catch (err) {
@@ -1194,13 +1220,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create annotation
   app.post("/api/annotations", async (req, res) => {
     try {
-      const annotationData = insertAnnotationSchema.parse(req.body);
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "You must be logged in to create an annotation" });
+      }
+      
+      // Add user ID from authenticated session to the request body
+      const requestData = {
+        ...req.body,
+        userId: req.user.id
+      };
+      
+      const annotationData = insertAnnotationSchema.parse(requestData);
       
       // Create the annotation
       const annotation = await storage.createAnnotation(annotationData);
       
       // Award points to the user for creating an annotation
-      await storage.updateUserPoints(annotationData.userId, 5);
+      await storage.updateUserPoints(req.user.id, 5);
       
       res.status(201).json(annotation);
     } catch (err) {
@@ -1270,6 +1307,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add reply to annotation
   app.post("/api/annotations/:id/replies", async (req, res) => {
     try {
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "You must be logged in to reply to an annotation" });
+      }
+      
       const annotationId = parseInt(req.params.id);
       const annotation = await storage.getAnnotation(annotationId);
       
@@ -1277,10 +1319,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Annotation not found" });
       }
       
-      // Modify the request body to include the annotation ID
+      // Modify the request body to include the annotation ID and authenticated user's ID
       const replyData = {
         ...req.body,
-        annotationId
+        annotationId,
+        userId: req.user.id
       };
       
       // Validate and create the reply
@@ -1288,7 +1331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reply = await storage.createAnnotationReply(validatedReplyData);
       
       // Award points to the user for contributing to the discussion
-      await storage.updateUserPoints(validatedReplyData.userId, 2);
+      await storage.updateUserPoints(req.user.id, 2);
       
       res.status(201).json(reply);
     } catch (err) {

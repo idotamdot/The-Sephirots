@@ -11,11 +11,13 @@ app.use(express.urlencoded({ extended: false }));
 // Setup session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || "harmony-sephirots-secret",
-  resave: false,
+  resave: true, // Changed to true to ensure session is saved on each request
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === "production",
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week,
+    httpOnly: true,
+    path: '/'
   }
 }));
 

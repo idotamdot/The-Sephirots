@@ -28,7 +28,7 @@ export default function AICompanion() {
             <CardHeader>
               <CardTitle className="text-lg font-medium">
                 <span className="flex items-center gap-2">
-                  <span className="text-amber-500">⚙️</span>
+                  <i className="ri-settings-4-line text-amber-500"></i>
                   <span>Companion Settings</span>
                 </span>
               </CardTitle>
@@ -95,13 +95,13 @@ export default function AICompanion() {
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="chat">
                 <span className="flex items-center gap-2">
-                  <span className="text-purple-500">💬</span>
+                  <i className="ri-message-3-line text-purple-500"></i>
                   <span>Chat Interface</span>
                 </span>
               </TabsTrigger>
               <TabsTrigger value="insights">
                 <span className="flex items-center gap-2">
-                  <span className="text-amber-500">👁️</span>
+                  <i className="ri-eye-line text-amber-500"></i>
                   <span>Soul Insights</span>
                 </span>
               </TabsTrigger>
@@ -139,7 +139,7 @@ export default function AICompanion() {
                       <CardTitle className="text-lg text-purple-600">Growth Trajectory</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm">You're following a spiral path of wisdom — revisiting key soul lessons with new understanding.</p>
+                      <p className="text-sm">You’re following a spiral path of wisdom — revisiting key soul lessons with new understanding.</p>
                     </CardContent>
                   </Card>
                 </div>

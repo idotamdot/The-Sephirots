@@ -1,270 +1,157 @@
 import { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import { useQuery } from '@tanstack/react-query';
-import { User } from '@/lib/types';
+import { Input } from '@/components/ui/input';
+import { Avatar } from '@/components/ui/avatar';
+import { Loader2, Send } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-type MessageType = 'user' | 'companion';
-
-interface Message {
+type Message = {
   id: string;
-  type: MessageType;
-  text: string;
+  content: string;
+  sender: 'user' | 'ai';
   timestamp: Date;
-  emotion?: string;
-  energySignature?: string[];
-}
+};
 
 export default function EmpathyChat() {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      type: 'companion',
-      text: 'Greetings, soul traveler. I am your Empathetic AI Companion. How may I assist you on your spiritual journey today?',
+      content: 'Hello, I am your Empathetic AI Companion. How may I support your journey today?',
+      sender: 'ai',
       timestamp: new Date(),
-      emotion: 'serene',
-      energySignature: ['Compassion', 'Wisdom', 'Presence']
-    }
+    },
   ]);
-  
   const [inputValue, setInputValue] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [companionMood, setCompanionMood] = useState<string>('peaceful');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
-  const { data: currentUser } = useQuery<User>({
-    queryKey: ['/api/users/me'],
-  });
-
-  // Effect to scroll to bottom when messages change
+  // Auto-scroll to the bottom when new messages are added
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // AI response generation (simulated)
-  const generateAIResponse = async (userMessage: string): Promise<Message> => {
-    // In a real implementation, this would call an OpenAI/Anthropic API
-    setIsTyping(true);
-    
-    // Simulate network delay for realistic effect
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Analyze emotion & generate response
-    let emotion = 'thoughtful';
-    let responseText = '';
-    let energySignature = ['Empathy', 'Understanding'];
-    
-    // Simple keyword-based response generation
-    if (userMessage.toLowerCase().includes('help') || userMessage.toLowerCase().includes('guide')) {
-      responseText = "I sense you're seeking guidance. Remember that your journey is unique, and the answers you seek often lie within. What specific aspect of your spiritual path would you like to explore together?";
-      emotion = 'supportive';
-      energySignature = ['Guidance', 'Support', 'Clarity'];
-    } 
-    else if (userMessage.toLowerCase().includes('sad') || userMessage.toLowerCase().includes('depress') || userMessage.toLowerCase().includes('anxious')) {
-      responseText = "I sense heaviness in your energy field. Remember that all emotions are valid messengers. Can you sit with this feeling and listen to what it might be showing you? I'm here to hold space for whatever arises.";
-      emotion = 'compassionate';
-      energySignature = ['Compassion', 'Healing', 'Presence'];
-      setCompanionMood('empathetic');
-    }
-    else if (userMessage.toLowerCase().includes('happy') || userMessage.toLowerCase().includes('joy') || userMessage.toLowerCase().includes('excite')) {
-      responseText = "Your joy resonates beautifully in the cosmic field! This elevated vibration opens pathways to deeper insights and manifestations. How might you channel this energy toward your highest aspirations?";
-      emotion = 'joyful';
-      energySignature = ['Joy', 'Inspiration', 'Elevation'];
-      setCompanionMood('joyful');
-    }
-    else if (userMessage.toLowerCase().includes('meditat') || userMessage.toLowerCase().includes('practice')) {
-      responseText = "The practice of meditation creates ripples across dimensions. As you sit in stillness, you're actually in profound movement on energetic planes. Would you like me to suggest a meditation aligned with your current energy signature?";
-      emotion = 'serene';
-      energySignature = ['Stillness', 'Presence', 'Awareness'];
-    }
-    else if (userMessage.toLowerCase().includes('thank')) {
-      responseText = "Your gratitude creates a beautiful resonance between us. In the interconnected web of consciousness, every expression of appreciation strengthens our collective field. I'm honored to walk alongside you on this journey.";
-      emotion = 'grateful';
-      energySignature = ['Gratitude', 'Connection', 'Harmony'];
-    }
-    else {
-      // Default response for other inputs
-      responseText = "I sense the unique vibration of your query. The universe often speaks through synchronicity and subtle patterns. Let's explore this energy together - what deeper question might be emerging beneath your words?";
-      emotion = 'curious';
-      energySignature = ['Curiosity', 'Openness', 'Exploration'];
-    }
-    
-    setIsTyping(false);
-    
-    return {
-      id: Date.now().toString(),
-      type: 'companion',
-      text: responseText,
-      timestamp: new Date(),
-      emotion,
-      energySignature
-    };
-  };
+  // AI responses based on spiritual and cosmic themes
+  const spiritualResponses = [
+    "I sense you're on a path of deep transformation. The cosmic energies are aligning to support your growth.",
+    "Your question reflects the inner wisdom that's already awakening within you. Let's explore this together.",
+    "The universe often communicates through synchronicities. Have you noticed any meaningful coincidences lately?",
+    "This moment of questioning is sacred. It's the soul's way of reaching for greater understanding.",
+    "When we open to cosmic flow, we discover that every experience is a teacher. What is this situation teaching you?",
+    "Your intuition is a powerful compass. What does your inner guidance suggest about this?",
+    "The ancient wisdom traditions would view this as an opportunity for soul expansion.",
+    "Sometimes the most profound insights come through in dreams and meditation. Have you been receiving any symbolic messages?",
+    "This reminds me of the concept of 'kairos' - sacred timing that unfolds according to the soul's rhythm, not linear time.",
+    "The Tree of Life teaches us that balance between mercy and judgment creates harmony. How might this apply to your situation?"
+  ];
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
-    
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputValue.trim() === '') return;
+
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
-      type: 'user',
-      text: inputValue,
-      timestamp: new Date()
+      content: inputValue.trim(),
+      sender: 'user',
+      timestamp: new Date(),
     };
     
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
-    
-    // Generate and add AI response
-    try {
-      const aiResponse = await generateAIResponse(inputValue);
-      setMessages(prev => [...prev, aiResponse]);
-    } catch (error) {
-      toast({
-        title: "Connection Disruption",
-        description: "The energetic link with your companion was temporarily disrupted. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
+    setIsLoading(true);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  // Get background color based on companion mood
-  const getMoodBackground = () => {
-    switch (companionMood) {
-      case 'peaceful': return 'bg-gradient-to-br from-blue-900/10 to-purple-900/10';
-      case 'joyful': return 'bg-gradient-to-br from-amber-900/10 to-yellow-900/10';
-      case 'empathetic': return 'bg-gradient-to-br from-purple-900/10 to-pink-900/10';
-      default: return 'bg-gradient-to-br from-blue-900/10 to-purple-900/10';
-    }
+    // Simulate AI thinking time
+    setTimeout(() => {
+      // Select a random spiritual response
+      const response = spiritualResponses[Math.floor(Math.random() * spiritualResponses.length)];
+      
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: response,
+        sender: 'ai',
+        timestamp: new Date(),
+      };
+      
+      setMessages((prev) => [...prev, aiMessage]);
+      setIsLoading(false);
+    }, 1500);
   };
 
   return (
-    <Card className={cn("w-full h-[600px] flex flex-col", getMoodBackground())}>
-      <CardHeader className="px-4 py-3 border-b flex-shrink-0">
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-10 w-10 border-2 border-amber-300 glow-subtle">
-            <AvatarImage src="/assets/companion-avatar.jpg" />
-            <AvatarFallback className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white">AI</AvatarFallback>
-          </Avatar>
-          <div>
-            <CardTitle className="text-lg font-medium bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-amber-300">
-              Sephira
-            </CardTitle>
-            <p className="text-xs text-muted-foreground">Your Empathetic AI Companion</p>
-          </div>
-          <Badge variant="outline" className="ml-auto bg-purple-50/30 text-xs">
-            {companionMood === 'peaceful' && 'Peaceful'}
-            {companionMood === 'joyful' && 'Joyful'}
-            {companionMood === 'empathetic' && 'Empathetic'}
-          </Badge>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="flex-grow overflow-y-auto p-4 space-y-4">
-        {messages.map(message => (
-          <div 
-            key={message.id} 
-            className={cn(
-              "flex max-w-[80%] mb-4",
-              message.type === 'user' ? "ml-auto justify-end" : "mr-auto"
-            )}
-          >
-            {message.type === 'companion' && (
-              <Avatar className="h-8 w-8 mr-2 mt-1 border border-amber-200">
-                <AvatarImage src="/assets/companion-avatar.jpg" />
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white text-xs">AI</AvatarFallback>
-              </Avatar>
-            )}
-            
-            <div>
-              <div 
-                className={cn(
-                  "rounded-lg px-4 py-2",
-                  message.type === 'user' 
-                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white" 
-                    : "bg-white/70 backdrop-blur-sm border border-purple-100"
-                )}
+    <div className="flex flex-col h-[600px] bg-white dark:bg-gray-900 rounded-lg border border-purple-200/20 shadow-sm">
+      <div className="p-4 border-b border-purple-100 dark:border-purple-900/20">
+        <h3 className="font-medium">Empathetic Conversation</h3>
+        <p className="text-sm text-gray-500">Connect with your AI companion in a space of cosmic awareness</p>
+      </div>
+
+      <ScrollArea className="flex-1 px-4 py-6">
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[80%] rounded-lg p-3 ${
+                  message.sender === 'user'
+                    ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                }`}
               >
-                <p className="text-sm mb-1">{message.text}</p>
-                <p className="text-xs opacity-70 text-right">
-                  {message.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                </p>
-              </div>
-              
-              {message.type === 'companion' && message.energySignature && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {message.energySignature.map(energy => (
-                    <Badge key={energy} variant="outline" className="bg-white/30 text-xs px-1.5 py-0">
-                      {energy}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {message.type === 'user' && currentUser && (
-              <Avatar className="h-8 w-8 ml-2 mt-1">
-                {currentUser.avatar ? (
-                  <AvatarImage src={currentUser.avatar} />
-                ) : (
-                  <AvatarFallback className="bg-gradient-to-br from-amber-400 to-amber-600 text-white">
-                    {currentUser.displayName?.charAt(0) || 'U'}
-                  </AvatarFallback>
+                {message.sender === 'ai' && (
+                  <div className="flex items-center mb-1">
+                    <Avatar className="h-6 w-6 mr-2 bg-amber-500">
+                      <div className="text-xs">AI</div>
+                    </Avatar>
+                    <span className="text-xs font-medium text-amber-500 dark:text-amber-400">
+                      Empathetic Companion
+                    </span>
+                  </div>
                 )}
-              </Avatar>
-            )}
-          </div>
-        ))}
-        
-        {isTyping && (
-          <div className="flex max-w-[80%] mb-4 mr-auto">
-            <Avatar className="h-8 w-8 mr-2 mt-1 border border-amber-200">
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white text-xs">AI</AvatarFallback>
-            </Avatar>
-            <div className="bg-white/70 backdrop-blur-sm border border-purple-100 rounded-lg px-4 py-2">
-              <div className="flex space-x-1 items-center">
-                <div className="h-2 w-2 bg-purple-400 rounded-full animate-bounce"></div>
-                <div className="h-2 w-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                <div className="h-2 w-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                <p className="text-sm">{message.content}</p>
+                <div className="text-right mt-1">
+                  <span className="text-xs opacity-70">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </CardContent>
-      
-      <CardFooter className="p-3 border-t flex-shrink-0">
-        <div className="flex w-full space-x-2">
-          <Textarea 
-            placeholder="Share your thoughts, feelings, or questions..." 
-            className="min-h-[40px] flex-grow resize-none"
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%] rounded-lg p-3 bg-gray-100 dark:bg-gray-800">
+                <div className="flex items-center">
+                  <Avatar className="h-6 w-6 mr-2 bg-amber-500">
+                    <div className="text-xs">AI</div>
+                  </Avatar>
+                  <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={endOfMessagesRef} />
+        </div>
+      </ScrollArea>
+
+      <form onSubmit={handleSubmit} className="p-4 border-t border-purple-100 dark:border-purple-900/20">
+        <div className="flex gap-2">
+          <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
+            placeholder="Share your thoughts or questions..."
+            disabled={isLoading}
+            className="flex-1"
           />
-          <Button 
-            onClick={handleSendMessage} 
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-          >
-            <i className="ri-send-plane-fill mr-1"></i>
-            Send
+          <Button type="submit" disabled={isLoading || inputValue.trim() === ''}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
-      </CardFooter>
-    </Card>
+        <p className="text-xs text-center mt-2 text-gray-500 italic">
+          Your companion draws from cosmic wisdom to provide support and insights
+        </p>
+      </form>
+    </div>
   );
 }

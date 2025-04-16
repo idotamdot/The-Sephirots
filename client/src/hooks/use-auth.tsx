@@ -46,12 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useQuery({
     queryKey: ["auth", "user"],
     queryFn: async () => {
-      const res = await fetch("/api/users/me", {
+      const res = await fetch("/api/user", {
         credentials: "include", // Important for sending cookies/session info
       });
       
       if (!res.ok) {
-        if (res.status === 404) {
+        if (res.status === 401) {
           return null; // User not logged in
         }
         throw new Error("Failed to fetch user");
@@ -135,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/auth/logout", {
+      const res = await fetch("/api/logout", {
         method: "POST",
         credentials: "include",
       });

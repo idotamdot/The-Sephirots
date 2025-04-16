@@ -9,6 +9,7 @@ import * as crypto from "crypto";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
+import bcrypt from "bcrypt";
 import { 
   insertUserSchema, 
   insertDiscussionSchema, 
@@ -69,14 +70,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return done(null, false, { message: "Incorrect username" });
       }
       
-      // Check password
-      const hashedPassword = hashPassword(password);
-      if (user.password !== hashedPassword) {
-        return done(null, false, { message: "Incorrect password" });
+      // Check if we're dealing with bcrypt hash (passwordHash field) or SHA-256 hash (password field)
+      const anyUser = user as any; // Use 'any' type to allow accessing any property
+      
+      // Check bcrypt password (found in passwordHash field)
+      if (anyUser.passwordHash) {
+        try {
+          // Compare with bcrypt
+          console.log("Checking bcrypt password hash");
+          const isValidBcrypt = await bcrypt.compare(password, anyUser.passwordHash);
+          if (isValidBcrypt) {
+            return done(null, user);
+          }
+        } catch (bcryptErr) {
+          console.error("Bcrypt comparison error:", bcryptErr);
+        }
       }
       
-      return done(null, user);
+      // Check SHA-256 password (found in password field)
+      if (user.password) {
+        console.log("Checking SHA-256 password hash");
+        const hashedPassword = hashPassword(password);
+        if (user.password === hashedPassword) {
+          return done(null, user);
+        }
+      }
+      
+      // If we reach here, neither password matched
+      console.log(`Authentication failed for user: ${username}`);
+      console.log(`User fields available:`, Object.keys(user));
+      
+      return done(null, false, { message: "Incorrect password" });
     } catch (err) {
+      console.error("Authentication error:", err);
       return done(err);
     }
   }));
@@ -93,10 +119,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return done(null, false);
       }
       
-      // Don't expose password
-      const { password, ...userWithoutPassword } = user;
-      done(null, userWithoutPassword);
+      // Don't expose password and passwordHash in session data
+      const { password, passwordHash, ...userWithoutSensitiveData } = user as any;
+      done(null, userWithoutSensitiveData);
     } catch (err) {
+      console.error("Error deserializing user:", err);
       done(err);
     }
   });

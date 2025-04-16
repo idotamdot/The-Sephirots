@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
+import DevLoginButton from "@/components/auth/DevLoginButton";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -157,13 +158,26 @@ export default function Login() {
               <span className="bg-white px-2 text-gray-500">or</span>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            className="w-full mt-2 border-amber-200 text-amber-800 hover:bg-amber-50"
-            onClick={() => navigate("/")}
-          >
-            Continue as Guest
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button 
+              variant="outline" 
+              className="w-full border-amber-200 text-amber-800 hover:bg-amber-50"
+              onClick={() => navigate("/")}
+            >
+              Continue as Guest
+            </Button>
+            
+            <div className="relative my-1">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-500">development</span>
+              </div>
+            </div>
+            
+            <DevLoginButton />
+          </div>
         </CardFooter>
       </Card>
     </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { queryClient } from "@/lib/queryClient"; // Adjust the path based on your project structure
 import { Link, useLocation } from "wouter";
 import { User } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -540,6 +541,7 @@ export default function Header({ onMenuClick, currentUser, isLoading }: HeaderPr
                           method: "POST",
                           credentials: "include",
                         }).then(() => {
+                          queryClient.removeQueries(["/api/users/me"]);
                           navigate("/");
                           window.location.reload();
                         });

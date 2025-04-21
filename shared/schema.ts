@@ -157,6 +157,7 @@ export const badges = pgTable("badges", {
   symbolism: text("symbolism"),
   isLimited: boolean("is_limited").notNull().default(false),
   maxSupply: integer("max_supply"),
+  enhanced: boolean("enhanced").notNull().default(false), // Indicates badge with special glow
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

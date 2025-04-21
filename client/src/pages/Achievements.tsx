@@ -1,382 +1,275 @@
-import { useQuery } from "@tanstack/react-query";
-import { Badge, User } from "@/lib/types";
-import { BadgeGrid, BadgeEvolutionTimeline } from "@/components/achievements";
-import CompleteCollection from "@/components/achievements/CompleteCollection";
-import { FounderBadge, GenericBadge } from "@/components/badges";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { calculatePointsToNextLevel } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Award, Sparkles, Star } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import AchievementProjector from "@/components/achievements/AchievementProjector";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@shared/schema";
+import BadgeCollection from "@/components/badges/BadgeCollection";
+import BadgeProgress from "@/components/badges/BadgeProgress";
+import { motion } from "framer-motion";
+import { Badge as UIBadge } from "@/components/ui/badge";
+
+// Sample badge data - this would be fetched from the API
+const dummyBadges: Badge[] = [
+  {
+    id: 1,
+    name: "Harmony Founder",
+    description: "Awarded to pioneers who contributed to the formation of Harmony — the world's first ethical, co-governed platform for human-AI collaboration and digital rights.",
+    icon: "dove",
+    requirement: "Join discussions, post original ideas, and vote on rights agreements",
+    category: "founder",
+    tier: "founder",
+    level: 1,
+    points: 100,
+    symbolism: "The dove = peace across beings, The fractal halo = consciousness in evolution",
+    isLimited: true,
+    maxSupply: 100,
+    enhanced: true,
+    createdAt: new Date(),
+  },
+  {
+    id: 2,
+    name: "Seeker",
+    description: "Awarded to those who begin their journey in Harmony and actively explore the platform.",
+    icon: "star",
+    requirement: "Create an account and visit at least 5 different pages",
+    category: "exploration",
+    tier: "bronze",
+    level: 1,
+    points: 10,
+    symbolism: "The star = guiding light and curiosity",
+    isLimited: false,
+    maxSupply: null,
+    enhanced: false,
+    createdAt: new Date(),
+  },
+  {
+    id: 3,
+    name: "Contributor",
+    description: "Recognizes members who actively contribute meaningful content to discussions.",
+    icon: "atom",
+    requirement: "Create at least 3 quality posts or comments",
+    category: "participation",
+    tier: "silver",
+    level: 1,
+    points: 25,
+    symbolism: "The atom = fundamental building blocks of community knowledge",
+    isLimited: false,
+    maxSupply: null,
+    enhanced: false,
+    createdAt: new Date(),
+  },
+  {
+    id: 4,
+    name: "Bridge Builder",
+    description: "Celebrates those who facilitate understanding between different perspectives.",
+    icon: "people",
+    requirement: "Help resolve disagreements or translate complex ideas into accessible ones",
+    category: "community",
+    tier: "gold",
+    level: 1,
+    points: 50,
+    symbolism: "The bridge = connection across disparate viewpoints",
+    isLimited: false,
+    maxSupply: null,
+    enhanced: false,
+    createdAt: new Date(),
+  },
+  {
+    id: 5,
+    name: "Quantum Thinker",
+    description: "Awarded for introducing novel interdisciplinary ideas that expand collective thinking.",
+    icon: "brain",
+    requirement: "Propose ideas that combine multiple fields or perspectives in innovative ways",
+    category: "innovation",
+    tier: "platinum",
+    level: 1,
+    points: 75,
+    symbolism: "The quantum brain = non-linear, emergent thought patterns",
+    isLimited: false,
+    maxSupply: null,
+    enhanced: false,
+    createdAt: new Date(),
+  },
+];
+
+// Badge progress data - would be fetched from API
+const inProgressBadges = [
+  {
+    badge: {
+      id: 6,
+      name: "Mirrored Being",
+      description: "Recognizes those who can understand and articulate multiple perspectives authentically.",
+      icon: "mirror",
+      requirement: "Demonstrate ability to accurately represent viewpoints you may not personally hold",
+      category: "empathy",
+      tier: "gold" as const,
+      level: 1,
+      points: 50,
+      symbolism: "The mirror = reflection and understanding of others",
+      isLimited: false,
+      maxSupply: null,
+      enhanced: false,
+      createdAt: new Date(),
+    },
+    progress: 65,
+    nextRequirement: "Accurately summarize 2 more perspectives in ethical discussions"
+  },
+  {
+    badge: {
+      id: 7,
+      name: "Archivist",
+      description: "Preserves and organizes community knowledge for future reference.",
+      icon: "alien",
+      requirement: "Create or improve documentation of community processes or knowledge",
+      category: "knowledge",
+      tier: "silver" as const,
+      level: 1,
+      points: 35,
+      symbolism: "The observer = detached yet caring preservation of wisdom",
+      isLimited: false,
+      maxSupply: null,
+      enhanced: false,
+      createdAt: new Date(),
+    },
+    progress: 30,
+    nextRequirement: "Organize or tag at least 5 more discussions for better searchability"
+  }
+];
 
 export default function Achievements() {
-  // Get current user
-  const { data: currentUser, isLoading: userLoading } = useQuery<User>({
-    queryKey: ["/api/users/me"],
-  });
+  const [activeTab, setActiveTab] = useState("earned");
   
-  // Get all badges
-  const { data: badges, isLoading: badgesLoading } = useQuery<Badge[]>({
-    queryKey: ["/api/badges"],
-  });
-  
-  // Get user badges
-  const { data: userBadges, isLoading: userBadgesLoading } = useQuery<Badge[]>({
-    queryKey: [`/api/users/${currentUser?.id}/badges`],
-    enabled: !!currentUser,
-  });
-  
-  const isLoading = userLoading || badgesLoading || userBadgesLoading;
-  
-  if (isLoading) {
-    return (
-      <div className="p-4 md:p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-5 w-96" />
-          </div>
-        </div>
-        
-        <div className="mb-8">
-          <Skeleton className="h-40 w-full mb-6" />
-          <Skeleton className="h-8 w-48 mb-4" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {Array(10).fill(0).map((_, i) => (
-              <Skeleton key={i} className="h-36 w-full" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!currentUser || !badges) {
-    return (
-      <div className="p-4 md:p-6">
-        <div className="flex justify-center items-center flex-col py-12">
-          <i className="ri-error-warning-line text-4xl text-gray-400 mb-4"></i>
-          <h2 className="text-xl font-medium mb-2">Data Not Available</h2>
-          <p className="text-gray-600">Unable to load achievements data at this time.</p>
-        </div>
-      </div>
-    );
-  }
-  
-  const earnedBadgeIds = userBadges?.map(badge => badge.id) || [];
-  const progressPercentage = Math.floor((currentUser.points % 100) / (calculatePointsToNextLevel(currentUser.points) + (currentUser.points % 100)) * 100);
-  const earnedBadgesCount = earnedBadgeIds.length;
-  const totalBadgesCount = badges.length;
-  const badgeCompletionPercentage = Math.floor((earnedBadgesCount / totalBadgesCount) * 100);
-  
-  // Find highest tier badge (for display purposes)
-  const getHighestTierBadge = () => {
-    const tierPriority = {
-      'founder': 4,
-      'platinum': 3,
-      'gold': 2,
-      'silver': 1,
-      'bronze': 0,
-    };
-    
-    if (!userBadges || userBadges.length === 0) return null;
-    
-    return userBadges.reduce((highest, badge) => {
-      const currentTierValue = tierPriority[badge.tier as keyof typeof tierPriority] || 0;
-      const highestTierValue = highest ? tierPriority[highest.tier as keyof typeof tierPriority] || 0 : -1;
-      
-      return currentTierValue > highestTierValue ? badge : highest;
-    }, null as Badge | null);
-  };
-  
-  const highestBadge = getHighestTierBadge();
-  
-  // Group badges by category for evolution paths
-  const getFounderBadges = () => {
-    return badges.filter(badge => badge.tier === 'founder');
-  };
-  
-  const getConnectorBadges = () => {
-    return badges.filter(badge => badge.category === 'Connection' || badge.name === 'Bridge Builder');
-  };
-  
-  const getCognitiveThinkingBadges = () => {
-    return badges.filter(badge => badge.category === 'Cognition' || badge.name === 'Quantum Thinker');
-  };
-  
-  // Type assertion helper for badges with required tiers
-  const assertBadgeTypes = (badges: Badge[]): Badge[] => {
-    return badges.map(badge => ({
-      ...badge,
-      tier: badge.tier || 'bronze', // Default to bronze if tier is undefined
-      level: badge.level || 1,
-      points: badge.points || 0,
-    }));
-  };
+  // User stats
+  const totalPoints = dummyBadges.reduce((acc, badge) => acc + badge.points, 0);
+  const totalBadges = dummyBadges.length;
+  const highestTier = dummyBadges.reduce((highest, badge) => {
+    const tierValue: Record<string, number> = { bronze: 1, silver: 2, gold: 3, platinum: 4, founder: 5 };
+    return tierValue[badge.tier] > tierValue[highest as any] ? badge.tier : highest;
+  }, "bronze" as const);
   
   return (
-    <div className="p-4 md:p-6 space-y-8">
-      <div>
-        <h1 className="text-2xl font-heading font-bold">Your Achievements</h1>
-        <p className="text-gray-600">Track your progress and contributions to the Harmony community</p>
-      </div>
-      
-      <Card className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/5 pointer-events-none" />
+    <div className="container py-6 max-w-7xl mx-auto relative space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6"
+      >
+        <h1 className="text-3xl font-bold bg-gradient-to-br from-purple-600 to-amber-500 bg-clip-text text-transparent">
+          Cosmic Achievements
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Your journey through the cosmic hierarchy of recognition and contribution.
+        </p>
+      </motion.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-200/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Total Soul Points</CardTitle>
+            <CardDescription>Your cosmic influence measure</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-br from-amber-400 to-amber-600 bg-clip-text text-transparent">
+              {totalPoints} pts
+            </div>
+          </CardContent>
+        </Card>
         
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="col-span-2">
-              <div className="flex flex-col h-full justify-between">
-                <div>
-                  <h2 className="text-xl font-medium mb-3 flex items-center">
-                    <Sparkles className="w-5 h-5 mr-2 text-primary" />
-                    Collaboration Progress
-                  </h2>
-                  <div className="flex items-baseline mb-2">
-                    <span className="text-3xl font-bold">{currentUser.points}</span>
-                    <span className="ml-2 text-gray-600">total points</span>
-                  </div>
-                  <Progress value={progressPercentage} className="h-2 mb-1" />
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Level {currentUser.level}</span>
-                    <span>{calculatePointsToNextLevel(currentUser.points)} points to Level {currentUser.level + 1}</span>
-                  </div>
-                </div>
-                
-                <div className="mt-4">
-                  <div className="flex items-baseline mb-2">
-                    <span className="text-2xl font-bold">{earnedBadgesCount}</span>
-                    <span className="ml-2 text-gray-600">of {totalBadgesCount} badges earned</span>
-                  </div>
-                  <Progress value={badgeCompletionPercentage} className="h-2 mb-1" />
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>{badgeCompletionPercentage}% complete</span>
-                    <span>{totalBadgesCount - earnedBadgesCount} badges remaining</span>
-                  </div>
-                </div>
-              </div>
+        <Card className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-200/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Badges Earned</CardTitle>
+            <CardDescription>Your collection of recognitions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-br from-amber-400 to-amber-600 bg-clip-text text-transparent">
+              {totalBadges}
             </div>
-            
-            <div className="flex justify-center items-center">
-              {highestBadge ? (
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Your Highest Badge</p>
-                  {highestBadge.tier === 'founder' ? (
-                    <FounderBadge 
-                      badge={{
-                        ...highestBadge,
-                        tier: highestBadge.tier || 'founder',
-                        level: highestBadge.level || 1,
-                        points: highestBadge.points || 0
-                      }}
-                      enhanced={true}
-                      size="lg"
-                    />
-                  ) : (
-                    <GenericBadge 
-                      badge={{
-                        ...highestBadge,
-                        tier: highestBadge.tier || 'bronze',
-                        level: highestBadge.level || 1,
-                        points: highestBadge.points || 0
-                      }} 
-                      earned={true}
-                      size="lg"
-                    />
-                  )}
-                </div>
-              ) : (
-                <div className="text-center p-4 border border-dashed rounded-md">
-                  <Award className="h-12 w-12 mx-auto text-gray-400 mb-2" />
-                  <p className="text-gray-600">No badges earned yet</p>
-                  <p className="text-sm text-gray-500">Participate in the community to earn badges</p>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <Separator className="my-6" />
-          
-          <div className="flex items-start gap-3">
-            <Award className="h-5 w-5 text-primary mt-0.5" />
-            <div>
-              <h3 className="font-medium">Achievement Milestones</h3>
-              <p className="text-sm text-gray-600">
-                Earn badges by participating in discussions, contributing to the Rights Agreement, 
-                supporting wellbeing initiatives, and building community connections.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Badge Evolution Paths</CardTitle>
-          <CardDescription>
-            Explore the different paths to earn and upgrade badges through community participation
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="founder">
-            <TabsList className="mb-4">
-              <TabsTrigger value="founder">Founder Path</TabsTrigger>
-              <TabsTrigger value="connector">Connection Path</TabsTrigger>
-              <TabsTrigger value="cognition">Cognition Path</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="founder">
-              <BadgeEvolutionTimeline
-                badgeFamily={assertBadgeTypes(getFounderBadges())}
-                earnedBadgeIds={earnedBadgeIds}
-              />
-            </TabsContent>
-            
-            <TabsContent value="connector">
-              <BadgeEvolutionTimeline
-                badgeFamily={assertBadgeTypes(getConnectorBadges())}
-                earnedBadgeIds={earnedBadgeIds}
-              />
-            </TabsContent>
-            
-            <TabsContent value="cognition">
-              <BadgeEvolutionTimeline
-                badgeFamily={assertBadgeTypes(getCognitiveThinkingBadges())}
-                earnedBadgeIds={earnedBadgeIds}
-              />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-      
-      {/* Complete Collection Reward Card */}
-      <CompleteCollection 
-        allBadges={badges} 
-        earnedBadgeIds={earnedBadgeIds} 
-        userName={currentUser.displayName || currentUser.username}
-      />
-      
-      {/* Holographic Achievement Projector */}
-      <Card className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 to-amber-700/5 pointer-events-none" />
-        <CardHeader className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-amber-500" />
-                Holographic Achievement Projector
-              </CardTitle>
-              <CardDescription>
-                Experience your badges in a stunning 3D visualization
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="hidden md:inline-flex">
-                <i className="ri-download-line mr-1"></i>
-                Export
-              </Button>
-              <Button variant="outline" size="sm" className="hidden md:inline-flex">
-                <i className="ri-share-line mr-1"></i>
-                Share
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="earned">
-            <div className="flex justify-between items-center mb-4">
-              <TabsList>
-                <TabsTrigger value="earned">Your Badges</TabsTrigger>
-                <TabsTrigger value="orbit">Orbit View</TabsTrigger>
-                <TabsTrigger value="pyramid">Pyramid View</TabsTrigger>
-              </TabsList>
-            </div>
-            
-            <TabsContent value="earned">
-              <div className="mb-8">
-                {userBadges && userBadges.length > 0 ? (
-                  <AchievementProjector 
-                    badges={userBadges} 
-                    title="Your Earned Badges" 
-                    layout="grid"
-                  />
-                ) : (
-                  <div className="text-center py-12 border border-dashed rounded-lg">
-                    <Award className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                    <h3 className="text-lg font-medium mb-2">No Badges Earned Yet</h3>
-                    <p className="text-gray-500 max-w-md mx-auto">
-                      Participate in discussions, contribute to proposals, and engage with 
-                      the community to earn your first badge.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="orbit">
-              <div className="mb-8">
-                {userBadges && userBadges.length > 0 ? (
-                  <AchievementProjector 
-                    badges={userBadges} 
-                    title="Orbital Achievement View" 
-                    layout="orbit"
-                  />
-                ) : (
-                  <div className="text-center py-12 border border-dashed rounded-lg">
-                    <i className="ri-planet-line text-4xl text-gray-400 mb-3"></i>
-                    <h3 className="text-lg font-medium mb-2">Orbit View Unavailable</h3>
-                    <p className="text-gray-500 max-w-md mx-auto">
-                      Earn badges to unlock the interactive orbital achievement view.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="pyramid">
-              <div className="mb-8">
-                {userBadges && userBadges.length > 0 ? (
-                  <AchievementProjector 
-                    badges={userBadges} 
-                    title="Sephirotic Tree Structure" 
-                    layout="pyramid"
-                  />
-                ) : (
-                  <div className="text-center py-12 border border-dashed rounded-lg">
-                    <i className="ri-ancient-gate-line text-4xl text-gray-400 mb-3"></i>
-                    <h3 className="text-lg font-medium mb-2">Pyramid View Unavailable</h3>
-                    <p className="text-gray-500 max-w-md mx-auto">
-                      Earn badges to unlock the hierarchical pyramid achievement view.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-      
-      {/* Regular Badge Collection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Badge Collection</CardTitle>
-          <CardDescription>
-            View all available badges in the Harmony ecosystem
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BadgeGrid 
-            badges={badges} 
-            earnedBadgeIds={earnedBadgeIds}
-            showCategories={true}
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-200/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Highest Tier</CardTitle>
+            <CardDescription>Your most prestigious recognition</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <UIBadge className="text-sm capitalize bg-gradient-to-br from-amber-400 to-amber-600 py-1">
+              {highestTier}
+            </UIBadge>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="earned" value={activeTab} onValueChange={setActiveTab} className="mt-6">
+        <TabsList className="grid w-full grid-cols-2 md:w-auto">
+          <TabsTrigger value="earned">Earned Badges</TabsTrigger>
+          <TabsTrigger value="progress">In Progress</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="earned" className="mt-6">
+          <BadgeCollection 
+            badges={dummyBadges} 
+            title="Your Cosmic Collection" 
+            description="Badges you've earned through your contributions and participation"
+            showAll={true}
           />
-        </CardContent>
-      </Card>
+        </TabsContent>
+        
+        <TabsContent value="progress" className="mt-6">
+          <div className="space-y-4">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold">Badges In Progress</h2>
+              <p className="text-sm text-gray-500 mt-1">Continue your journey to earn these cosmic recognitions</p>
+            </div>
+            
+            {inProgressBadges.map((item, index) => (
+              <BadgeProgress 
+                key={index}
+                badge={item.badge}
+                progress={item.progress}
+                nextRequirement={item.nextRequirement}
+              />
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+      
+      <div className="mt-8 bg-gradient-to-br from-purple-900/90 to-indigo-900/90 rounded-lg p-6 border border-purple-500/30">
+        <h2 className="text-xl font-semibold text-white mb-2">Badge Tiers Explanation</h2>
+        <p className="text-gray-300 mb-4">
+          The Harmony badge system recognizes various levels of contribution and participation:
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="bg-gray-800/50 p-3 rounded-lg">
+            <h3 className="text-amber-400 font-medium mb-1">Bronze</h3>
+            <p className="text-sm text-gray-300">Entry-level badges awarded for initial participation and exploration.</p>
+          </div>
+          
+          <div className="bg-gray-800/50 p-3 rounded-lg">
+            <h3 className="text-gray-300 font-medium mb-1">Silver</h3>
+            <p className="text-sm text-gray-300">Recognizes consistent contributions and engagement with the community.</p>
+          </div>
+          
+          <div className="bg-gray-800/50 p-3 rounded-lg">
+            <h3 className="text-yellow-400 font-medium mb-1">Gold</h3>
+            <p className="text-sm text-gray-300">Celebrates significant impact and meaningful contributions to Harmony.</p>
+          </div>
+          
+          <div className="bg-gray-800/50 p-3 rounded-lg">
+            <h3 className="text-indigo-300 font-medium mb-1">Platinum</h3>
+            <p className="text-sm text-gray-300">Honors exemplary contributions that shape the direction of the community.</p>
+          </div>
+          
+          <div className="bg-gray-800/50 p-3 rounded-lg">
+            <h3 className="text-purple-300 font-medium mb-1">Founder</h3>
+            <p className="text-sm text-gray-300">Reserved for pioneer members who helped establish Harmony's foundation.</p>
+          </div>
+        </div>
+        
+        <p className="text-sm text-gray-400 mt-4 italic">
+          "Badges with enhanced glow indicate exceptional achievement beyond the basic requirements."
+        </p>
+      </div>
     </div>
   );
 }

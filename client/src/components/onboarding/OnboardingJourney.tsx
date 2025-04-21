@@ -26,11 +26,10 @@ export default function OnboardingJourney() {
   const [, navigate] = useLocation();
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
   
-  // Only display if onboarding is active
-  if (!isOnboarding) return null;
-  
   // Handle onboarding step redirection if needed
   useEffect(() => {
+    if (!isOnboarding) return;
+    
     if (currentStep === 'companion-introduction') {
       navigate('/ai-companion');
     } else if (currentStep === 'rights-agreement') {
@@ -41,7 +40,10 @@ export default function OnboardingJourney() {
       completeOnboarding();
       navigate('/');
     }
-  }, [currentStep, navigate, completeOnboarding]);
+  }, [currentStep, navigate, completeOnboarding, isOnboarding]);
+  
+  // Only display if onboarding is active
+  if (!isOnboarding) return null;
 
   const renderStepContent = () => {
     switch (currentStep) {

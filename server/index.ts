@@ -65,31 +65,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Create a test user on server startup for development
-  try {
-    const saltRounds = 10;
-    const testPassword = "testpassword";
-    const passwordHash = await bcrypt.hash(testPassword, saltRounds);
-    
-    // Create test user with bcrypt hashed password
-    const testUser = await storage.createUser({
-      username: "testuser",
-      displayName: "Test User",
-      password: null, // We store the password hash instead
-      // @ts-ignore - Custom fields
-      passwordHash,
-      avatar: null,
-      bio: "A test user account",
-      // @ts-ignore - Custom fields
-      isAi: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-    
-    log(`Created test user: ${testUser.username} (ID: ${testUser.id})`);
-  } catch (error) {
-    log(`Error creating test user: ${error.message}`);
-  }
+  // Test user creation removed to prevent password null constraint issues
 
   const server = await registerRoutes(app);
 

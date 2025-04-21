@@ -29,6 +29,8 @@ import {
   insertModerationSettingSchema,
   insertCosmicReactionSchema,
   insertCosmicEmojiMetadataSchema,
+  insertBadgeSchema,
+  insertUserBadgeSchema,
   type User,
   type Proposal,
   type Vote,
@@ -40,7 +42,9 @@ import {
   type ModerationAppeal,
   type ModerationSetting,
   type CosmicReaction,
-  type CosmicEmojiMetadata
+  type CosmicEmojiMetadata,
+  type Badge,
+  type UserBadge
 } from "@shared/schema";
 import { z, ZodError } from "zod";
 
@@ -832,6 +836,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const badges = await storage.getBadges();
       res.json(badges);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Get single badge by ID
+  app.get("/api/badges/:id", async (req, res) => {
+    try {
+      const badgeId = parseInt(req.params.id);
+      const badge = await storage.getBadge(badgeId);
+      
+      if (!badge) {
+        return res.status(404).json({ error: "Badge not found" });
+      }
+      
+      res.json(badge);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create badge (admin only)
+  app.post("/api/badges", async (req, res) => {
+    try {
+      // Check if user is authenticated and has admin role
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      // Get user roles
+      const userId = req.user.id;
+      const userRoles = await storage.getUserRoles(userId);
+      const isAdmin = userRoles.some(role => role.role === "admin");
+      
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Admin permission required" });
+      }
+      
+      // Parse and validate badge data
+      const badgeData = insertBadgeSchema.parse(req.body);
+      const newBadge = await storage.createBadge(badgeData);
+      
+      res.status(201).json(newBadge);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+  
+  // Award a badge to a user
+  app.post("/api/badges/:id/award", async (req, res) => {
+    try {
+      // Check if user is authenticated and has permission
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      // Get user roles
+      const issuerId = req.user.id;
+      const userRoles = await storage.getUserRoles(issuerId);
+      const hasPermission = userRoles.some(role => 
+        ["admin", "moderator", "governance_council"].includes(role.role)
+      );
+      
+      if (!hasPermission) {
+        return res.status(403).json({ error: "Permission required" });
+      }
+      
+      // Validate request data
+      const awardSchema = z.object({
+        userId: z.number(),
+        enhanced: z.boolean().optional(),
+        completedCriteria: z.string().optional()
+      });
+      
+      const { userId, enhanced, completedCriteria } = awardSchema.parse(req.body);
+      const badgeId = parseInt(req.params.id);
+      
+      // Check if badge exists
+      const badge = await storage.getBadge(badgeId);
+      if (!badge) {
+        return res.status(404).json({ error: "Badge not found" });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Check if user already has this badge
+      const userBadges = await storage.getUserBadges(userId);
+      const alreadyHasBadge = userBadges.some(ub => ub.badgeId === badgeId);
+      
+      if (alreadyHasBadge) {
+        return res.status(409).json({ error: "User already has this badge" });
+      }
+      
+      // Award the badge
+      const userBadge = await storage.awardBadge({
+        userId,
+        badgeId,
+        enhanced: enhanced || false,
+        completedCriteria,
+        issuedBy: issuerId
+      });
+      
+      res.status(201).json(userBadge);
+    } catch (err) {
+      handleZodError(err, res);
+    }
+  });
+  
+  // Get badges by user ID
+  app.get("/api/users/:userId/badges", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Get user badge relationships
+      const userBadges = await storage.getUserBadges(userId);
+      
+      // Fetch badge details for each user badge
+      const badges = await Promise.all(
+        userBadges.map(async (userBadge) => {
+          const badge = await storage.getBadge(userBadge.badgeId);
+          if (!badge) return null;
+          
+          // Include additional information from the user badge relationship
+          return {
+            ...badge,
+            earnedAt: userBadge.earnedAt,
+            enhanced: userBadge.enhanced || badge.enhanced,
+            issuedBy: userBadge.issuedBy
+          };
+        })
+      );
+      
+      // Filter out any null badges
+      const validBadges = badges.filter(badge => badge !== null);
+      
+      res.json(validBadges);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Internal server error" });

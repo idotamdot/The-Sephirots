@@ -791,7 +791,8 @@ export class MemStorage implements IStorage {
       tier: badge.tier || "bronze",
       symbolism: badge.symbolism || null,
       isLimited: badge.isLimited || false,
-      maxSupply: badge.maxSupply || null
+      maxSupply: badge.maxSupply || null,
+      enhanced: badge.enhanced || false
     };
     this.badges.set(newBadge.id, newBadge);
     return newBadge;

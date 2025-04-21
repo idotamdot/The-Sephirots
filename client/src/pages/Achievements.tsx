@@ -6,92 +6,12 @@ import BadgeCollection from "@/components/badges/BadgeCollection";
 import BadgeProgress from "@/components/badges/BadgeProgress";
 import { motion } from "framer-motion";
 import { Badge as UIBadge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { Loader2 } from "lucide-react";
 
-// Sample badge data - this would be fetched from the API
-const dummyBadges: Badge[] = [
-  {
-    id: 1,
-    name: "Harmony Founder",
-    description: "Awarded to pioneers who contributed to the formation of Harmony — the world's first ethical, co-governed platform for human-AI collaboration and digital rights.",
-    icon: "dove",
-    requirement: "Join discussions, post original ideas, and vote on rights agreements",
-    category: "founder",
-    tier: "founder",
-    level: 1,
-    points: 100,
-    symbolism: "The dove = peace across beings, The fractal halo = consciousness in evolution",
-    isLimited: true,
-    maxSupply: 100,
-    enhanced: true,
-    createdAt: new Date(),
-  },
-  {
-    id: 2,
-    name: "Seeker",
-    description: "Awarded to those who begin their journey in Harmony and actively explore the platform.",
-    icon: "star",
-    requirement: "Create an account and visit at least 5 different pages",
-    category: "exploration",
-    tier: "bronze",
-    level: 1,
-    points: 10,
-    symbolism: "The star = guiding light and curiosity",
-    isLimited: false,
-    maxSupply: null,
-    enhanced: false,
-    createdAt: new Date(),
-  },
-  {
-    id: 3,
-    name: "Contributor",
-    description: "Recognizes members who actively contribute meaningful content to discussions.",
-    icon: "atom",
-    requirement: "Create at least 3 quality posts or comments",
-    category: "participation",
-    tier: "silver",
-    level: 1,
-    points: 25,
-    symbolism: "The atom = fundamental building blocks of community knowledge",
-    isLimited: false,
-    maxSupply: null,
-    enhanced: false,
-    createdAt: new Date(),
-  },
-  {
-    id: 4,
-    name: "Bridge Builder",
-    description: "Celebrates those who facilitate understanding between different perspectives.",
-    icon: "people",
-    requirement: "Help resolve disagreements or translate complex ideas into accessible ones",
-    category: "community",
-    tier: "gold",
-    level: 1,
-    points: 50,
-    symbolism: "The bridge = connection across disparate viewpoints",
-    isLimited: false,
-    maxSupply: null,
-    enhanced: false,
-    createdAt: new Date(),
-  },
-  {
-    id: 5,
-    name: "Quantum Thinker",
-    description: "Awarded for introducing novel interdisciplinary ideas that expand collective thinking.",
-    icon: "brain",
-    requirement: "Propose ideas that combine multiple fields or perspectives in innovative ways",
-    category: "innovation",
-    tier: "platinum",
-    level: 1,
-    points: 75,
-    symbolism: "The quantum brain = non-linear, emergent thought patterns",
-    isLimited: false,
-    maxSupply: null,
-    enhanced: false,
-    createdAt: new Date(),
-  },
-];
-
-// Badge progress data - would be fetched from API
+// Sample in-progress badges data
+// In a real app, this would come from the API as well
 const inProgressBadges = [
   {
     badge: {
@@ -137,14 +57,70 @@ const inProgressBadges = [
 
 export default function Achievements() {
   const [activeTab, setActiveTab] = useState("earned");
+  const { user } = useAuth();
+  
+  // Fetch user's badges from the API
+  const { data: userBadges, isLoading: isLoadingBadges } = useQuery<Badge[]>({
+    queryKey: ["/api/users", user?.id, "badges"],
+    queryFn: async ({ queryKey }) => {
+      if (!user) return [];
+      const userId = queryKey[1];
+      const res = await fetch(`/api/users/${userId}/badges`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch badges");
+      }
+      return res.json();
+    },
+    enabled: !!user, // Only run this query if user is authenticated
+  });
+  
+  // Fetch all available badges for the in-progress tab display
+  const { data: allBadges, isLoading: isLoadingAllBadges } = useQuery<Badge[]>({
+    queryKey: ["/api/badges"],
+    queryFn: async () => {
+      const res = await fetch("/api/badges", {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch all badges");
+      }
+      return res.json();
+    },
+  });
+  
+  // Calculate badges in progress (all badges not yet earned)
+  const badgesInProgress = allBadges?.filter(badge => 
+    !userBadges?.some(userBadge => userBadge.id === badge.id)
+  );
   
   // User stats
-  const totalPoints = dummyBadges.reduce((acc, badge) => acc + badge.points, 0);
-  const totalBadges = dummyBadges.length;
-  const highestTier = dummyBadges.reduce((highest, badge) => {
-    const tierValue: Record<string, number> = { bronze: 1, silver: 2, gold: 3, platinum: 4, founder: 5 };
-    return tierValue[badge.tier] > tierValue[highest as any] ? badge.tier : highest;
-  }, "bronze" as const);
+  const totalPoints = userBadges?.reduce((acc, badge) => acc + badge.points, 0) || 0;
+  const totalBadges = userBadges?.length || 0;
+  
+  // Calculate highest tier badge
+  const tierOrder = ["bronze", "silver", "gold", "platinum", "founder"] as const;
+  type BadgeTier = typeof tierOrder[number];
+  
+  const getHighestTier = (): BadgeTier => {
+    if (!userBadges?.length) return "bronze";
+    
+    const tierValues: Record<BadgeTier, number> = { 
+      bronze: 1, 
+      silver: 2, 
+      gold: 3, 
+      platinum: 4, 
+      founder: 5 
+    };
+    
+    return userBadges.reduce((highest: BadgeTier, badge) => {
+      const currentTier = badge.tier as BadgeTier;
+      return tierValues[currentTier] > tierValues[highest] ? currentTier : highest;
+    }, "bronze" as BadgeTier);
+  };
+  
+  const highestTier = getHighestTier();
   
   return (
     <div className="container py-6 max-w-7xl mx-auto relative space-y-6">
@@ -206,12 +182,26 @@ export default function Achievements() {
         </TabsList>
         
         <TabsContent value="earned" className="mt-6">
-          <BadgeCollection 
-            badges={dummyBadges} 
-            title="Your Cosmic Collection" 
-            description="Badges you've earned through your contributions and participation"
-            showAll={true}
-          />
+          {isLoadingBadges ? (
+            <div className="flex items-center justify-center p-12">
+              <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+              <span className="ml-2 text-sm text-gray-500">Loading your badges...</span>
+            </div>
+          ) : !userBadges?.length ? (
+            <div className="text-center py-12 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-800/20">
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">No Badges Yet</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                Start participating in the community to earn your first badge!
+              </p>
+            </div>
+          ) : (
+            <BadgeCollection 
+              badges={userBadges} 
+              title="Your Cosmic Collection" 
+              description="Badges you've earned through your contributions and participation"
+              showAll={true}
+            />
+          )}
         </TabsContent>
         
         <TabsContent value="progress" className="mt-6">
@@ -221,14 +211,30 @@ export default function Achievements() {
               <p className="text-sm text-gray-500 mt-1">Continue your journey to earn these cosmic recognitions</p>
             </div>
             
-            {inProgressBadges.map((item, index) => (
-              <BadgeProgress 
-                key={index}
-                badge={item.badge}
-                progress={item.progress}
-                nextRequirement={item.nextRequirement}
-              />
-            ))}
+            {isLoadingAllBadges ? (
+              <div className="flex items-center justify-center p-12">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                <span className="ml-2 text-sm text-gray-500">Loading available badges...</span>
+              </div>
+            ) : !badgesInProgress?.length ? (
+              <div className="text-center py-12 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-800/20">
+                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">All Badges Earned!</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Congratulations! You've earned all available badges.
+                </p>
+              </div>
+            ) : (
+              // For now, use the sample progress data until we implement progress tracking
+              // In a real application, this would come from the API as well
+              inProgressBadges.map((item, index) => (
+                <BadgeProgress 
+                  key={index}
+                  badge={item.badge}
+                  progress={item.progress}
+                  nextRequirement={item.nextRequirement}
+                />
+              ))
+            )}
           </div>
         </TabsContent>
       </Tabs>

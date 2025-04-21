@@ -421,17 +421,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user badges
-  app.get("/api/users/:id/badges", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const badges = await storage.getUserBadges(userId);
-      res.json(badges);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
+  // User badges are handled with the comprehensive endpoint below
+  // in the badge routes section: "/api/users/:userId/badges"
 
   // ===== DISCUSSION ROUTES =====
   

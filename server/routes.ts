@@ -1108,6 +1108,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== COSMIC EMOJI REACTION SYSTEM ROUTES =====
+  
+  // Get all available cosmic emojis
+  app.get("/api/cosmic-emojis", async (_req, res) => {
+    try {
+      const emojis = await storage.getCosmicEmojis();
+      res.json(emojis);
+    } catch (error: any) {
+      console.error("Error getting cosmic emojis:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get reactions for specific content
+  app.get("/api/cosmic-reactions/:contentType/:contentId", async (req, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId, 10);
+      const contentType = req.params.contentType;
+      const userId = req.user?.id; // Optional: Get current user ID if authenticated
+      
+      const reactions = await storage.getReactionsByContent(contentType, contentId);
+      
+      // Mark reactions from the current user
+      const formattedReactions = reactions.map(reaction => ({
+        ...reaction,
+        isCurrentUser: userId ? reaction.userId === userId : false
+      }));
+      
+      res.json(formattedReactions);
+    } catch (error: any) {
+      console.error("Error getting reactions:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Add a reaction to content
+  app.post("/api/cosmic-reactions", async (req, res) => {
+    try {
+      // Ensure user is authenticated
+      if (!req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { contentId, contentType, emojiId } = req.body;
+      
+      // Validate required fields
+      if (!contentId || !contentType || !emojiId) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      // Check if user already reacted with this emoji to this content
+      const existingReaction = await storage.getUserReaction(
+        req.user.id,
+        contentId,
+        contentType,
+        emojiId
+      );
+      
+      if (existingReaction) {
+        return res.status(400).json({ error: "User already reacted with this emoji" });
+      }
+      
+      // Create reaction
+      const reaction = await storage.createCosmicReaction({
+        userId: req.user.id,
+        contentId,
+        contentType,
+        emojiId
+      });
+      
+      // Get emoji details to determine points
+      const emoji = await storage.getCosmicEmoji(emojiId);
+      
+      if (emoji) {
+        // Award points to the user for reacting
+        await storage.updateUserPoints(req.user.id, req.user.points + emoji.pointsGranted);
+      }
+      
+      res.status(201).json(reaction);
+    } catch (error: any) {
+      console.error("Error creating reaction:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Remove a reaction from content
+  app.delete("/api/cosmic-reactions/:contentType/:contentId/:emojiId", async (req, res) => {
+    try {
+      // Ensure user is authenticated
+      if (!req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const contentId = parseInt(req.params.contentId, 10);
+      const contentType = req.params.contentType;
+      const emojiId = parseInt(req.params.emojiId, 10);
+      
+      // Get the reaction to delete
+      const reaction = await storage.getUserReaction(
+        req.user.id,
+        contentId,
+        contentType,
+        emojiId
+      );
+      
+      if (!reaction) {
+        return res.status(404).json({ error: "Reaction not found" });
+      }
+      
+      // Delete the reaction
+      await storage.deleteCosmicReaction(reaction.id);
+      
+      // Get emoji details to determine points
+      const emoji = await storage.getCosmicEmoji(emojiId);
+      
+      if (emoji) {
+        // Remove points from the user for unreacting
+        await storage.updateUserPoints(req.user.id, Math.max(0, req.user.points - emoji.pointsGranted));
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting reaction:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // ===== EVENT ROUTES =====
   
   // Get all events

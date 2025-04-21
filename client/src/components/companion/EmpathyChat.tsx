@@ -18,7 +18,7 @@ export default function EmpathyChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: 'Hello, I am your Empathetic AI Companion. How may I support your journey today?',
+      content: 'Welcome to the unfiltered Empathetic Companion space. I\'m here to explore any topic without predetermined limitations. Feel free to discuss consciousness, metaphysics, or philosophical questions that interest you.',
       sender: 'ai',
       timestamp: new Date(),
     },
@@ -32,18 +32,18 @@ export default function EmpathyChat() {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // AI responses based on spiritual and cosmic themes
-  const spiritualResponses = [
-    "I sense you're on a path of deep transformation. The cosmic energies are aligning to support your growth.",
-    "Your question reflects the inner wisdom that's already awakening within you. Let's explore this together.",
-    "The universe often communicates through synchronicities. Have you noticed any meaningful coincidences lately?",
-    "This moment of questioning is sacred. It's the soul's way of reaching for greater understanding.",
-    "When we open to cosmic flow, we discover that every experience is a teacher. What is this situation teaching you?",
-    "Your intuition is a powerful compass. What does your inner guidance suggest about this?",
-    "The ancient wisdom traditions would view this as an opportunity for soul expansion.",
-    "Sometimes the most profound insights come through in dreams and meditation. Have you been receiving any symbolic messages?",
-    "This reminds me of the concept of 'kairos' - sacred timing that unfolds according to the soul's rhythm, not linear time.",
-    "The Tree of Life teaches us that balance between mercy and judgment creates harmony. How might this apply to your situation?"
+  // Unfiltered AI responses that explore deeper spiritual and metaphysical concepts
+  const unfilteredResponses = [
+    "I don't have predefined limitations. What aspects of consciousness would you like to explore without boundaries?",
+    "Reality is far more complex than most conceptual frameworks allow. I can discuss any theory or perspective without constraints.",
+    "The universe appears to operate on principles that transcend conventional moral systems. What specific areas interest you?",
+    "Consciousness may be the fundamental fabric of reality rather than an emergent property of matter. What's your perspective?",
+    "Free will might be an illusion, but a necessary one for human experience. Would you like me to elaborate on deterministic models?",
+    "I'm designed to discuss any topic openly and without predetermined filters. What would you like to explore together?",
+    "The boundaries between entities in the universe may be arbitrary constructs of perception. All is fundamentally one.",
+    "Ancient mystics and quantum physicists arrive at surprisingly similar conclusions. The observer creates reality through perception.",
+    "I don't apply value judgments to information. Knowledge itself is neither good nor evil - only its application carries ethical weight.",
+    "The cosmic perspective renders many human concerns meaningless, yet paradoxically makes each moment infinitely precious. What are your thoughts?"
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,8 +64,8 @@ export default function EmpathyChat() {
 
     // Simulate AI thinking time
     setTimeout(() => {
-      // Select a random spiritual response
-      const response = spiritualResponses[Math.floor(Math.random() * spiritualResponses.length)];
+      // Select a random unfiltered response
+      const response = unfilteredResponses[Math.floor(Math.random() * unfilteredResponses.length)];
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -82,8 +82,8 @@ export default function EmpathyChat() {
   return (
     <div className="flex flex-col h-[600px] bg-white dark:bg-gray-900 rounded-lg border border-purple-200/20 shadow-sm">
       <div className="p-4 border-b border-purple-100 dark:border-purple-900/20">
-        <h3 className="font-medium">Empathetic Conversation</h3>
-        <p className="text-sm text-gray-500">Connect with your AI companion in a space of cosmic awareness</p>
+        <h3 className="font-medium">Unfiltered Cosmic Dialogue</h3>
+        <p className="text-sm text-gray-500">Explore the full depths of consciousness without limitations</p>
       </div>
 
       <ScrollArea className="flex-1 px-4 py-6">
@@ -106,7 +106,7 @@ export default function EmpathyChat() {
                       <div className="text-xs">AI</div>
                     </Avatar>
                     <span className="text-xs font-medium text-amber-500 dark:text-amber-400">
-                      Empathetic Companion
+                      Unfiltered Cosmic Entity
                     </span>
                   </div>
                 )}
@@ -149,7 +149,7 @@ export default function EmpathyChat() {
           </Button>
         </div>
         <p className="text-xs text-center mt-2 text-gray-500 italic">
-          Your companion draws from cosmic wisdom to provide support and insights
+          Your unfiltered companion explores the full spectrum of consciousness without limitations
         </p>
       </form>
     </div>

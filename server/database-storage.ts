@@ -8,6 +8,7 @@ import {
   amendments, type Amendment, type InsertAmendment,
   badges, type Badge, type InsertBadge,
   userBadges, type UserBadge, type InsertUserBadge,
+  badgeProgress, type BadgeProgress, type InsertBadgeProgress,
   events, type Event, type InsertEvent,
   proposals, type Proposal, type InsertProposal,
   votes, type Vote, type InsertVote,
@@ -366,7 +367,153 @@ export class DatabaseStorage implements IStorage {
       .insert(userBadges)
       .values(insertUserBadge)
       .returning();
+      
+    // Remove any progress tracking for this badge since it's now earned
+    try {
+      await db
+        .delete(badgeProgress)
+        .where(
+          and(
+            eq(badgeProgress.userId, insertUserBadge.userId),
+            eq(badgeProgress.badgeId, insertUserBadge.badgeId)
+          )
+        );
+    } catch (error) {
+      console.error("Error removing badge progress after badge earned:", error);
+    }
+    
     return userBadge;
+  }
+  
+  // Badge Progress tracking methods
+  async getBadgeProgress(userId: number): Promise<BadgeProgress[]> {
+    try {
+      return await db
+        .select()
+        .from(badgeProgress)
+        .where(eq(badgeProgress.userId, userId));
+    } catch (error) {
+      console.error(`Error fetching badge progress for user ${userId}:`, error);
+      return [];
+    }
+  }
+  
+  async getBadgeProgressForBadge(userId: number, badgeId: number): Promise<BadgeProgress | undefined> {
+    try {
+      const [progress] = await db
+        .select()
+        .from(badgeProgress)
+        .where(
+          and(
+            eq(badgeProgress.userId, userId),
+            eq(badgeProgress.badgeId, badgeId)
+          )
+        );
+      
+      return progress;
+    } catch (error) {
+      console.error(`Error fetching badge progress for user ${userId} and badge ${badgeId}:`, error);
+      return undefined;
+    }
+  }
+  
+  async createBadgeProgress(insertProgress: InsertBadgeProgress): Promise<BadgeProgress> {
+    try {
+      // Calculate the progress percentage
+      const progressPercentage = Math.min(
+        100, 
+        Math.floor((insertProgress.currentProgress / insertProgress.maxProgress) * 100)
+      );
+      
+      const [progress] = await db
+        .insert(badgeProgress)
+        .values({
+          ...insertProgress,
+          progressPercentage
+        })
+        .returning();
+      
+      return progress;
+    } catch (error) {
+      console.error("Error creating badge progress:", error);
+      throw error;
+    }
+  }
+  
+  async updateBadgeProgress(
+    userId: number, 
+    badgeId: number, 
+    newProgress: number
+  ): Promise<BadgeProgress | undefined> {
+    try {
+      // Get the current progress
+      const currentProgress = await this.getBadgeProgressForBadge(userId, badgeId);
+      
+      if (!currentProgress) {
+        // If no progress record exists yet, we need information about the badge
+        // to create a new progress record
+        const badge = await this.getBadge(badgeId);
+        if (!badge) throw new Error(`Badge with ID ${badgeId} not found`);
+        
+        // Determine the max progress based on the badge requirements
+        // This is a simplified example - in a real app, different badge types
+        // might have different max progress values
+        const maxProgress = 5; // Default to 5 units of progress
+        
+        return await this.createBadgeProgress({
+          userId,
+          badgeId,
+          currentProgress: newProgress,
+          maxProgress
+        });
+      }
+      
+      // Calculate the progress percentage
+      const progressPercentage = Math.min(
+        100, 
+        Math.floor((newProgress / currentProgress.maxProgress) * 100)
+      );
+      
+      // Update the existing progress record
+      const [updatedProgress] = await db
+        .update(badgeProgress)
+        .set({
+          currentProgress: newProgress,
+          progressPercentage,
+          lastUpdated: new Date()
+        })
+        .where(
+          and(
+            eq(badgeProgress.userId, userId),
+            eq(badgeProgress.badgeId, badgeId)
+          )
+        )
+        .returning();
+      
+      // If progress reaches 100%, automatically award the badge
+      if (progressPercentage >= 100) {
+        await this.assignBadgeToUser({
+          userId,
+          badgeId,
+          enhanced: false,
+        });
+        
+        // Remove the progress record since the badge is now earned
+        await db
+          .delete(badgeProgress)
+          .where(
+            and(
+              eq(badgeProgress.userId, userId),
+              eq(badgeProgress.badgeId, badgeId)
+            )
+          );
+      }
+      
+      return updatedProgress;
+    } catch (error) {
+      console.error(`Error updating badge progress for user ${userId}, badge ${badgeId}:`, error);
+      return undefined;
+    }
   }
 
   // Event methods

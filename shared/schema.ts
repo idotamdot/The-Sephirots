@@ -183,6 +183,25 @@ export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
   completedCriteria: true,
 });
 
+// Badge Progress tracking
+export const badgeProgress = pgTable("badge_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  badgeId: integer("badge_id").notNull(),
+  currentProgress: integer("current_progress").notNull().default(0), // Current progress value (e.g., 3 of 5 posts)
+  maxProgress: integer("max_progress").notNull(), // Maximum progress needed (e.g., 5 posts)
+  progressPercentage: integer("progress_percentage").notNull().default(0), // 0-100 percentage complete
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertBadgeProgressSchema = createInsertSchema(badgeProgress).omit({
+  id: true,
+  progressPercentage: true,
+  lastUpdated: true,
+  createdAt: true,
+});
+
 // Events schema
 export const events = pgTable("events", {
   id: serial("id").primaryKey(),
@@ -350,6 +369,9 @@ export type InsertBadge = z.infer<typeof insertBadgeSchema>;
 
 export type UserBadge = typeof userBadges.$inferSelect;
 export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+
+export type BadgeProgress = typeof badgeProgress.$inferSelect;
+export type InsertBadgeProgress = z.infer<typeof insertBadgeProgressSchema>;
 
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;

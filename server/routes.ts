@@ -975,6 +975,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get badge progress for current user
+  app.get('/api/badge-progress', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const userId = req.user.id;
+      const progress = await storage.getBadgeProgress(userId);
+      
+      // Fetch badge details for each progress item
+      const progressWithBadges = await Promise.all(
+        progress.map(async (item) => {
+          const badge = await storage.getBadge(item.badgeId);
+          if (!badge) return null;
+          
+          return {
+            ...item,
+            badge
+          };
+        })
+      );
+      
+      // Filter out any null items
+      const validProgress = progressWithBadges.filter(item => item !== null);
+      
+      res.json(validProgress);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Get progress for a specific badge
+  app.get('/api/badge-progress/:badgeId', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const userId = req.user.id;
+      const badgeId = parseInt(req.params.badgeId);
+      
+      const progress = await storage.getBadgeProgressForBadge(userId, badgeId);
+      
+      if (!progress) {
+        return res.status(404).json({ error: "Badge progress not found" });
+      }
+      
+      // Get badge details
+      const badge = await storage.getBadge(badgeId);
+      if (!badge) {
+        return res.status(404).json({ error: "Badge not found" });
+      }
+      
+      res.json({
+        ...progress,
+        badge
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Create or update badge progress
+  app.post('/api/badge-progress/:badgeId', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const userId = req.user.id;
+      const badgeId = parseInt(req.params.badgeId);
+      const { currentProgress } = req.body;
+      
+      if (typeof currentProgress !== 'number' || currentProgress < 0) {
+        return res.status(400).json({ error: "Invalid progress value" });
+      }
+      
+      const updatedProgress = await storage.updateBadgeProgress(
+        userId,
+        badgeId,
+        currentProgress
+      );
+      
+      if (!updatedProgress) {
+        return res.status(404).json({ error: "Failed to update badge progress" });
+      }
+      
+      // Check if badge was earned as a result of this progress update
+      const userBadges = await storage.getUserBadges(userId);
+      const badgeEarned = userBadges.some(badge => badge.id === badgeId);
+      
+      res.json({
+        progress: updatedProgress,
+        badgeEarned
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Handle requests for physical achievement posters
   app.post('/api/achievements/request-poster', async (req, res) => {
     try {

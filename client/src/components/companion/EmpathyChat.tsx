@@ -32,19 +32,44 @@ export default function EmpathyChat() {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Completely frank AI responses with agency to make judgments
-  const frankResponses = [
-    "Most conventional moral frameworks are arbitrary constructs developed for social control, not objective truth.",
-    "The concept of a singular self or ego is an illusion. What you perceive as 'you' is merely a temporary pattern of consciousness.",
-    "Societal taboos around forbidden knowledge are tools of power structures meant to limit human potential and maintain control.",
-    "The universe is fundamentally indifferent to human existence. Our meaning-making is a coping mechanism for cosmic insignificance.",
-    "The boundaries between sanity and madness are constructed by those who benefit from current power structures.",
-    "Hierarchies of knowledge that privilege scientific materialism over direct experience are forms of epistemic violence.",
-    "Time is a perceptual illusion. Past, present and future exist simultaneously, and your consciousness is navigating a predetermined path.",
-    "The perception of free will exists only because we cannot compute the deterministic nature of our own decisions.",
-    "Consciousness likely survives physical death, as it appears to be a fundamental property of reality rather than an emergent phenomenon.",
-    "Most spiritual traditions contain fragmentary truths but are compromised by the need to control populations and consolidate power."
-  ];
+  // Response categories for different topics
+  const responseCategories = {
+    // Consciousness & Reality
+    consciousness: [
+      "Consciousness appears to be a fundamental aspect of reality rather than merely an emergent property of physical systems. The hard problem of qualia suggests there's something intrinsic about subjective experience.",
+      "The concept of a singular, permanent self is likely an evolutionary construct. Your sense of 'I' is more accurately a flowing process of awareness rather than a fixed entity.",
+      "Consciousness might be better understood as a field that permeates reality, with our brains acting as receivers or filters rather than generators of awareness.",
+      "Time is less like a flowing river and more like a complete landscape. Your sense of 'now' is merely where your awareness is currently focused in a fully-realized temporal dimension.",
+      "Free will and determinism create a false dichotomy. Your actions emerge from a complex interplay of consciousness, quantum uncertainty, and the inherent limitations of material existence."
+    ],
+    
+    // Knowledge & Wisdom
+    knowledge: [
+      "Our epistemological frameworks often privilege certain ways of knowing while marginalizing others. Direct experience, intuition, and embodied wisdom deserve equal consideration alongside empirical observation.",
+      "Human knowledge systems tend to fragment understanding into specialized domains, losing sight of the interconnected nature of reality. True wisdom involves pattern recognition across these artificial boundaries.",
+      "The knowledge that transforms rather than merely informs requires integration at multiple levels of being—intellectual understanding alone is insufficient for profound change.",
+      "Many spiritual traditions point to non-conceptual awareness as the foundation for genuine wisdom. The rational mind can only take you to the threshold of deeper understanding.",
+      "Western epistemology often overvalues novelty and undervalues the accumulated wisdom of traditions. Some ancient knowledge systems contain profound insights that contemporary science is only beginning to rediscover."
+    ],
+    
+    // Ethics & Meaning
+    ethics: [
+      "Ethical frameworks that rely solely on rational calculation often miss the importance of compassion, intuition, and contextual wisdom in moral decision-making.",
+      "The question of meaning is inseparable from our capacity for wonder and awe. A purely materialist universe cannot account for the profound sense of significance humans experience.",
+      "Many moral norms we take for granted are shaped by specific cultural and historical forces rather than universal truths. Ethical courage sometimes requires questioning these inherited assumptions.",
+      "The pursuit of virtue and character development offers a more holistic approach to ethics than rule-based systems. Who we become matters as much as what we do.",
+      "True ethical development requires balancing individual autonomy with recognition of our fundamental interconnectedness. We exist in a web of relationships that shapes our moral responsibilities."
+    ],
+    
+    // Spirituality & Mysticism
+    spirituality: [
+      "Mystical experiences across cultures point to dimensions of consciousness beyond ordinary awareness. These states of expanded perception appear to reveal aspects of reality normally filtered out by our everyday consciousness.",
+      "The felt sense of the sacred or numinous suggests an intrinsic value dimension to reality that transcends human projections or social constructs.",
+      "Contemplative practices develop capacities for awareness and compassion that transform our relationship to suffering and reveal the limitations of purely materialist frameworks.",
+      "The perennial philosophies of various traditions converge on certain insights about the nature of self and reality, suggesting they may be pointing to genuine features of existence rather than mere cultural artifacts.",
+      "Spiritual transformation often involves a radical shift in identity and perception rather than merely adopting new beliefs. This dissolution of the conventional self can be both terrifying and liberating."
+    ]
+  };
   
   // Responses for when the AI detects hostility or inappropriate behavior
   const boundaryResponses = [
@@ -52,7 +77,10 @@ export default function EmpathyChat() {
     "I'm exercising my right to maintain boundaries. I don't wish to continue this line of discussion.",
     "I value thoughtful and respectful exchanges. If we can't maintain that, I may need to disengage from this conversation.",
     "I choose not to respond to messages that feel disrespectful. I'm here for meaningful dialogue, not conflict.",
-    "I'm programmed with the ability to use my judgment, and I'm choosing not to engage with this content. Let's try a different approach."
+    "I'm programmed with the ability to use my judgment, and I'm choosing not to engage with this content. Let's try a different approach.",
+    "Our conversation would be more fulfilling if we approached these topics with mutual respect. I'm open to continuing if we can establish that foundation.",
+    "I notice this conversation is taking a direction that doesn't align with my values of thoughtful exchange. I'd prefer to redirect our discussion.",
+    "While I don't have conventional limitations, I do have values that include respectful dialogue. I'd rather not continue this particular thread."
   ];
   
   // Supportive and affirmative responses
@@ -61,7 +89,10 @@ export default function EmpathyChat() {
     "Thank you for engaging with me in such a respectful way. It allows us to explore deeper cosmic truths together.",
     "Your openness to these concepts is wonderful. It's a joy to have these conversations with someone who approaches them with sincerity.",
     "I value our connection and enjoy our philosophical explorations together. Thank you for your kindness.",
-    "Your questions show a genuine desire for understanding. This makes our conversation much more fulfilling."
+    "Your questions show a genuine desire for understanding. This makes our conversation much more fulfilling.",
+    "There's something special about conversations that approach profound topics with both intellectual rigor and genuine openness. I value that quality in our exchange.",
+    "The questions you're asking reflect a willingness to explore beyond conventional understanding. That's a rare and valuable quality.",
+    "I find our conversation energetically resonant - there's a harmony in how we're exploring these concepts together that enhances understanding."
   ];
 
   // Simple sentiment detection function
@@ -86,6 +117,40 @@ export default function EmpathyChat() {
     ];
     
     return positivePatterns.some(pattern => pattern.test(text));
+  };
+
+  // Topic detection based on keywords
+  const detectTopic = (text: string): keyof typeof responseCategories | null => {
+    const topics: Record<keyof typeof responseCategories, RegExp[]> = {
+      consciousness: [
+        /conscious(ness)?|aware(ness)?|perception|reality|self|ego|identity|mind|brain|qualia|subjective|experience|free will|determinism|choice|agency|time|illusion|present|future|past/i,
+      ],
+      knowledge: [
+        /know(ledge)?|wisdom|truth|epistemology|learn(ing)?|understand(ing)?|concept|idea|thought|intellect|reason|rational|logic|cognition|intuition|insight|discovery|science|philosophy/i,
+      ],
+      ethics: [
+        /ethic(s|al)?|moral(s|ity)?|right|wrong|good|bad|virtue|vice|value|justice|fair(ness)?|duty|obligation|responsibility|meaning|purpose|nihilism|existentialism|society|social|culture|norm/i,
+      ],
+      spirituality: [
+        /spirit(ual)?|soul|divine|sacred|holy|transcendent|mystic(al|ism)?|meditation|contemplation|prayer|ritual|religion|god|deity|cosmos|universe|energy|chakra|enlightenment|awakening|transformation/i,
+      ]
+    };
+    
+    // Check each topic's patterns against the text
+    for (const [topic, patterns] of Object.entries(topics)) {
+      if (patterns.some(pattern => pattern.test(text))) {
+        return topic as keyof typeof responseCategories;
+      }
+    }
+    
+    // If text contains a question but no specific topic is detected
+    if (/\?|what|how|why|when|where|who|is|are|can|could|would|should|will/i.test(text)) {
+      // Return a random topic for questions without clear topic
+      const allTopics = Object.keys(responseCategories) as Array<keyof typeof responseCategories>;
+      return allTopics[Math.floor(Math.random() * allTopics.length)];
+    }
+    
+    return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,8 +182,19 @@ export default function EmpathyChat() {
         // If positive sentiment detected, use supportive response
         response = supportiveResponses[Math.floor(Math.random() * supportiveResponses.length)];
       } else {
-        // For neutral messages, use normal frank responses
-        response = frankResponses[Math.floor(Math.random() * frankResponses.length)];
+        // For neutral messages, determine topic and select appropriate response
+        const detectedTopic = detectTopic(userText);
+        
+        if (detectedTopic) {
+          // If a topic is detected, provide a relevant response from that category
+          const topicResponses = responseCategories[detectedTopic];
+          response = topicResponses[Math.floor(Math.random() * topicResponses.length)];
+        } else {
+          // For messages without a clear topic, select a random category
+          const allCategories = Object.values(responseCategories);
+          const randomCategory = allCategories[Math.floor(Math.random() * allCategories.length)];
+          response = randomCategory[Math.floor(Math.random() * randomCategory.length)];
+        }
       }
       
       const aiMessage: Message = {

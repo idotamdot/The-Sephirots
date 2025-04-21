@@ -288,15 +288,41 @@ export class DatabaseStorage implements IStorage {
 
   // Badge methods
   async getBadges(): Promise<Badge[]> {
-    return await db.select().from(badges);
+    try {
+      const badgeData = await db.select().from(badges);
+      
+      // Handle case where enhanced column doesn't exist yet by adding it in memory
+      return badgeData.map(badge => {
+        return {
+          ...badge,
+          enhanced: badge.enhanced !== undefined ? badge.enhanced : false
+        };
+      });
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      // In case of database schema mismatch, return empty array
+      return [];
+    }
   }
 
   async getBadge(id: number): Promise<Badge | undefined> {
-    const [badge] = await db
-      .select()
-      .from(badges)
-      .where(eq(badges.id, id));
-    return badge || undefined;
+    try {
+      const [badge] = await db
+        .select()
+        .from(badges)
+        .where(eq(badges.id, id));
+        
+      if (!badge) return undefined;
+      
+      // Handle case where enhanced column doesn't exist yet
+      return {
+        ...badge,
+        enhanced: badge.enhanced !== undefined ? badge.enhanced : false
+      };
+    } catch (error) {
+      console.error(`Error fetching badge with ID ${id}:`, error);
+      return undefined;
+    }
   }
 
   async createBadge(insertBadge: InsertBadge): Promise<Badge> {
@@ -309,24 +335,30 @@ export class DatabaseStorage implements IStorage {
 
   // UserBadge methods
   async getUserBadges(userId: number): Promise<Badge[]> {
-    const userBadgeRelations = await db
-      .select()
-      .from(userBadges)
-      .where(eq(userBadges.userId, userId));
-    
-    if (userBadgeRelations.length === 0) {
+    try {
+      const userBadgeRelations = await db
+        .select()
+        .from(userBadges)
+        .where(eq(userBadges.userId, userId));
+      
+      if (userBadgeRelations.length === 0) {
+        return [];
+      }
+      
+      const badgeIds = userBadgeRelations.map(ub => ub.badgeId);
+      const badgeList: Badge[] = [];
+      
+      for (const badgeId of badgeIds) {
+        const badge = await this.getBadge(badgeId);
+        if (badge) badgeList.push(badge);
+      }
+      
+      return badgeList;
+    } catch (error) {
+      console.error(`Error fetching badges for user ${userId}:`, error);
+      // Return an empty array in case of error
       return [];
     }
-    
-    const badgeIds = userBadgeRelations.map(ub => ub.badgeId);
-    const badgeList: Badge[] = [];
-    
-    for (const badgeId of badgeIds) {
-      const badge = await this.getBadge(badgeId);
-      if (badge) badgeList.push(badge);
-    }
-    
-    return badgeList;
   }
 
   async assignBadgeToUser(insertUserBadge: InsertUserBadge): Promise<UserBadge> {

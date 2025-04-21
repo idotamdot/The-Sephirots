@@ -24,6 +24,7 @@ import DonationThankYou from "./pages/DonationThankYou";
 import BadgeTest from "@/pages/BadgeTest";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import ForgotPassword from "@/pages/ForgotPassword";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -102,6 +103,7 @@ function AppContent() {
                   <Route path="/" component={Home} />
                   <Route path="/login" component={Login} />
                   <Route path="/register" component={Register} />
+                  <Route path="/forgot-password" component={ForgotPassword} />
                   <Route path="/discussions" component={Discussions} />
                   <Route path="/discussions/:id">
                     {params => <Discussion id={parseInt(params.id)} />}

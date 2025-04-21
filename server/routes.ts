@@ -308,6 +308,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Forgot password route
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      // Validate request body
+      const schema = z.object({
+        username: z.string().optional(),
+        email: z.string().email().optional(),
+      }).refine(data => data.username || data.email, {
+        message: "Either username or email must be provided",
+      });
+      
+      const { username, email } = schema.parse(req.body);
+      
+      // For security reasons, always return success even if user not found
+      // This prevents user enumeration attacks
+      
+      // In production, this would send an email with a reset link
+      // For now, we'll just log the request and return success
+      console.log(`Password reset requested for username: ${username || 'not provided'}, email: ${email || 'not provided'}`);
+      
+      // Return success regardless of whether user exists
+      res.json({ 
+        success: true, 
+        message: "If an account was found with this information, password reset instructions have been sent." 
+      });
+      
+    } catch (err) {
+      // Still return success for security reasons - don't expose validation errors
+      // But log the actual error
+      console.error("Forgot password error:", err);
+      res.json({ 
+        success: true, 
+        message: "If an account was found with this information, password reset instructions have been sent." 
+      });
+    }
+  });
+  
   // Logout route
   app.post("/api/auth/logout", (req, res) => {
     req.logout((err) => {

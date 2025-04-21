@@ -1,62 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@shared/schema";
 import BadgeCollection from "@/components/badges/BadgeCollection";
-import BadgeProgress from "@/components/badges/BadgeProgress";
+import { BadgeProgress } from "@/components/badges/BadgeProgress";
+import { BadgeAlert } from "@/components/badges/BadgeAlert";
 import { motion } from "framer-motion";
 import { Badge as UIBadge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
-// Sample in-progress badges data
-// In a real app, this would come from the API as well
-const inProgressBadges = [
-  {
-    badge: {
-      id: 6,
-      name: "Mirrored Being",
-      description: "Recognizes those who can understand and articulate multiple perspectives authentically.",
-      icon: "mirror",
-      requirement: "Demonstrate ability to accurately represent viewpoints you may not personally hold",
-      category: "empathy",
-      tier: "gold" as const,
-      level: 1,
-      points: 50,
-      symbolism: "The mirror = reflection and understanding of others",
-      isLimited: false,
-      maxSupply: null,
-      enhanced: false,
-      createdAt: new Date(),
-    },
-    progress: 65,
-    nextRequirement: "Accurately summarize 2 more perspectives in ethical discussions"
-  },
-  {
-    badge: {
-      id: 7,
-      name: "Archivist",
-      description: "Preserves and organizes community knowledge for future reference.",
-      icon: "alien",
-      requirement: "Create or improve documentation of community processes or knowledge",
-      category: "knowledge",
-      tier: "silver" as const,
-      level: 1,
-      points: 35,
-      symbolism: "The observer = detached yet caring preservation of wisdom",
-      isLimited: false,
-      maxSupply: null,
-      enhanced: false,
-      createdAt: new Date(),
-    },
-    progress: 30,
-    nextRequirement: "Organize or tag at least 5 more discussions for better searchability"
-  }
-];
+// Types for badge progress data
+interface BadgeProgressItem {
+  id: number;
+  userId: number;
+  badgeId: number;
+  currentProgress: number;
+  maxProgress: number;
+  progressPercentage: number;
+  lastUpdated: Date;
+  createdAt: Date;
+  badge: Badge;
+}
 
 export default function Achievements() {
   const [activeTab, setActiveTab] = useState("earned");
+  const [alertBadge, setAlertBadge] = useState<Badge | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
   const { user } = useAuth();
   
   // Fetch user's badges from the API
@@ -76,6 +47,22 @@ export default function Achievements() {
     enabled: !!user, // Only run this query if user is authenticated
   });
   
+  // Fetch badge progress data
+  const { data: badgeProgress, isLoading: isLoadingProgress, error: progressError } = useQuery<BadgeProgressItem[]>({
+    queryKey: ["/api/badge-progress"],
+    queryFn: async () => {
+      if (!user) return [];
+      const res = await fetch("/api/badge-progress", {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch badge progress");
+      }
+      return res.json();
+    },
+    enabled: !!user,
+  });
+  
   // Fetch all available badges for the in-progress tab display
   const { data: allBadges, isLoading: isLoadingAllBadges } = useQuery<Badge[]>({
     queryKey: ["/api/badges"],
@@ -90,10 +77,30 @@ export default function Achievements() {
     },
   });
   
-  // Calculate badges in progress (all badges not yet earned)
-  const badgesInProgress = allBadges?.filter(badge => 
-    !userBadges?.some(userBadge => userBadge.id === badge.id)
-  );
+  // Function to close the badge alert
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+    setAlertBadge(null);
+  };
+  
+  // Simulate a new badge being earned - in a real app this would be triggered by events
+  // Like a WebSocket notification or a polling mechanism that checks for new badges
+  useEffect(() => {
+    // For demo purposes, show an alert for a random badge after 5 seconds if badges exist
+    const showDemoBadge = () => {
+      if (userBadges && userBadges.length > 0) {
+        const randomBadge = userBadges[Math.floor(Math.random() * userBadges.length)];
+        setAlertBadge(randomBadge);
+        setShowAlert(true);
+      }
+    };
+    
+    // Only show this in development for demonstration
+    if (process.env.NODE_ENV === "development") {
+      const timer = setTimeout(showDemoBadge, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [userBadges]);
   
   // User stats
   const totalPoints = userBadges?.reduce((acc, badge) => acc + badge.points, 0) || 0;
@@ -124,6 +131,13 @@ export default function Achievements() {
   
   return (
     <div className="container py-6 max-w-7xl mx-auto relative space-y-6">
+      {/* Badge alert notification */}
+      <BadgeAlert 
+        badge={alertBadge}
+        isOpen={showAlert}
+        onClose={handleCloseAlert}
+      />
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -211,29 +225,24 @@ export default function Achievements() {
               <p className="text-sm text-gray-500 mt-1">Continue your journey to earn these cosmic recognitions</p>
             </div>
             
-            {isLoadingAllBadges ? (
+            {isLoadingProgress ? (
               <div className="flex items-center justify-center p-12">
                 <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-                <span className="ml-2 text-sm text-gray-500">Loading available badges...</span>
+                <span className="ml-2 text-sm text-gray-500">Loading badge progress...</span>
               </div>
-            ) : !badgesInProgress?.length ? (
+            ) : !badgeProgress?.length ? (
               <div className="text-center py-12 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-800/20">
-                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">All Badges Earned!</h3>
+                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">No Badges In Progress</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  Congratulations! You've earned all available badges.
+                  You're not currently working toward any badges.
                 </p>
               </div>
             ) : (
-              // For now, use the sample progress data until we implement progress tracking
-              // In a real application, this would come from the API as well
-              inProgressBadges.map((item, index) => (
-                <BadgeProgress 
-                  key={index}
-                  badge={item.badge}
-                  progress={item.progress}
-                  nextRequirement={item.nextRequirement}
-                />
-              ))
+              <BadgeProgress 
+                progressItems={badgeProgress}
+                isLoading={isLoadingProgress}
+                error={progressError || null}
+              />
             )}
           </div>
         </TabsContent>

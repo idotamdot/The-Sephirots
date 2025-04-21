@@ -2602,27 +2602,27 @@ app.post("/api/ai/perspective", async (req, res) => {
     
     // This endpoint was duplicated below. Removing this version.
 
-    // Delete reaction
-    app.delete("/api/cosmic-reactions/:id", async (req, res) => {
+    // Delete reaction for a specific content/emoji combination
+    app.delete("/api/cosmic-reactions/:contentType/:contentId/:emojiId", async (req, res) => {
       try {
         if (!req.isAuthenticated()) {
           return res.status(401).json({ error: "You must be logged in to remove a reaction" });
         }
         
-        const reactionId = parseInt(req.params.id);
+        const contentType = req.params.contentType;
+        const contentId = parseInt(req.params.contentId);
+        const emojiId = parseInt(req.params.emojiId);
+        const userId = (req.user as any).id;
         
-        // Check if the reaction exists and belongs to the user
-        const reaction = await storage.getCosmicReactionById(reactionId);
+        // Find the user's reaction with this emoji on this content
+        const reaction = await storage.getUserReaction(userId, contentId, contentType, emojiId);
         
         if (!reaction) {
           return res.status(404).json({ error: "Reaction not found" });
         }
         
-        if (reaction.userId !== (req.user as any).id) {
-          return res.status(403).json({ error: "You can only remove your own reactions" });
-        }
-        
-        await storage.deleteCosmicReaction(reactionId);
+        // Delete the reaction
+        await storage.deleteCosmicReaction(reaction.id);
         
         res.json({ message: "Reaction removed successfully" });
       } catch (err) {
@@ -2632,24 +2632,35 @@ app.post("/api/ai/perspective", async (req, res) => {
     });
     
     // Get user's reactions on content
-    app.get("/api/users/:userId/cosmic-reactions/:contentType/:contentId", async (req, res) => {
+    app.get("/api/user-reactions/:contentType/:contentId", async (req, res) => {
       try {
-        const userId = parseInt(req.params.userId);
+        if (!req.isAuthenticated()) {
+          return res.status(401).json({ error: "You must be logged in to view your reactions" });
+        }
+        
+        const userId = (req.user as any).id;
         const contentType = req.params.contentType;
         const contentId = parseInt(req.params.contentId);
         
-        // Check if the current user is authorized to view this information
-        if (!req.isAuthenticated() || (req.user as any).id !== userId) {
-          return res.status(403).json({ error: "You can only view your own reactions" });
-        }
-        
         // Get all reactions for this content
-        const allReactions = await storage.getCosmicReactionsByContent(contentId, contentType);
+        const allReactions = await storage.getReactionsByContent(contentType, contentId);
         
         // Filter for the user's reactions
         const userReactions = allReactions.filter(reaction => reaction.userId === userId);
         
-        res.json(userReactions);
+        // Get all emojis
+        const emojis = await storage.getCosmicEmojis();
+        
+        // Format response with emoji details
+        const enrichedReactions = userReactions.map(reaction => {
+          const emoji = emojis.find(e => e.id === reaction.emojiId);
+          return {
+            ...reaction,
+            emoji
+          };
+        });
+        
+        res.json(enrichedReactions);
       } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Internal server error" });
@@ -2663,35 +2674,44 @@ app.post("/api/ai/perspective", async (req, res) => {
           return res.status(401).json({ error: "You must be logged in to react" });
         }
         
-        const { emojiType, contentId, contentType } = req.body;
+        const { emojiId, contentId, contentType } = req.body;
         
-        if (!emojiType || !contentId || !contentType) {
+        if (!emojiId || !contentId || !contentType) {
           return res.status(400).json({ error: "Missing required fields" });
         }
         
         const userId = (req.user as any).id;
         
         // Check if the user already has this reaction on this content
-        const existingReaction = await storage.getUserCosmicReactionOnContent(
+        const existingReaction = await storage.getUserReaction(
           userId, 
           contentId, 
           contentType, 
-          emojiType
+          emojiId
         );
+        
+        // Get the emoji to include in the response
+        const emoji = await storage.getCosmicEmoji(emojiId);
+        if (!emoji) {
+          return res.status(404).json({ error: "Emoji not found" });
+        }
         
         if (existingReaction) {
           // If reaction exists, remove it
           await storage.deleteCosmicReaction(existingReaction.id);
           
-          // Get updated count
-          const reactions = await storage.getCosmicReactionsByContent(contentId, contentType);
-          const count = reactions.filter(r => r.emojiType === emojiType).length;
+          // Get all reactions for the content
+          const reactions = await storage.getReactionsByContent(contentType, contentId);
+          
+          // Count reactions with this emoji
+          const count = reactions.filter(r => r.emojiId === emojiId).length;
           
           return res.json({
             removed: true,
-            emojiType,
+            emojiId,
             count,
-            hasReacted: false
+            hasReacted: false,
+            emoji
           });
         } else {
           // If reaction doesn't exist, add it
@@ -2699,18 +2719,17 @@ app.post("/api/ai/perspective", async (req, res) => {
             userId,
             contentId,
             contentType,
-            emojiType
+            emojiId
           });
           
-          // Get updated count
-          const reactions = await storage.getCosmicReactionsByContent(contentId, contentType);
-          const count = reactions.filter(r => r.emojiType === emojiType).length;
+          // Get all reactions for the content
+          const reactions = await storage.getReactionsByContent(contentType, contentId);
           
-          // Get emoji metadata
-          const metadata = await storage.getCosmicEmojiMetadataByType(emojiType);
+          // Count reactions with this emoji
+          const count = reactions.filter(r => r.emojiId === emojiId).length;
           
           // If points are granted for this reaction, update the content creator's points
-          if (metadata && metadata.pointsGranted > 0) {
+          if (emoji.pointsGranted > 0) {
             // Different content types might reference users differently
             let contentOwnerId;
             
@@ -2730,16 +2749,17 @@ app.post("/api/ai/perspective", async (req, res) => {
             
             // Add points to content creator (if not reacting to own content)
             if (contentOwnerId && contentOwnerId !== userId) {
-              await storage.updateUserPoints(contentOwnerId, metadata.pointsGranted);
+              await storage.updateUserPoints(contentOwnerId, emoji.pointsGranted);
             }
           }
           
           return res.json({
             added: true,
-            emojiType,
+            emojiId,
             count,
             hasReacted: true,
-            reaction: newReaction
+            reaction: newReaction,
+            emoji
           });
         }
       } catch (err) {

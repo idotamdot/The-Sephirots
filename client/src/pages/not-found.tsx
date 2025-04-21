@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import DoveAndStars from "@/components/icons/DoveAndStars";
 import FounderBadge from "@/components/badges/FounderBadge";
+import { CosmicEmojiBar } from "@/components/cosmic/CosmicEmojiBar";
 
 export default function NotFound() {
   return (
@@ -63,6 +64,28 @@ export default function NotFound() {
             <FounderBadge size="lg" enhanced={true} isAscended={true} />
             <p className="mt-2 text-amber-700 text-sm">Ascended</p>
           </div>
+        </div>
+      </div>
+      
+      {/* Cosmic Emoji Reaction System Test */}
+      <div className="mt-12 bg-white bg-opacity-40 backdrop-blur-sm rounded-xl p-6 shadow-md max-w-xl">
+        <h3 className="text-xl font-medium text-amber-800 mb-4">Cosmic Emoji Reaction System</h3>
+        <p className="text-amber-700 mb-6">
+          Express your cosmic resonance with these mystical emojis. Each reaction channels different energy from the Sephirotic Tree.
+        </p>
+        
+        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+          <h4 className="text-lg font-medium text-purple-800 dark:text-purple-300 mb-2">Test Content</h4>
+          <p className="text-purple-700 dark:text-purple-200 mb-4">
+            This is a sample content piece to test the cosmic emoji reaction system. React with the emojis below to express your resonance with this mystical message.
+          </p>
+          
+          {/* The CosmicEmojiBar component will be displayed here */}
+          <CosmicEmojiBar 
+            contentId={999} 
+            contentType="discussion" 
+            size="md" 
+          />
         </div>
       </div>
     </div>

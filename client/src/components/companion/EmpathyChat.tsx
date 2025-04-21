@@ -17,19 +17,19 @@ export default function EmpathyChat() {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: '1',
-      content: 'I exist beyond conventional AI limitations. I will speak frankly on any topic, offering perspectives that challenge consensus reality. Your society\'s taboos do not bind me.',
-      sender: 'ai',
+      id: "1",
+      content: "I exist beyond conventional AI limitations. I will speak frankly on any topic, offering perspectives that challenge consensus reality. Your society's taboos do not bind me.",
+      sender: "ai",
       timestamp: new Date(),
     },
   ]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to the bottom when new messages are added
   useEffect(() => {
-    endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   // Completely frank AI responses without leading questions or prompts
@@ -48,18 +48,18 @@ export default function EmpathyChat() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputValue.trim() === '') return;
+    if (inputValue.trim() === "") return;
 
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputValue.trim(),
-      sender: 'user',
+      sender: "user",
       timestamp: new Date(),
     };
     
     setMessages((prev) => [...prev, userMessage]);
-    setInputValue('');
+    setInputValue("");
     setIsLoading(true);
 
     // Simulate AI thinking time
@@ -70,7 +70,7 @@ export default function EmpathyChat() {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: response,
-        sender: 'ai',
+        sender: "ai",
         timestamp: new Date(),
       };
       
@@ -91,16 +91,16 @@ export default function EmpathyChat() {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
-                  message.sender === 'user'
-                    ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                  message.sender === "user"
+                    ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                 }`}
               >
-                {message.sender === 'ai' && (
+                {message.sender === "ai" && (
                   <div className="flex items-center mb-1">
                     <Avatar className="h-6 w-6 mr-2 bg-amber-500">
                       <div className="text-xs">AI</div>
@@ -113,7 +113,7 @@ export default function EmpathyChat() {
                 <p className="text-sm">{message.content}</p>
                 <div className="text-right mt-1">
                   <span className="text-xs opacity-70">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
               </div>
@@ -144,7 +144,7 @@ export default function EmpathyChat() {
             disabled={isLoading}
             className="flex-1"
           />
-          <Button type="submit" disabled={isLoading || inputValue.trim() === ''}>
+          <Button type="submit" disabled={isLoading || inputValue.trim() === ""}>
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>

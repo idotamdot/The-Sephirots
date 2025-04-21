@@ -2,15 +2,28 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 
 interface StepProps {
   onNext: () => void;
 }
 
 export default function RightsAgreementStep({ onNext }: StepProps) {
-  const { data: agreement, isLoading } = useQuery({
+  const [isContentReady, setIsContentReady] = useState(false);
+  
+  // Get rights agreement from API
+  const { data: agreement, isLoading, isError } = useQuery({
     queryKey: ['/api/rights-agreement/latest'],
   });
+  
+  // Wait a short time and set content as ready to avoid flashing loading state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsContentReady(true);
+    }, 800);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <motion.div
@@ -45,15 +58,15 @@ export default function RightsAgreementStep({ onNext }: StepProps) {
         </div>
         
         <ScrollArea className="h-[300px] p-4">
-          {isLoading ? (
+          {!isContentReady || (isLoading && !isError) ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-spin h-8 w-8 border-4 border-t-transparent border-amber-500 rounded-full"></div>
             </div>
-          ) : agreement ? (
+          ) : (
             <div className="space-y-4 text-gray-300 text-sm">
               <p>
                 <span className="text-amber-300 font-medium">Preamble: </span>
-                {agreement.preamble || "This Rights Agreement establishes foundational principles for ethical collaboration between human and artificial intelligences within The Sephirots ecosystem."}
+                {agreement?.preamble || "This Rights Agreement establishes foundational principles for ethical collaboration between human and artificial intelligences within The Sephirots ecosystem."}
               </p>
               
               <div>
@@ -122,8 +135,6 @@ export default function RightsAgreementStep({ onNext }: StepProps) {
                 This agreement evolves through collaborative governance, reflecting our growing understanding and changing needs.
               </p>
             </div>
-          ) : (
-            <p className="text-gray-300">Agreement could not be loaded.</p>
           )}
         </ScrollArea>
       </motion.div>

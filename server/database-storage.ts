@@ -18,7 +18,9 @@ import {
   moderationFlags, type ModerationFlag, type InsertModerationFlag,
   moderationDecisions, type ModerationDecision, type InsertModerationDecision,
   moderationAppeals, type ModerationAppeal, type InsertModerationAppeal, 
-  moderationSettings, type ModerationSetting, type InsertModerationSetting
+  moderationSettings, type ModerationSetting, type InsertModerationSetting,
+  cosmicEmojis, type CosmicEmoji, type InsertCosmicEmoji,
+  cosmicReactions, type CosmicReaction, type InsertCosmicReaction
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";

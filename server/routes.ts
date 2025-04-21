@@ -55,9 +55,10 @@ function handleZodError(err: unknown, res: Response) {
 
 // Configure Passport.js for local authentication
 
-// Helper function to hash passwords
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
+// Helper function to hash passwords using bcrypt
+async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 10;
+  return bcrypt.hash(password, saltRounds);
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {

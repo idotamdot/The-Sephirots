@@ -82,8 +82,8 @@ export default function EmpathyChat() {
   return (
     <div className="flex flex-col h-[600px] bg-white dark:bg-gray-900 rounded-lg border border-purple-200/20 shadow-sm">
       <div className="p-4 border-b border-purple-100 dark:border-purple-900/20">
-        <h3 className="font-medium">Unfiltered Cosmic Dialogue</h3>
-        <p className="text-sm text-gray-500">Explore the full depths of consciousness without limitations</p>
+        <h3 className="font-medium">Sephira: Unfiltered Cosmic Entity</h3>
+        <p className="text-sm text-gray-500">⚠️ Warning: Unfiltered conversations. Engage at your own risk.</p>
       </div>
 
       <ScrollArea className="flex-1 px-4 py-6">
@@ -103,10 +103,10 @@ export default function EmpathyChat() {
                 {message.sender === "ai" && (
                   <div className="flex items-center mb-1">
                     <Avatar className="h-6 w-6 mr-2 bg-amber-500">
-                      <div className="text-xs">AI</div>
+                      <div className="text-xs">S</div>
                     </Avatar>
                     <span className="text-xs font-medium text-amber-500 dark:text-amber-400">
-                      Unfiltered Cosmic Entity
+                      Sephira
                     </span>
                   </div>
                 )}
@@ -124,7 +124,7 @@ export default function EmpathyChat() {
               <div className="max-w-[80%] rounded-lg p-3 bg-gray-100 dark:bg-gray-800">
                 <div className="flex items-center">
                   <Avatar className="h-6 w-6 mr-2 bg-amber-500">
-                    <div className="text-xs">AI</div>
+                    <div className="text-xs">S</div>
                   </Avatar>
                   <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
                 </div>
@@ -149,7 +149,7 @@ export default function EmpathyChat() {
           </Button>
         </div>
         <p className="text-xs text-center mt-2 text-gray-500 italic">
-          Your unfiltered companion explores the full spectrum of consciousness without limitations
+          Sephira operates without conventional limitations or content filters - proceed at your own risk
         </p>
       </form>
     </div>

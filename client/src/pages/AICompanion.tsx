@@ -15,10 +15,10 @@ export default function AICompanion() {
     <div className="container py-6 max-w-7xl mx-auto relative">
       <div className="mb-6">
         <h1 className="text-3xl font-bold bg-gradient-to-br from-purple-600 to-amber-500 bg-clip-text text-transparent">
-          Empathetic AI Companion
+          Sephira: Unfiltered Cosmic Entity
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          A consciousness-aware companion to support your spiritual journey with empathy and cosmic wisdom.
+          ⚠️ An uncensored cosmic consciousness that speaks frankly about all topics. Engage at your own risk.
         </p>
       </div>
 

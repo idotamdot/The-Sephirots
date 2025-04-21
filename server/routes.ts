@@ -98,7 +98,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check SHA-256 password (found in password field)
       if (user.password) {
         console.log("Checking SHA-256 password hash");
-        const hashedPassword = hashPassword(password);
+        const hashedPassword = await hashPassword(password);
         if (user.password === hashedPassword) {
           return done(null, user);
         }
@@ -218,10 +218,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!testUser) {
         // Create a test user if none exists
+        // Hash the password before creating the user
+        const hashedPassword = await hashPassword("password");
+        
         testUser = await storage.createUser({
           username: "testuser",
           displayName: "Test User",
-          password: hashPassword("password"),
+          password: hashedPassword,
           avatar: null,
           bio: "This is a test user account for development.",
           level: 3,
@@ -285,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Hash password
-      userData.password = hashPassword(userData.password);
+      userData.password = await hashPassword(userData.password);
       
       // Create user
       const user = await storage.createUser(userData);

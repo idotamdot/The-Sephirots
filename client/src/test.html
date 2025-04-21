@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Badge Test</title>
+  <script type="module">
+    import { createRoot } from 'react-dom/client';
+    import { createElement } from 'react';
+    import SimpleBadgeTest from './pages/SimpleBadgeTest';
+    
+    const container = document.getElementById('app');
+    const root = createRoot(container);
+    root.render(createElement(SimpleBadgeTest));
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Badge Showcase Test</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #6d28d9;
+      margin-bottom: 24px;
+    }
+    .badge {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(to bottom right, #8b5cf6, #6d28d9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      box-shadow: 0 4px 20px rgba(109, 40, 217, 0.3);
+      overflow: hidden;
+      margin: 20px;
+    }
+    .badge:before {
+      content: '';
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 120%;
+      height: 120%;
+      background: linear-gradient(45deg, 
+                               rgba(255,255,255,0.1) 0%, 
+                               rgba(255,255,255,0.2) 50%, 
+                               rgba(255,255,255,0.1) 100%);
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+    .badge-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+    .badge-info {
+      flex: 1;
+      min-width: 200px;
+    }
+    .badge-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      background: linear-gradient(to right, #f59e0b, #d97706);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .badge-description {
+      color: #4b5563;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .donation-tiers {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tier-button {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .tier-button:hover {
+      transform: scale(1.05);
+    }
+    .tier-button.seed {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #065f46;
+    }
+    .tier-button.tree {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #92400e;
+    }
+    .tier-button.light {
+      background-color: rgba(139, 92, 246, 0.2);
+      color: #5b21b6;
+    }
+    .tier-button.active.seed {
+      background-color: rgb(16, 185, 129);
+      color: white;
+    }
+    .tier-button.active.tree {
+      background-color: rgb(245, 158, 11);
+      color: white;
+    }
+    .tier-button.active.light {
+      background-color: rgb(139, 92, 246);
+      color: white;
+    }
+    .sparkle {
+      display: inline-block;
+      animation: sparkle 2s infinite;
+    }
+    @keyframes sparkle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .footer {
+      padding-top: 16px;
+      margin-top: 16px;
+      border-top: 1px solid #e5e7eb;
+      color: #6b7280;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-seed { background: linear-gradient(to bottom right, #10b981, #065f46); }
+    .badge-tree { background: linear-gradient(to bottom right, #f59e0b, #92400e); }
+    .badge-light { background: linear-gradient(to bottom right, #8b5cf6, #5b21b6); }
+    
+    .rotating-ring {
+      position: absolute;
+      width: 140%;
+      height: 140%;
+      border: 2px dashed rgba(255,255,255,0.3);
+      border-radius: 50%;
+      animation: rotate 20s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      opacity: 0;
+      animation: particle-animation 3s ease-out forwards;
+    }
+    
+    @keyframes particle-animation {
+      0% { opacity: 0; transform: translate(0, 0) scale(0); }
+      20% { opacity: 1; }
+      80% { opacity: 0.8; }
+      100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(var(--scale)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Donation Badge Showcase</h1>
+    
+    <div class="badge-container">
+      <div id="badge-display" class="badge badge-light">
+        <div class="rotating-ring"></div>
+        <span id="badge-icon">✨</span>
+        <div id="particles" class="particles"></div>
+      </div>
+      
+      <div class="badge-info">
+        <h2 id="badge-title" class="badge-title">Light Guardian Supporter</h2>
+        <p id="badge-description" class="badge-description">
+          Your magnificent contribution shines like a guiding light, illuminating our path forward.
+        </p>
+        
+        <div class="donation-tiers">
+          <button id="seed-btn" class="tier-button seed">
+            <span class="sparkle">✨</span> Seed Planter
+          </button>
+          <button id="tree-btn" class="tier-button tree">
+            <span class="sparkle">✨</span> Tree Tender
+          </button>
+          <button id="light-btn" class="tier-button light active">
+            <span class="sparkle">✨</span> Light Guardian
+          </button>
+        </div>
+        
+        <div class="footer">
+          <span>🎁</span>
+          <span>Your donation supports the Harmony vision and helps build our community. Thank you for being a vital part of our growth.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Badge data
+    const badges = {
+      seed: {
+        name: "Seed Planter I",
+        description: "Thank you for planting the seeds of our community's growth with your contribution.",
+        icon: "🌱",
+        class: "badge-seed"
+      },
+      tree: {
+        name: "Tree Tender I",
+        description: "You've helped our community flourish like a mighty tree with your generous support.",
+        icon: "🌳",
+        class: "badge-tree"
+      },
+      light: {
+        name: "Light Guardian I",
+        description: "Your magnificent contribution shines like a guiding light, illuminating our path forward.",
+        icon: "✨",
+        class: "badge-light"
+      }
+    };
+    
+    let currentBadge = "light";
+    
+    // DOM elements
+    const badgeDisplay = document.getElementById('badge-display');
+    const badgeIcon = document.getElementById('badge-icon');
+    const badgeTitle = document.getElementById('badge-title');
+    const badgeDescription = document.getElementById('badge-description');
+    const particlesContainer = document.getElementById('particles');
+    const seedBtn = document.getElementById('seed-btn');
+    const treeBtn = document.getElementById('tree-btn');
+    const lightBtn = document.getElementById('light-btn');
+    
+    // Functions
+    function updateBadge(type) {
+      currentBadge = type;
+      
+      // Update badge display
+      badgeDisplay.className = `badge ${badges[type].class}`;
+      badgeIcon.textContent = badges[type].icon;
+      badgeTitle.textContent = `${badges[type].name} Supporter`;
+      badgeDescription.textContent = badges[type].description;
+      
+      // Update buttons
+      seedBtn.classList.toggle('active', type === 'seed');
+      treeBtn.classList.toggle('active', type === 'tree');
+      lightBtn.classList.toggle('active', type === 'light');
+      
+      // Trigger particles
+      createParticles();
+    }
+    
+    function createParticles() {
+      // Clear existing particles
+      particlesContainer.innerHTML = '';
+      
+      // Create new particles
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Set random position and animation properties
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 150 + 50;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        const scale = Math.random() * 0.5 + 0.5;
+        const delay = Math.random() * 0.5;
+        
+        particle.style.setProperty('--tx', `${tx}px`);
+        particle.style.setProperty('--ty', `${ty}px`);
+        particle.style.setProperty('--scale', scale);
+        particle.style.animationDelay = `${delay}s`;
+        
+        // Set color based on badge type
+        if (currentBadge === 'seed') {
+          particle.style.backgroundColor = '#10b981';
+        } else if (currentBadge === 'tree') {
+          particle.style.backgroundColor = '#f59e0b';
+        } else {
+          particle.style.backgroundColor = '#8b5cf6';
+        }
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    // Event listeners
+    seedBtn.addEventListener('click', () => updateBadge('seed'));
+    treeBtn.addEventListener('click', () => updateBadge('tree'));
+    lightBtn.addEventListener('click', () => updateBadge('light'));
+    
+    // Initial particles
+    createParticles();
+    
+    // Auto-trigger particles occasionally
+    setInterval(createParticles, 8000);
+  </script>
+</body>
+</html>

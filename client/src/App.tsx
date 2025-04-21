@@ -21,6 +21,7 @@ import SupportJourney from "./pages/SupportJourney";
 import Donate from "@/pages/Donate";
 import Payment from "@/pages/Payment";
 import DonationThankYou from "./pages/DonationThankYou";
+import BadgeTest from "@/pages/BadgeTest";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import NotFound from "@/pages/not-found";
@@ -128,6 +129,7 @@ function AppContent() {
                   <Route path="/donate" component={Donate} />
                   <Route path="/payment" component={Payment} />
                   <Route path="/donation-thank-you" component={DonationThankYou} />
+                  <Route path="/badge-test" component={BadgeTest} />
                   <Route component={NotFound} />
                 </Switch>
               </div>

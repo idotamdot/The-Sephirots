@@ -267,9 +267,9 @@ export default function DonationBadgeShowcase({ badges }: DonationBadgeShowcaseP
               className="text-gray-600 dark:text-gray-300 mb-4"
             >
               {selectedBadge?.description || 
-                selectedTier === "seed" ? "Thank you for planting the seeds of our community's growth with your contribution." :
-                selectedTier === "tree" ? "You've helped our community flourish like a mighty tree with your generous support." :
-                "Your magnificent contribution shines like a guiding light, illuminating our path forward."
+                (selectedTier === "seed" ? "Thank you for planting the seeds of our community's growth with your contribution." :
+                 selectedTier === "tree" ? "You've helped our community flourish like a mighty tree with your generous support." :
+                 "Your magnificent contribution shines like a guiding light, illuminating our path forward.")
               }
             </motion.p>
             

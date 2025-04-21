@@ -1,13 +1,14 @@
 import { cn } from "@/lib/utils";
 import { Badge } from "@shared/schema";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface BadgeDisplayProps {
   badge: Badge;
   size?: "sm" | "md" | "lg" | "xl";
   showDetails?: boolean;
   enhanced?: boolean;
+  isDonation?: boolean;
   className?: string;
   onClick?: () => void;
 }
@@ -17,10 +18,24 @@ export default function BadgeDisplay({
   size = "md",
   showDetails = false,
   enhanced = false,
+  isDonation = false,
   className,
   onClick,
 }: BadgeDisplayProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Occasionally animate donation badges
+  useEffect(() => {
+    if (isDonation) {
+      const interval = setInterval(() => {
+        setIsAnimating(true);
+        setTimeout(() => setIsAnimating(false), 2000);
+      }, Math.random() * 10000 + 15000); // Random interval between 15-25 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [isDonation]);
   
   // Map badge tier to colors
   const tierColors = {
@@ -29,6 +44,13 @@ export default function BadgeDisplay({
     gold: "from-yellow-500 to-yellow-600 border-yellow-400",
     platinum: "from-indigo-400 to-indigo-500 border-indigo-300",
     founder: "from-purple-600 to-indigo-700 border-purple-400",
+  };
+  
+  // Additional colors for donation badges
+  const donationColors = {
+    'seed-planter': "from-emerald-500 to-emerald-700 border-emerald-400",
+    'tree-tender': "from-amber-500 to-amber-700 border-amber-400",
+    'light-guardian': "from-purple-500 to-indigo-600 border-purple-400"
   };
   
   // Map size to dimensions
@@ -41,8 +63,70 @@ export default function BadgeDisplay({
   
   // Get icon component based on badge icon
   const renderBadgeIcon = () => {
-    // Simple SVG icons based on badge type
-    if (badge.icon === "dove") {
+    if (badge.icon === "seed") {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className="w-3/5 h-3/5 text-white">
+          <path
+            d="M12 22V16M12 16C10.8954 16 10 15.1046 10 14V7.5C10 5.01472 12.0147 3 14.5 3C16.9853 3 19 5.01472 19 7.5V14C19 15.1046 18.1046 16 17 16H12Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M6 11.5V9.5C6 8.39543 6.89543 7.5 8 7.5H10"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path 
+            d="M6 14.5H8M6 17.5H8" 
+            stroke="currentColor" 
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
+    } else if (badge.icon === "tree") {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className="w-3/5 h-3/5 text-white">
+          <path
+            d="M12 22V14M12 14L18 9.5L12 5L6 9.5L12 14Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M12 5V2"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M5 17.5L8 15M19 17.5L16 15"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    } else if (badge.icon === "light") {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className="w-3/5 h-3/5 text-white">
+          <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2" />
+          <path
+            d="M12 4V2M12 22V20M4 12H2M22 12H20M19.778 19.778L18.364 18.364M4.222 4.222L5.636 5.636M19.778 4.222L18.364 5.636M4.222 19.778L5.636 18.364"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
+    } else if (badge.icon === "dove") {
       return (
         <svg viewBox="0 0 24 24" fill="none" className="w-3/5 h-3/5 text-white">
           <path
@@ -156,7 +240,26 @@ export default function BadgeDisplay({
     }
   };
   
-  const tierColor = tierColors[badge.tier] || tierColors.bronze;
+  // Determine if this is a donation badge by name
+  const isDonationBadge = 
+    badge.name.toLowerCase().includes('seed planter') || 
+    badge.name.toLowerCase().includes('tree tender') || 
+    badge.name.toLowerCase().includes('light guardian');
+  
+  // Get color scheme based on badge type
+  let badgeColorClass = tierColors[badge.tier] || tierColors.bronze;
+  
+  // Override with donation-specific colors if applicable
+  if (isDonationBadge) {
+    if (badge.name.toLowerCase().includes('seed planter')) {
+      badgeColorClass = donationColors['seed-planter'];
+    } else if (badge.name.toLowerCase().includes('tree tender')) {
+      badgeColorClass = donationColors['tree-tender'];
+    } else if (badge.name.toLowerCase().includes('light guardian')) {
+      badgeColorClass = donationColors['light-guardian'];
+    }
+  }
+  
   const sizeClass = sizeDimensions[size] || sizeDimensions.md;
   
   return (
@@ -170,9 +273,17 @@ export default function BadgeDisplay({
         {/* Badge */}
         <motion.div
           whileHover={{ scale: 1.05 }}
+          animate={isAnimating ? { 
+            scale: [1, 1.1, 1],
+            rotate: [0, 5, -5, 0]
+          } : {}}
+          transition={{ 
+            duration: isAnimating ? 1 : 0.3,
+            ease: "easeInOut" 
+          }}
           className={cn(
             "rounded-full flex items-center justify-center cursor-pointer bg-gradient-to-br border-2",
-            tierColor,
+            badgeColorClass,
             sizeClass,
             {
               "cursor-default": !onClick,
@@ -188,12 +299,25 @@ export default function BadgeDisplay({
             </div>
           )}
           
-          {/* Enhanced glow effect */}
+          {/* Enhanced glow effect - different for donation badges */}
           {enhanced && (
             <motion.div 
-              className="absolute inset-0 rounded-full bg-amber-400/30"
-              animate={{ 
-                boxShadow: ["0 0 10px 2px rgba(251, 191, 36, 0.3)", "0 0 20px 6px rgba(251, 191, 36, 0.5)", "0 0 10px 2px rgba(251, 191, 36, 0.3)"]
+              className={cn(
+                "absolute inset-0 rounded-full",
+                isDonationBadge ? "bg-purple-400/20" : "bg-amber-400/30"
+              )}
+              animate={isDonationBadge ? { 
+                boxShadow: [
+                  "0 0 10px 2px rgba(168, 85, 247, 0.3)",
+                  "0 0 20px 6px rgba(168, 85, 247, 0.5)",
+                  "0 0 10px 2px rgba(168, 85, 247, 0.3)"
+                ]
+              } : { 
+                boxShadow: [
+                  "0 0 10px 2px rgba(251, 191, 36, 0.3)",
+                  "0 0 20px 6px rgba(251, 191, 36, 0.5)",
+                  "0 0 10px 2px rgba(251, 191, 36, 0.3)"
+                ]
               }}
               transition={{ 
                 duration: 2,
@@ -202,10 +326,65 @@ export default function BadgeDisplay({
               }}
             />
           )}
+          
+          {/* Special donation badge effects */}
+          {isDonationBadge && (
+            <>
+              {/* Particle effects for donation badges */}
+              <AnimatePresence>
+                {isAnimating && (
+                  <>
+                    {[...Array(6)].map((_, i) => (
+                      <motion.div
+                        key={`particle-${i}`}
+                        initial={{ 
+                          x: 0, 
+                          y: 0, 
+                          opacity: 0.7, 
+                          scale: 0.5 
+                        }}
+                        animate={{ 
+                          x: (Math.random() - 0.5) * 60, 
+                          y: (Math.random() - 0.5) * 60, 
+                          opacity: 0, 
+                          scale: 0
+                        }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1 + Math.random() }}
+                        className={cn(
+                          "absolute w-2 h-2 rounded-full",
+                          badge.name.toLowerCase().includes('seed planter') ? "bg-emerald-400" :
+                          badge.name.toLowerCase().includes('tree tender') ? "bg-amber-400" :
+                          "bg-purple-400"
+                        )}
+                      />
+                    ))}
+                  </>
+                )}
+              </AnimatePresence>
+              
+              {/* Permanent subtle pulse for donation badges */}
+              <motion.div
+                className="absolute inset-0 rounded-full bg-white/5"
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  opacity: [0.1, 0.2, 0.1]
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  repeatType: "reverse"
+                }}
+              />
+            </>
+          )}
         </motion.div>
         
-        {/* Badge name */}
-        <div className="mt-2 text-center font-medium">
+        {/* Badge name with special styling for donation badges */}
+        <div className={cn(
+          "mt-2 text-center font-medium",
+          isDonationBadge ? "bg-gradient-to-br from-purple-600 to-amber-500 bg-clip-text text-transparent" : ""
+        )}>
           {badge.name}
         </div>
         
@@ -214,9 +393,19 @@ export default function BadgeDisplay({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full z-50 bg-gray-900/95 rounded-lg shadow-xl p-4 w-64 text-white"
+            className={cn(
+              "absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full z-50 rounded-lg shadow-xl p-4 w-64 text-white",
+              isDonationBadge ? 
+                "bg-gradient-to-br from-purple-950/95 to-indigo-950/95 border border-purple-500/30" : 
+                "bg-gray-900/95"
+            )}
           >
-            <div className="text-sm font-medium text-amber-400">{badge.name}</div>
+            <div className={cn(
+              "text-sm font-medium",
+              isDonationBadge ? "text-purple-300" : "text-amber-400"
+            )}>
+              {badge.name}
+            </div>
             <div className="text-xs mt-1">{badge.description}</div>
             {badge.symbolism && (
               <div className="mt-2">
@@ -232,6 +421,13 @@ export default function BadgeDisplay({
               <span className="capitalize">{badge.tier}</span>
               <span>{badge.points} pts</span>
             </div>
+            
+            {/* Special message for donation badges */}
+            {isDonationBadge && (
+              <div className="mt-2 pt-2 border-t border-purple-500/30 text-xs text-center text-purple-300">
+                Thank you for supporting The Sephirots collective journey
+              </div>
+            )}
           </motion.div>
         )}
       </div>

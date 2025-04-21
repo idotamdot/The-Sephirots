@@ -46,60 +46,56 @@ export function CosmicEmoji({
     lg: 'w-10 h-10 text-lg',
   };
 
-  // Add cosmic reaction mutation
-  const addReactionMutation = useMutation({
+  // Define response type for toggle reaction
+  interface ToggleReactionResponse {
+    added?: boolean;
+    removed?: boolean;
+    count?: number;
+  }
+
+  // Toggle reaction mutation (handles both adding and removing)
+  const toggleReactionMutation = useMutation<ToggleReactionResponse, Error, void>({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/cosmic-reactions', {
+      const response = await apiRequest('POST', '/api/cosmic-reactions/toggle', {
         contentId,
         contentType,
         emojiId
       });
       return await response.json();
     },
-    onSuccess: () => {
-      // Increment local count
-      setCount(prevCount => prevCount + 1);
-      setHasReacted(true);
-      
-      // Show animation
-      setIsAnimating(true);
-      setTimeout(() => setIsAnimating(false), 1000);
+    onSuccess: (data) => {
+      if (data.added) {
+        // Reaction was added
+        if (typeof data.count === 'number') {
+          setCount(data.count);
+        } else {
+          setCount(prevCount => prevCount + 1);
+        }
+        setHasReacted(true);
+        
+        // Show animation
+        setIsAnimating(true);
+        setTimeout(() => setIsAnimating(false), 1000);
+      } else if (data.removed) {
+        // Reaction was removed
+        if (typeof data.count === 'number') {
+          setCount(data.count);
+        } else {
+          setCount(prevCount => Math.max(0, prevCount - 1));
+        }
+        setHasReacted(false);
+      }
       
       // Invalidate queries to refresh the data
       queryClient.invalidateQueries({ queryKey: [`/api/cosmic-reactions/${contentType}/${contentId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/user-reactions/${contentType}/${contentId}`] });
       
       // Update user points
       queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Failed to add reaction',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-
-  // Remove cosmic reaction mutation
-  const removeReactionMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest('DELETE', `/api/cosmic-reactions/${contentType}/${contentId}/${emojiId}`);
-      return await response.json();
-    },
-    onSuccess: () => {
-      // Decrement local count
-      setCount(prevCount => Math.max(0, prevCount - 1));
-      setHasReacted(false);
-      
-      // Invalidate queries to refresh the data
-      queryClient.invalidateQueries({ queryKey: [`/api/cosmic-reactions/${contentType}/${contentId}`] });
-      
-      // Update user points
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Failed to remove reaction',
+        title: 'Failed to toggle reaction',
         description: error.message,
         variant: 'destructive',
       });
@@ -109,11 +105,8 @@ export function CosmicEmoji({
   const handleClick = () => {
     if (disabled || !user) return;
     
-    if (hasReacted) {
-      removeReactionMutation.mutate();
-    } else {
-      addReactionMutation.mutate();
-    }
+    // Use our single toggle mutation instead of separate add/remove mutations
+    toggleReactionMutation.mutate();
   };
 
   return (

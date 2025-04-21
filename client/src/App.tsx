@@ -18,6 +18,8 @@ import ProposalDetail from "@/pages/ProposalDetail";
 import CreateProposal from "@/pages/CreateProposal";
 import Moderation from "@/pages/Moderation";
 import SupportJourney from "./pages/SupportJourney";
+import Donate from "@/pages/Donate";
+import Payment from "@/pages/Payment";
 import DonationThankYou from "./pages/DonationThankYou";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -123,6 +125,8 @@ function AppContent() {
                   </Route>
                   <Route path="/moderation" component={Moderation} />
                   <Route path="/support-journey" component={SupportJourney} />
+                  <Route path="/donate" component={Donate} />
+                  <Route path="/payment" component={Payment} />
                   <Route path="/donation-thank-you" component={DonationThankYou} />
                   <Route component={NotFound} />
                 </Switch>

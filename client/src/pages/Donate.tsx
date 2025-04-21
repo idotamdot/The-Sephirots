@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -63,7 +63,7 @@ const donationTiers = [
 // Checkout form component
 const CheckoutForm = ({ selectedTier }: { selectedTier: string }) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,23 +76,17 @@ const CheckoutForm = ({ selectedTier }: { selectedTier: string }) => {
         throw new Error('Invalid donation tier selected');
       }
       
-      // Redirect to Stripe checkout page
-      // Note: in a real production app, you'd probably want to create a customer record first
-      const response = await apiRequest('POST', '/api/create-checkout-session', {
+      // Use the existing donation intent API
+      const response = await apiRequest('POST', '/api/create-donation-intent', {
         tierId: tier.id,
-        amount: tier.amount,
-        name: tier.name
+        amount: tier.amount * 100, // Convert to cents for Stripe
       });
       
-      const { sessionId } = await response.json();
+      const { clientSecret, paymentIntentId } = await response.json();
       
-      // Redirect to Stripe checkout
-      const stripe = await stripePromise;
-      const { error } = await stripe!.redirectToCheckout({ sessionId });
+      // Redirect to payment page
+      navigate(`/payment?client_secret=${clientSecret}&payment_intent=${paymentIntentId}&tier=${selectedTier}`);
       
-      if (error) {
-        throw new Error(error.message);
-      }
     } catch (err: any) {
       toast({
         title: 'Error',

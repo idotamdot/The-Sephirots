@@ -24,7 +24,7 @@ import {
   mindMapCollaborators, MindMapCollaborator, InsertMindMapCollaborator,
   mindMapTemplates, MindMapTemplate, InsertMindMapTemplate,
   cosmicReactions, CosmicReaction, InsertCosmicReaction,
-  cosmicEmojiMetadata, CosmicEmojiMetadata, InsertCosmicEmojiMetadata
+  cosmicEmojis, CosmicEmoji, InsertCosmicEmoji
 } from "@shared/schema";
 
 export interface IStorage {
@@ -182,18 +182,16 @@ export interface IStorage {
   getMindMapTemplate(id: number): Promise<MindMapTemplate | undefined>;
   createMindMapTemplate(template: InsertMindMapTemplate): Promise<MindMapTemplate>;
   
+  // Cosmic Emoji methods
+  getCosmicEmojis(): Promise<CosmicEmoji[]>;
+  getCosmicEmoji(id: number): Promise<CosmicEmoji | undefined>;
+  createCosmicEmoji(emoji: InsertCosmicEmoji): Promise<CosmicEmoji>;
+  
   // Cosmic Reaction methods
-  getCosmicReactionsByContent(contentId: number, contentType: string): Promise<CosmicReaction[]>;
-  getCosmicReactionById(id: number): Promise<CosmicReaction | undefined>;
-  getUserCosmicReactionOnContent(userId: number, contentId: number, contentType: string, emojiType: string): Promise<CosmicReaction | undefined>;
+  getReactionsByContent(contentType: string, contentId: number): Promise<CosmicReaction[]>;
+  getUserReaction(userId: number, contentId: number, contentType: string, emojiId: number): Promise<CosmicReaction | undefined>;
   createCosmicReaction(reaction: InsertCosmicReaction): Promise<CosmicReaction>;
   deleteCosmicReaction(id: number): Promise<void>;
-  
-  // Cosmic Emoji Metadata methods
-  getCosmicEmojiMetadata(): Promise<CosmicEmojiMetadata[]>;
-  getCosmicEmojiMetadataByType(emojiType: string): Promise<CosmicEmojiMetadata | undefined>;
-  createCosmicEmojiMetadata(metadata: InsertCosmicEmojiMetadata): Promise<CosmicEmojiMetadata>;
-  updateCosmicEmojiMetadata(id: number, metadata: Partial<CosmicEmojiMetadata>): Promise<CosmicEmojiMetadata>;
 }
 
 export class MemStorage implements IStorage {
@@ -267,8 +265,8 @@ export class MemStorage implements IStorage {
   // Cosmic Reaction related properties
   private cosmicReactions: Map<number, CosmicReaction>;
   private cosmicReactionId: number;
-  private cosmicEmojiMetadata: Map<number, CosmicEmojiMetadata>;
-  private cosmicEmojiMetadataId: number;
+  private cosmicEmojis: Map<number, CosmicEmoji>;
+  private cosmicEmojiId: number;
   
   constructor() {
     this.users = new Map();
@@ -341,13 +339,13 @@ export class MemStorage implements IStorage {
     // Initialize cosmic reaction data structures
     this.cosmicReactions = new Map();
     this.cosmicReactionId = 1;
-    this.cosmicEmojiMetadata = new Map();
-    this.cosmicEmojiMetadataId = 1;
+    this.cosmicEmojis = new Map();
+    this.cosmicEmojiId = 1;
     
-    // Add initial cosmic emoji metadata
+    // Add initial cosmic emojis
     const emojiTypes = [
       {
-        id: this.cosmicEmojiMetadataId++,
+        id: this.cosmicEmojiId++,
         emojiType: "star_of_awe",
         displayEmoji: "✨",
         tooltip: "Star of Awe - Keter",
@@ -359,7 +357,7 @@ export class MemStorage implements IStorage {
         updatedAt: new Date()
       },
       {
-        id: this.cosmicEmojiMetadataId++,
+        id: this.cosmicEmojiId++,
         emojiType: "crescent_of_peace",
         displayEmoji: "🌙",
         tooltip: "Crescent of Peace - Chokhmah",
@@ -371,7 +369,7 @@ export class MemStorage implements IStorage {
         updatedAt: new Date()
       },
       {
-        id: this.cosmicEmojiMetadataId++,
+        id: this.cosmicEmojiId++,
         emojiType: "flame_of_passion",
         displayEmoji: "🔥",
         tooltip: "Flame of Passion - Gevurah",
@@ -383,7 +381,7 @@ export class MemStorage implements IStorage {
         updatedAt: new Date()
       },
       {
-        id: this.cosmicEmojiMetadataId++,
+        id: this.cosmicEmojiId++,
         emojiType: "drop_of_compassion",
         displayEmoji: "💧",
         tooltip: "Drop of Compassion - Chesed",
@@ -395,7 +393,7 @@ export class MemStorage implements IStorage {
         updatedAt: new Date()
       },
       {
-        id: this.cosmicEmojiMetadataId++,
+        id: this.cosmicEmojiId++,
         emojiType: "leaf_of_growth",
         displayEmoji: "🌱",
         tooltip: "Leaf of Growth - Netzach",
@@ -407,7 +405,7 @@ export class MemStorage implements IStorage {
         updatedAt: new Date()
       },
       {
-        id: this.cosmicEmojiMetadataId++,
+        id: this.cosmicEmojiId++,
         emojiType: "spiral_of_mystery",
         displayEmoji: "🌀",
         tooltip: "Spiral of Mystery - Yesod",
@@ -419,7 +417,7 @@ export class MemStorage implements IStorage {
         updatedAt: new Date()
       },
       {
-        id: this.cosmicEmojiMetadataId++,
+        id: this.cosmicEmojiId++,
         emojiType: "mirror_of_insight",
         displayEmoji: "🪞",
         tooltip: "Mirror of Insight - Binah",
@@ -432,9 +430,9 @@ export class MemStorage implements IStorage {
       }
     ];
     
-    // Store emoji metadata
+    // Store cosmic emojis
     emojiTypes.forEach(emoji => {
-      this.cosmicEmojiMetadata.set(emoji.id, emoji);
+      this.cosmicEmojis.set(emoji.id, emoji);
     });
     
     // Add a sample user

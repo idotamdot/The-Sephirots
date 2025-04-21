@@ -66,6 +66,11 @@ export const navigationItems = [
     icon: "ri-robot-line"
   },
   {
+    path: "/donate",
+    label: "Support Journey",
+    icon: "ri-heart-add-line"
+  },
+  {
     path: "/moderation",
     label: "Moderation",
     icon: "ri-shield-check-line",

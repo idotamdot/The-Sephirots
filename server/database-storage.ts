@@ -789,4 +789,67 @@ export class DatabaseStorage implements IStorage {
       .delete(annotationReplies)
       .where(eq(annotationReplies.id, id));
   }
+  
+  // Cosmic Emoji methods
+  async getCosmicEmojis(): Promise<CosmicEmoji[]> {
+    return await db.select().from(cosmicEmojis);
+  }
+  
+  async getCosmicEmoji(id: number): Promise<CosmicEmoji | undefined> {
+    const [emoji] = await db
+      .select()
+      .from(cosmicEmojis)
+      .where(eq(cosmicEmojis.id, id));
+    return emoji || undefined;
+  }
+  
+  async createCosmicEmoji(insertEmoji: InsertCosmicEmoji): Promise<CosmicEmoji> {
+    const [emoji] = await db
+      .insert(cosmicEmojis)
+      .values(insertEmoji)
+      .returning();
+    return emoji;
+  }
+  
+  // Cosmic Reaction methods
+  async getReactionsByContent(contentType: string, contentId: number): Promise<CosmicReaction[]> {
+    return await db
+      .select()
+      .from(cosmicReactions)
+      .where(
+        and(
+          eq(cosmicReactions.contentType, contentType as any),
+          eq(cosmicReactions.contentId, contentId)
+        )
+      );
+  }
+  
+  async getUserReaction(userId: number, contentId: number, contentType: string, emojiId: number): Promise<CosmicReaction | undefined> {
+    const [reaction] = await db
+      .select()
+      .from(cosmicReactions)
+      .where(
+        and(
+          eq(cosmicReactions.userId, userId),
+          eq(cosmicReactions.contentId, contentId),
+          eq(cosmicReactions.contentType, contentType as any),
+          eq(cosmicReactions.emojiId, emojiId)
+        )
+      );
+    return reaction || undefined;
+  }
+  
+  async createCosmicReaction(insertReaction: InsertCosmicReaction): Promise<CosmicReaction> {
+    const [reaction] = await db
+      .insert(cosmicReactions)
+      .values(insertReaction)
+      .returning();
+    return reaction;
+  }
+  
+  async deleteCosmicReaction(id: number): Promise<void> {
+    await db
+      .delete(cosmicReactions)
+      .where(eq(cosmicReactions.id, id));
+  }
 }

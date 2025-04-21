@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { User, Badge, Discussion } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,16 +6,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import BadgeGrid from "@/components/achievements/BadgeGrid";
 import DiscussionList from "@/components/discussions/DiscussionList";
+import DonationBadgeShowcase from "@/components/badges/DonationBadgeShowcase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { calculatePointsToNextLevel } from "@/lib/utils";
+import { calculatePointsToNextLevel, cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, Edit3, Settings, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Camera, Upload, Edit3, Settings, X, Award, Sparkles } from "lucide-react";
 
 interface ProfileProps {
   currentUser?: User;
@@ -425,11 +427,44 @@ export default function Profile({ currentUser }: ProfileProps) {
           <div className="mb-4">
             <h3 className="text-lg font-medium">Earned Badges</h3>
           </div>
-          <BadgeGrid 
-            badges={userBadges || []} 
-            earnedBadgeIds={(userBadges || []).map(b => b.id)}
-            showCategories={false}
-          />
+          
+          {/* Detect and display donation badges in a special showcase */}
+          {useMemo(() => {
+            // Filter donation badges
+            const donationBadges = userBadges?.filter(badge => 
+              badge.name.toLowerCase().includes('seed planter') || 
+              badge.name.toLowerCase().includes('tree tender') || 
+              badge.name.toLowerCase().includes('light guardian')
+            ) || [];
+            
+            if (donationBadges.length > 0) {
+              return (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="mb-8"
+                >
+                  <div className="flex items-center mb-4">
+                    <Sparkles className="w-5 h-5 mr-2 text-amber-500" />
+                    <h3 className="text-lg font-medium bg-gradient-to-r from-amber-500 to-purple-600 bg-clip-text text-transparent">
+                      Supporter Badges
+                    </h3>
+                  </div>
+                  <DonationBadgeShowcase badges={donationBadges} />
+                </motion.div>
+              );
+            }
+            return null;
+          }, [userBadges])}
+          
+          <div className="mt-6">
+            <BadgeGrid 
+              badges={userBadges || []} 
+              earnedBadgeIds={(userBadges || []).map(b => b.id)}
+              showCategories={true}
+            />
+          </div>
         </TabsContent>
         
         <TabsContent value="activity" className="mt-6">

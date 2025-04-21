@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@shared/schema";
 import BadgeCollection from "@/components/badges/BadgeCollection";
 import { BadgeProgress } from "@/components/badges/BadgeProgress";
 import { BadgeAlert } from "@/components/badges/BadgeAlert";
+import DonationBadgeShowcase from "@/components/badges/DonationBadgeShowcase";
 import { motion } from "framer-motion";
 import { Badge as UIBadge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2 } from "lucide-react";
+import { Loader2, Gift, Award } from "lucide-react";
 
 // Types for badge progress data
 interface BadgeProgressItem {
@@ -83,6 +84,17 @@ export default function Achievements() {
     setAlertBadge(null);
   };
   
+  // Detect donation badges
+  const donationBadges = useMemo(() => {
+    if (!userBadges) return [];
+    
+    return userBadges.filter(badge => (
+      badge.name.toLowerCase().includes('seed planter') || 
+      badge.name.toLowerCase().includes('tree tender') || 
+      badge.name.toLowerCase().includes('light guardian')
+    ));
+  }, [userBadges]);
+  
   // Simulate a new badge being earned - in a real app this would be triggered by events
   // Like a WebSocket notification or a polling mechanism that checks for new badges
   useEffect(() => {
@@ -154,7 +166,10 @@ export default function Achievements() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-200/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Total Soul Points</CardTitle>
+            <CardTitle className="text-lg flex items-center">
+              <Award className="w-5 h-5 mr-2 text-amber-500" />
+              Total Soul Points
+            </CardTitle>
             <CardDescription>Your cosmic influence measure</CardDescription>
           </CardHeader>
           <CardContent>
@@ -166,7 +181,10 @@ export default function Achievements() {
         
         <Card className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-200/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Badges Earned</CardTitle>
+            <CardTitle className="text-lg flex items-center">
+              <Gift className="w-5 h-5 mr-2 text-amber-500" />
+              Badges Earned
+            </CardTitle>
             <CardDescription>Your collection of recognitions</CardDescription>
           </CardHeader>
           <CardContent>
@@ -188,6 +206,11 @@ export default function Achievements() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Display donation badges in enhanced showcase if present */}
+      {donationBadges.length > 0 && (
+        <DonationBadgeShowcase badges={donationBadges} />
+      )}
 
       <Tabs defaultValue="earned" value={activeTab} onValueChange={setActiveTab} className="mt-6">
         <TabsList className="grid w-full grid-cols-2 md:w-auto">
@@ -279,6 +302,27 @@ export default function Achievements() {
             <h3 className="text-purple-300 font-medium mb-1">Founder</h3>
             <p className="text-sm text-gray-300">Reserved for pioneer members who helped establish Harmony's foundation.</p>
           </div>
+        </div>
+        
+        <div className="mt-4 py-3 px-4 bg-purple-800/30 rounded-md border border-purple-500/20">
+          <h3 className="text-lg font-medium text-amber-300 mb-2">Donation Badges</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-800/50 p-3 rounded-lg">
+              <h4 className="text-emerald-400 font-medium mb-1">Seed Planter</h4>
+              <p className="text-sm text-gray-300">Those who nurture the community with small contributions ($10-$49).</p>
+            </div>
+            <div className="bg-gray-800/50 p-3 rounded-lg">
+              <h4 className="text-amber-400 font-medium mb-1">Tree Tender</h4>
+              <p className="text-sm text-gray-300">Medium-tier supporters who help the community grow ($50-$199).</p>
+            </div>
+            <div className="bg-gray-800/50 p-3 rounded-lg">
+              <h4 className="text-purple-300 font-medium mb-1">Light Guardian</h4>
+              <p className="text-sm text-gray-300">Major benefactors who illuminate the path forward ($200+).</p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-400 mt-3 italic">
+            "Donation badges come with special animations and effects that showcase your generous support."
+          </p>
         </div>
         
         <p className="text-sm text-gray-400 mt-4 italic">

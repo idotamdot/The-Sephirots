@@ -2535,13 +2535,13 @@ app.post("/api/ai/perspective", async (req, res) => {
       }
     });
     
-    // ===== COSMIC REACTION ROUTES =====
+    // ===== COSMIC EMOJI ROUTES =====
     
-    // Get all emoji metadata
-    app.get("/api/cosmic-emoji-metadata", async (_req, res) => {
+    // Get all emoji definitions
+    app.get("/api/cosmic-emojis", async (_req, res) => {
       try {
-        const metadata = await storage.getCosmicEmojiMetadata();
-        res.json(metadata);
+        const emojis = await storage.getCosmicEmojis();
+        res.json(emojis);
       } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Internal server error" });
@@ -2554,32 +2554,26 @@ app.post("/api/ai/perspective", async (req, res) => {
         const contentType = req.params.contentType;
         const contentId = parseInt(req.params.contentId);
         
-        const reactions = await storage.getCosmicReactionsByContent(contentId, contentType);
+        // Get all reactions for this content
+        const reactions = await storage.getReactionsByContent(contentType, contentId);
         
-        // Group reactions by emoji type and count them
-        const reactionCounts = reactions.reduce((acc, reaction) => {
-          if (!acc[reaction.emojiType]) {
-            acc[reaction.emojiType] = 0;
-          }
-          acc[reaction.emojiType]++;
-          return acc;
-        }, {});
+        // Check if user is authenticated to mark their own reactions
+        const userId = req.isAuthenticated() ? (req.user as any).id : null;
         
-        // Get emoji metadata for each type
-        const emojiMetadata = await storage.getCosmicEmojiMetadata();
-        const enrichedReactions = Object.entries(reactionCounts).map(([emojiType, count]) => {
-          const metadata = emojiMetadata.find(meta => meta.emojiType === emojiType);
+        // Get all emojis
+        const emojis = await storage.getCosmicEmojis();
+        
+        // Format response for the client
+        const formattedReactions = reactions.map(reaction => {
+          const emoji = emojis.find(e => e.id === reaction.emojiId);
           return {
-            emojiType,
-            count,
-            metadata
+            ...reaction,
+            isCurrentUser: userId === reaction.userId,
+            emoji
           };
         });
         
-        // Sort by count (highest first)
-        enrichedReactions.sort((a, b) => b.count - a.count);
-        
-        res.json(enrichedReactions);
+        res.json(formattedReactions);
       } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Internal server error" });

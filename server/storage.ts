@@ -249,6 +249,12 @@ export class MemStorage implements IStorage {
   private moderationAppeals: Map<number, ModerationAppeal>;
   private moderationAppealId: number;
   
+  private cosmicEmojis: Map<number, CosmicEmoji>;
+  private cosmicEmojiId: number;
+  
+  private cosmicReactions: Map<number, CosmicReaction>;
+  private cosmicReactionId: number;
+  
   private moderationSettings: Map<number, ModerationSetting>;
   private moderationSettingId: number;
   
@@ -262,11 +268,7 @@ export class MemStorage implements IStorage {
   private mindMapTemplates: Map<number, MindMapTemplate>;
   private mindMapTemplateId: number;
   
-  // Cosmic Reaction related properties
-  private cosmicReactions: Map<number, CosmicReaction>;
-  private cosmicReactionId: number;
-  private cosmicEmojis: Map<number, CosmicEmoji>;
-  private cosmicEmojiId: number;
+  // Cosmic emoji and reaction properties are already defined above
   
   constructor() {
     this.users = new Map();
@@ -1703,6 +1705,59 @@ export class MemStorage implements IStorage {
     };
     this.cosmicEmojiMetadata.set(id, updatedMetadata);
     return updatedMetadata;
+  }
+  
+  // Cosmic Emoji methods
+  async getCosmicEmojis(): Promise<CosmicEmoji[]> {
+    return Array.from(this.cosmicEmojis.values());
+  }
+  
+  async getCosmicEmoji(id: number): Promise<CosmicEmoji | undefined> {
+    return this.cosmicEmojis.get(id);
+  }
+  
+  async createCosmicEmoji(emoji: InsertCosmicEmoji): Promise<CosmicEmoji> {
+    const newEmoji = {
+      id: this.cosmicEmojiId++,
+      ...emoji,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.cosmicEmojis.set(newEmoji.id, newEmoji);
+    return newEmoji;
+  }
+  
+  // Cosmic Reaction methods
+  async getReactionsByContent(contentType: string, contentId: number): Promise<CosmicReaction[]> {
+    return Array.from(this.cosmicReactions.values()).filter(
+      reaction => 
+        reaction.contentType === contentType && 
+        reaction.contentId === contentId
+    );
+  }
+  
+  async getUserReaction(userId: number, contentId: number, contentType: string, emojiId: number): Promise<CosmicReaction | undefined> {
+    return Array.from(this.cosmicReactions.values()).find(
+      reaction => 
+        reaction.userId === userId && 
+        reaction.contentId === contentId && 
+        reaction.contentType === contentType && 
+        reaction.emojiId === emojiId
+    );
+  }
+  
+  async createCosmicReaction(reaction: InsertCosmicReaction): Promise<CosmicReaction> {
+    const newReaction = {
+      id: this.cosmicReactionId++,
+      ...reaction,
+      createdAt: new Date()
+    };
+    this.cosmicReactions.set(newReaction.id, newReaction);
+    return newReaction;
+  }
+  
+  async deleteCosmicReaction(id: number): Promise<void> {
+    this.cosmicReactions.delete(id);
   }
 }
 

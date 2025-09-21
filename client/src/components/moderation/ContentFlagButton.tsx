@@ -58,11 +58,7 @@ export default function ContentFlagButton({
       reporterId: number;
       reason: string;
     }) => {
-      const requestData = {
-        method: "POST",
-        body: data,
-      };
-      return apiRequest("/api/moderation/flags", requestData as any);
+      return apiRequest("POST", "/api/moderation/flags", data);
     },
     onSuccess: () => {
       toast({
@@ -93,11 +89,7 @@ export default function ContentFlagButton({
       content: string;
       userId: number;
     }) => {
-      const requestData = {
-        method: "POST",
-        body: data,
-      };
-      return apiRequest("/api/moderation/auto-moderate", requestData as any);
+      return apiRequest("POST", "/api/moderation/auto-moderate", data);
     },
   });
 

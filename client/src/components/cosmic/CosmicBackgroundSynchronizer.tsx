@@ -55,6 +55,22 @@ export default function CosmicBackgroundSynchronizer({
   // Get community activity statistics to determine mood
   const { data: communityStats } = useQuery({
     queryKey: ['/api/community-stats'],
+    queryFn: async () => {
+      const response = await fetch('/api/community-stats');
+      if (!response.ok) throw new Error('Failed to fetch community stats');
+      return response.json() as Promise<{
+        activeUsers: number;
+        discussions: {
+          total: number;
+          recentlyActive: number;
+        };
+        proposals: {
+          total: number;
+          inProgress: number;
+          recentlyApproved: number;
+        };
+      }>;
+    },
     enabled: !moodOverride,
     refetchInterval: 60000, // Refetch every minute
   });
@@ -62,6 +78,14 @@ export default function CosmicBackgroundSynchronizer({
   // Get user data for personalization
   const { data: userData } = useQuery({
     queryKey: ['/api/users/me'],
+    queryFn: async () => {
+      const response = await fetch('/api/users/me', { credentials: 'include' });
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 404) return null;
+        throw new Error('Failed to fetch user data');
+      }
+      return response.json();
+    },
   });
   
   // Setup window dimensions

@@ -20,7 +20,7 @@ import { motion } from "framer-motion";
 import { Camera, Upload, Edit3, Settings, X, Award, Sparkles } from "lucide-react";
 
 interface ProfileProps {
-  currentUser?: User;
+  currentUser: User | null;
 }
 
 export default function Profile({ currentUser }: ProfileProps) {

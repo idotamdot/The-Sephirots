@@ -8,7 +8,7 @@ import SupportButton from "@/components/layout/SupportButton";
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
-  currentUser?: User;
+  currentUser: User | null;
 }
 
 export default function Sidebar({ open, onClose, currentUser }: SidebarProps) {

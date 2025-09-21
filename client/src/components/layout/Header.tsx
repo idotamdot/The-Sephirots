@@ -28,7 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HeaderProps {
   onMenuClick: () => void;
-  currentUser?: User;
+  currentUser: User | null;
   isLoading: boolean;
 }
 
@@ -541,7 +541,7 @@ export default function Header({ onMenuClick, currentUser, isLoading }: HeaderPr
                           method: "POST",
                           credentials: "include",
                         }).then(() => {
-                          queryClient.removeQueries(["/api/users/me"]);
+                          queryClient.removeQueries({ queryKey: ["/api/users/me"] });
                           navigate("/");
                           window.location.reload();
                         });

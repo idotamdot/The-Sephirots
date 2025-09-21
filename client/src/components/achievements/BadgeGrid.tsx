@@ -96,29 +96,16 @@ export default function BadgeGrid({ badges, earnedBadgeIds, showCategories = fal
             
             return (
               <div key={badge.id} className="flex flex-col items-center">
-                {badge.tier === 'founder' ? (
-                  <FounderBadge
-                    badge={{
-                      ...badge,
-                      tier: badge.tier || 'founder',
-                      level: badge.level || 1,
-                      points: badge.points || 0
-                    }} 
-                    earned={isEarned}
-                    size="md"
-                  />
-                ) : (
-                  <GenericBadge 
-                    badge={{
-                      ...badge,
-                      tier: badge.tier || 'bronze',
-                      level: badge.level || 1,
-                      points: badge.points || 0
-                    }} 
-                    earned={isEarned}
-                    size="md"
-                  />
-                )}
+                <GenericBadge 
+                  badge={{
+                    ...badge,
+                    tier: badge.tier || 'founder',
+                    level: badge.level || 1,
+                    points: badge.points || 0
+                  }} 
+                  earned={isEarned}
+                  size="md"
+                />
                 
                 <div className="text-center mt-2">
                   <h4 className="font-medium text-sm">{badge.name}</h4>

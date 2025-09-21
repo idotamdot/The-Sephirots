@@ -73,29 +73,16 @@ export default function BadgeEvolutionTimeline({ badgeFamily, earnedBadgeIds }: 
                 <div className={`flex justify-center md:justify-end ${
                   index % 2 === 0 ? 'md:col-start-1' : 'md:col-start-3 md:[direction:ltr]'
                 }`}>
-                  {badge.tier === 'founder' ? (
-                    <FounderBadge
-                      badge={{
-                        ...badge,
-                        tier: badge.tier || 'founder',
-                        level: badge.level || 1,
-                        points: badge.points || 0
-                      }} 
-                      earned={isEarned}
-                      size="md"
-                    />
-                  ) : (
-                    <GenericBadge 
-                      badge={{
-                        ...badge,
-                        tier: badge.tier || 'bronze',
-                        level: badge.level || 1,
-                        points: badge.points || 0
-                      }} 
-                      earned={isEarned}
-                      size="md"
-                    />
-                  )}
+                  <GenericBadge 
+                    badge={{
+                      ...badge,
+                      tier: badge.tier || 'founder',
+                      level: badge.level || 1,
+                      points: badge.points || 0
+                    }} 
+                    earned={isEarned}
+                    size="md"
+                  />
                 </div>
                 
                 <div className="flex justify-center">

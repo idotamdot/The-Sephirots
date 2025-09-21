@@ -1,5 +1,5 @@
 import { Badge as BadgeType } from "@/lib/types";
-import FounderBadge from "./FounderBadge";
+import GenericBadge from "./GenericBadge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Award } from "lucide-react";
@@ -40,9 +40,9 @@ export default function BadgeGrid({
         {/* Display founder badge prominently if exists */}
         {founderBadge && (
           <div className="flex justify-center mb-6">
-            <FounderBadge
+            <GenericBadge
               badge={founderBadge}
-              enhanced={true}
+              earned={true}
               size="lg"
             />
           </div>

@@ -1474,7 +1474,7 @@ export class MemStorage implements IStorage {
       description: connection.description,
       color: connection.color,
       thickness: connection.thickness,
-      style: connection.style,
+      style: connection.style ?? "solid",
       createdBy: connection.createdBy,
       createdAt: timestamp,
       updatedAt: timestamp
@@ -1517,8 +1517,9 @@ export class MemStorage implements IStorage {
       id,
       mindMapId: collaborator.mindMapId,
       userId: collaborator.userId,
-      role: collaborator.role,
-      createdAt: timestamp
+      canEdit: collaborator.canEdit ?? true,
+      addedBy: collaborator.addedBy,
+      addedAt: timestamp
     };
     
     this.mindMapCollaborators.set(id, mindMapCollaborator);
@@ -1575,23 +1576,23 @@ export class MemStorage implements IStorage {
     return this.cosmicReactions.get(id);
   }
   
-  async getUserCosmicReactionOnContent(userId: number, contentId: number, contentType: string, emojiType: string): Promise<CosmicReaction | undefined> {
+  async getUserCosmicReactionOnContent(userId: number, contentId: number, contentType: string, emojiId: number): Promise<CosmicReaction | undefined> {
     return Array.from(this.cosmicReactions.values()).find(
       reaction => 
         reaction.userId === userId && 
         reaction.contentId === contentId && 
         reaction.contentType === contentType &&
-        reaction.emojiType === emojiType
+        reaction.emojiId === emojiId
     );
   }
   
   async createCosmicReaction(reaction: InsertCosmicReaction): Promise<CosmicReaction> {
-    // Check if the user already reacted with this emoji type on this content
+    // Check if the user already reacted with this emoji on this content
     const existingReaction = await this.getUserCosmicReactionOnContent(
       reaction.userId, 
       reaction.contentId, 
       reaction.contentType,
-      reaction.emojiType
+      reaction.emojiId
     );
     
     if (existingReaction) {
@@ -1608,9 +1609,7 @@ export class MemStorage implements IStorage {
     this.cosmicReactions.set(newReaction.id, newReaction);
     
     // Update user points if there's emoji metadata with points
-    const emojiMetadata = Array.from(this.cosmicEmojis.values()).find(
-      meta => meta.emojiType === reaction.emojiType
-    );
+    const emojiMetadata = this.cosmicEmojis.get(reaction.emojiId);
     
     if (emojiMetadata && emojiMetadata.pointsGranted && reaction.contentType === "discussion") {
       // Get the discussion to find the author
@@ -1642,9 +1641,7 @@ export class MemStorage implements IStorage {
     this.cosmicReactions.delete(id);
     
     // Remove points if there's emoji metadata with points
-    const emojiMetadata = Array.from(this.cosmicEmojis.values()).find(
-      meta => meta.emojiType === reaction.emojiType
-    );
+    const emojiMetadata = this.cosmicEmojis.get(reaction.emojiId);
     
     if (emojiMetadata && emojiMetadata.pointsGranted && reaction.contentType === "discussion") {
       // Get the discussion to find the author
@@ -1684,6 +1681,7 @@ export class MemStorage implements IStorage {
     const timestamp = new Date();
     const newMetadata: CosmicEmoji = {
       id: this.cosmicEmojiId++,
+      pointsGranted: 5, // Default value
       ...metadata,
       createdAt: timestamp,
       updatedAt: timestamp

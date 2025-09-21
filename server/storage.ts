@@ -1745,20 +1745,6 @@ export class MemStorage implements IStorage {
         reaction.emojiId === emojiId
     );
   }
-  
-  async createCosmicReaction(reaction: InsertCosmicReaction): Promise<CosmicReaction> {
-    const newReaction = {
-      id: this.cosmicReactionId++,
-      ...reaction,
-      createdAt: new Date()
-    };
-    this.cosmicReactions.set(newReaction.id, newReaction);
-    return newReaction;
-  }
-  
-  async deleteCosmicReaction(id: number): Promise<void> {
-    this.cosmicReactions.delete(id);
-  }
 }
 
 // Use DatabaseStorage for proper persistence

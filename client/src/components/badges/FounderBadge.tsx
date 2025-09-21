@@ -1,12 +1,15 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import DoveAndStars from '@/components/icons/DoveAndStars';
+import { Badge } from '@/lib/types';
 
 interface FounderBadgeProps {
+  badge?: Badge;
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   enhanced?: boolean;
   isAscended?: boolean;
+  earned?: boolean;
 }
 
 // Size classes mapping
@@ -18,10 +21,12 @@ const sizeClasses = {
 };
 
 export default function FounderBadge({ 
+  badge,
   className, 
   size = 'md', 
   enhanced = false,
-  isAscended = false
+  isAscended = false,
+  earned = false
 }: FounderBadgeProps) {
   return (
     <div className={cn("flex flex-col items-center", className)}>

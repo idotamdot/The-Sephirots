@@ -1608,18 +1608,18 @@ export class MemStorage implements IStorage {
     this.cosmicReactions.set(newReaction.id, newReaction);
     
     // Update user points if there's emoji metadata with points
-    const emojiMetadata = Array.from(this.cosmicEmojiMetadata.values()).find(
+    const emojiMetadata = Array.from(this.cosmicEmojis.values()).find(
       meta => meta.emojiType === reaction.emojiType
     );
     
-    if (emojiMetadata && reaction.contentType === "discussion") {
+    if (emojiMetadata && emojiMetadata.pointsGranted && reaction.contentType === "discussion") {
       // Get the discussion to find the author
       const discussion = this.discussions.get(reaction.contentId);
       if (discussion) {
         // Add points to the discussion author
         await this.updateUserPoints(discussion.userId, emojiMetadata.pointsGranted);
       }
-    } else if (emojiMetadata && reaction.contentType === "comment") {
+    } else if (emojiMetadata && emojiMetadata.pointsGranted && reaction.contentType === "comment") {
       // Get the comment to find the author
       const comment = this.comments.get(reaction.contentId);
       if (comment) {
@@ -1642,18 +1642,18 @@ export class MemStorage implements IStorage {
     this.cosmicReactions.delete(id);
     
     // Remove points if there's emoji metadata with points
-    const emojiMetadata = Array.from(this.cosmicEmojiMetadata.values()).find(
+    const emojiMetadata = Array.from(this.cosmicEmojis.values()).find(
       meta => meta.emojiType === reaction.emojiType
     );
     
-    if (emojiMetadata && reaction.contentType === "discussion") {
+    if (emojiMetadata && emojiMetadata.pointsGranted && reaction.contentType === "discussion") {
       // Get the discussion to find the author
       const discussion = this.discussions.get(reaction.contentId);
       if (discussion) {
         // Remove points from the discussion author (negative points)
         await this.updateUserPoints(discussion.userId, -emojiMetadata.pointsGranted);
       }
-    } else if (emojiMetadata && reaction.contentType === "comment") {
+    } else if (emojiMetadata && emojiMetadata.pointsGranted && reaction.contentType === "comment") {
       // Get the comment to find the author
       const comment = this.comments.get(reaction.contentId);
       if (comment) {
@@ -1664,17 +1664,17 @@ export class MemStorage implements IStorage {
   }
   
   // Cosmic Emoji Metadata methods
-  async getCosmicEmojiMetadata(): Promise<CosmicEmojiMetadata[]> {
-    return Array.from(this.cosmicEmojiMetadata.values());
+  async getCosmicEmojiMetadata(): Promise<CosmicEmoji[]> {
+    return Array.from(this.cosmicEmojis.values());
   }
   
-  async getCosmicEmojiMetadataByType(emojiType: string): Promise<CosmicEmojiMetadata | undefined> {
-    return Array.from(this.cosmicEmojiMetadata.values()).find(
+  async getCosmicEmojiMetadataByType(emojiType: string): Promise<CosmicEmoji | undefined> {
+    return Array.from(this.cosmicEmojis.values()).find(
       metadata => metadata.emojiType === emojiType
     );
   }
   
-  async createCosmicEmojiMetadata(metadata: InsertCosmicEmojiMetadata): Promise<CosmicEmojiMetadata> {
+  async createCosmicEmojiMetadata(metadata: InsertCosmicEmoji): Promise<CosmicEmoji> {
     // Check if metadata for this emoji type already exists
     const existingMetadata = await this.getCosmicEmojiMetadataByType(metadata.emojiType);
     if (existingMetadata) {
@@ -1682,18 +1682,18 @@ export class MemStorage implements IStorage {
     }
     
     const timestamp = new Date();
-    const newMetadata: CosmicEmojiMetadata = {
-      id: this.cosmicEmojiMetadataId++,
+    const newMetadata: CosmicEmoji = {
+      id: this.cosmicEmojiId++,
       ...metadata,
       createdAt: timestamp,
       updatedAt: timestamp
     };
-    this.cosmicEmojiMetadata.set(newMetadata.id, newMetadata);
+    this.cosmicEmojis.set(newMetadata.id, newMetadata);
     return newMetadata;
   }
   
-  async updateCosmicEmojiMetadata(id: number, metadata: Partial<CosmicEmojiMetadata>): Promise<CosmicEmojiMetadata> {
-    const existingMetadata = this.cosmicEmojiMetadata.get(id);
+  async updateCosmicEmojiMetadata(id: number, metadata: Partial<CosmicEmoji>): Promise<CosmicEmoji> {
+    const existingMetadata = this.cosmicEmojis.get(id);
     if (!existingMetadata) {
       throw new Error(`Cosmic emoji metadata with ID ${id} not found`);
     }
@@ -1703,7 +1703,7 @@ export class MemStorage implements IStorage {
       ...metadata, 
       updatedAt: new Date() 
     };
-    this.cosmicEmojiMetadata.set(id, updatedMetadata);
+    this.cosmicEmojis.set(id, updatedMetadata);
     return updatedMetadata;
   }
   
@@ -1719,6 +1719,7 @@ export class MemStorage implements IStorage {
   async createCosmicEmoji(emoji: InsertCosmicEmoji): Promise<CosmicEmoji> {
     const newEmoji = {
       id: this.cosmicEmojiId++,
+      pointsGranted: 5, // Default value
       ...emoji,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -1746,19 +1747,7 @@ export class MemStorage implements IStorage {
     );
   }
   
-  async createCosmicReaction(reaction: InsertCosmicReaction): Promise<CosmicReaction> {
-    const newReaction = {
-      id: this.cosmicReactionId++,
-      ...reaction,
-      createdAt: new Date()
-    };
-    this.cosmicReactions.set(newReaction.id, newReaction);
-    return newReaction;
-  }
-  
-  async deleteCosmicReaction(id: number): Promise<void> {
-    this.cosmicReactions.delete(id);
-  }
+
 }
 
 // Use DatabaseStorage for proper persistence

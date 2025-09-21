@@ -15,7 +15,7 @@ export default function BadgeGrid({ badges, earnedBadgeIds, showCategories = fal
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<string | null>(null);
   
-  const categories = [...new Set(badges.map(badge => badge.category))];
+  const categories = Array.from(new Set(badges.map(badge => badge.category)));
   
   // Filter badges by search term and category
   const filteredBadges = badges.filter(badge => {

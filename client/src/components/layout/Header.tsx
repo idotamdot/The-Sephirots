@@ -28,7 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HeaderProps {
   onMenuClick: () => void;
-  currentUser?: User;
+  currentUser: User | null;
   isLoading: boolean;
 }
 

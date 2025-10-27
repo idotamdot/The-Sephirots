@@ -14,6 +14,13 @@ export default function RightsAgreementStep({ onNext }: StepProps) {
   // Get rights agreement from API
   const { data: agreement, isLoading, isError } = useQuery({
     queryKey: ['/api/rights-agreement/latest'],
+    queryFn: async () => {
+      const response = await fetch('/api/rights-agreement/latest');
+      if (!response.ok) {
+        throw new Error('Failed to fetch rights agreement');
+      }
+      return response.json();
+    },
   });
   
   // Wait a short time and set content as ready to avoid flashing loading state

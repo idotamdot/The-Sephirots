@@ -167,9 +167,9 @@ export default function DiscussionForm({ userId, initialCategory = "community_ne
             </Button>
           </div>
           
-          {form.getValues().tags && form.getValues().tags.length > 0 && (
+          {form.getValues().tags && form.getValues().tags!.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">
-              {form.getValues().tags.map((tag, index) => (
+              {form.getValues().tags!.map((tag, index) => (
                 <div 
                   key={index} 
                   className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full flex items-center"
@@ -228,7 +228,7 @@ export default function DiscussionForm({ userId, initialCategory = "community_ne
           <Button 
             type="button" 
             variant="outline" 
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/discussions")}
           >
             Cancel
           </Button>

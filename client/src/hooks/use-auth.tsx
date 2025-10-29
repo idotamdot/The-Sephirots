@@ -2,15 +2,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-
-type User = {
-  id: number;
-  username: string;
-  displayName: string;
-  avatar?: string;
-  role?: string;
-  points?: number;
-};
+import { User } from "@/lib/types";
 
 type LoginData = {
   username: string;
@@ -27,6 +19,7 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   error: Error | null;
+  isAuthenticated: boolean;
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
@@ -180,6 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading: isLoading || loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending,
         error: authError,
+        isAuthenticated: !!user,
         login,
         logout,
         register,

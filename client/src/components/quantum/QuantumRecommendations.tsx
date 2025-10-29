@@ -23,16 +23,34 @@ export default function QuantumRecommendations() {
   // Get all discussions
   const { data: discussions } = useQuery<Discussion[]>({
     queryKey: ['/api/discussions'],
+    queryFn: async () => {
+      const response = await fetch('/api/discussions');
+      if (!response.ok) throw new Error('Failed to fetch discussions');
+      return response.json();
+    },
   });
 
   // Get all users
   const { data: users } = useQuery<User[]>({
     queryKey: ['/api/users'],
+    queryFn: async () => {
+      const response = await fetch('/api/users');
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    },
   });
 
   // Get user badges
   const { data: userBadges } = useQuery({
     queryKey: ['/api/users', currentUser?.id, 'badges'],
+    queryFn: async () => {
+      if (!currentUser?.id) return [];
+      const response = await fetch(`/api/users/${currentUser.id}/badges`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user badges');
+      }
+      return response.json() as Promise<Badge[]>;
+    },
     enabled: !!currentUser?.id,
   });
 

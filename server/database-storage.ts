@@ -1058,13 +1058,18 @@ export class DatabaseStorage implements IStorage {
 
   async createMindMapNode(node: InsertMindMapNode): Promise<MindMapNode> {
     const timestamp = new Date();
+    const nodeData = node as any;
+    const attributes =
+      nodeData.attributes ??
+      (nodeData.description ? JSON.stringify({ description: nodeData.description }) : "{}");
+
     const [created] = await db
       .insert(mindMapNodes)
       .values({
-        ...node,
-        attributes: (node as any).attributes ?? ((node as any).description ? JSON.stringify({ description: (node as any).description }) : "{}"),
-        createdAt: (node as any).createdAt ?? timestamp,
-        updatedAt: (node as any).updatedAt ?? timestamp,
+        ...nodeData,
+        attributes,
+        createdAt: nodeData.createdAt ?? timestamp,
+        updatedAt: nodeData.updatedAt ?? timestamp,
       })
       .returning();
     return created;
@@ -1140,17 +1145,17 @@ export class DatabaseStorage implements IStorage {
 
   async createMindMapConnection(connection: InsertMindMapConnection): Promise<MindMapConnection> {
     const timestamp = new Date();
-    const normalizedConnection = {
-      ...connection,
-      sourceNodeId: (connection as any).sourceId ?? (connection as any).sourceNodeId,
-      targetNodeId: (connection as any).targetId ?? (connection as any).targetNodeId,
-      createdAt: (connection as any).createdAt ?? timestamp,
-      updatedAt: (connection as any).updatedAt ?? timestamp,
-    };
+    const connectionData = connection as any;
 
     const [created] = await db
       .insert(mindMapConnections)
-      .values(normalizedConnection as InsertMindMapConnection)
+      .values({
+        ...connection,
+        sourceNodeId: connectionData.sourceId ?? connectionData.sourceNodeId,
+        targetNodeId: connectionData.targetId ?? connectionData.targetNodeId,
+        createdAt: connectionData.createdAt ?? timestamp,
+        updatedAt: connectionData.updatedAt ?? timestamp,
+      } as InsertMindMapConnection)
       .returning();
     return created;
   }

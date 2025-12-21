@@ -1030,10 +1030,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteMindMap(id: number): Promise<void> {
-    await db.delete(mindMapNodes).where(eq(mindMapNodes.mindMapId, id));
-    await db.delete(mindMapConnections).where(eq(mindMapConnections.mindMapId, id));
-    await db.delete(mindMapCollaborators).where(eq(mindMapCollaborators.mindMapId, id));
-    await db.delete(mindMaps).where(eq(mindMaps.id, id));
+    await db.transaction(async (tx) => {
+      await tx.delete(mindMapNodes).where(eq(mindMapNodes.mindMapId, id));
+      await tx.delete(mindMapConnections).where(eq(mindMapConnections.mindMapId, id));
+      await tx.delete(mindMapCollaborators).where(eq(mindMapCollaborators.mindMapId, id));
+      await tx.delete(mindMaps).where(eq(mindMaps.id, id));
+    });
   }
 
   async getMindMapNodes(mindMapId: number): Promise<MindMapNode[]> {

@@ -20,10 +20,15 @@ import {
   moderationAppeals, type ModerationAppeal, type InsertModerationAppeal, 
   moderationSettings, type ModerationSetting, type InsertModerationSetting,
   cosmicEmojis, type CosmicEmoji, type InsertCosmicEmoji,
-  cosmicReactions, type CosmicReaction, type InsertCosmicReaction
+  cosmicReactions, type CosmicReaction, type InsertCosmicReaction,
+  mindMaps, type MindMap, type InsertMindMap,
+  mindMapNodes, type MindMapNode, type InsertMindMapNode,
+  mindMapConnections, type MindMapConnection, type InsertMindMapConnection,
+  mindMapCollaborators, type MindMapCollaborator,
+  mindMapTemplates, type MindMapTemplate, type InsertMindMapTemplate
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -851,5 +856,348 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(cosmicReactions)
       .where(eq(cosmicReactions.id, id));
+  }
+
+  // ===== Additional helpers to cover full storage contract =====
+
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async awardBadge(insertUserBadge: InsertUserBadge): Promise<UserBadge> {
+    const [userBadge] = await db
+      .insert(userBadges)
+      .values({
+        ...insertUserBadge,
+        earnedAt: insertUserBadge.earnedAt ?? new Date(),
+      })
+      .returning();
+
+    const badge = await this.getBadge(insertUserBadge.badgeId);
+    if (badge?.points) {
+      await this.updateUserPoints(insertUserBadge.userId, badge.points);
+    }
+
+    return userBadge;
+  }
+
+  // Moderation storage
+  async getModerationFlags(): Promise<ModerationFlag[]> {
+    return await db.select().from(moderationFlags);
+  }
+
+  async getModerationFlagsByStatus(status: string): Promise<ModerationFlag[]> {
+    return await db
+      .select()
+      .from(moderationFlags)
+      .where(eq(moderationFlags.status, status as any));
+  }
+
+  async createModerationFlag(flag: InsertModerationFlag): Promise<ModerationFlag> {
+    const [createdFlag] = await db.insert(moderationFlags).values(flag).returning();
+    return createdFlag;
+  }
+
+  async getModerationSetting(id: number): Promise<ModerationSetting | undefined> {
+    const [setting] = await db
+      .select()
+      .from(moderationSettings)
+      .where(eq(moderationSettings.id, id));
+    return setting || undefined;
+  }
+
+  async getModerationSettings(): Promise<ModerationSetting[]> {
+    return await db.select().from(moderationSettings);
+  }
+
+  async createModerationSetting(setting: InsertModerationSetting): Promise<ModerationSetting> {
+    const [created] = await db.insert(moderationSettings).values(setting).returning();
+    return created;
+  }
+
+  async updateModerationSetting(id: number, setting: Partial<ModerationSetting>): Promise<ModerationSetting> {
+    const [updated] = await db
+      .update(moderationSettings)
+      .set({ ...setting, updatedAt: new Date() })
+      .where(eq(moderationSettings.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new Error(`Moderation setting with ID ${id} not found`);
+    }
+
+    return updated;
+  }
+
+  async getModerationAppeals(): Promise<ModerationAppeal[]> {
+    return await db.select().from(moderationAppeals);
+  }
+
+  async getModerationAppealsByStatus(status: string): Promise<ModerationAppeal[]> {
+    return await db
+      .select()
+      .from(moderationAppeals)
+      .where(eq(moderationAppeals.status, status as any));
+  }
+
+  async createModerationAppeal(appeal: InsertModerationAppeal): Promise<ModerationAppeal> {
+    const [created] = await db.insert(moderationAppeals).values(appeal).returning();
+    return created;
+  }
+
+  // Mind map storage
+  async getMindMaps(): Promise<MindMap[]> {
+    return await db.select().from(mindMaps);
+  }
+
+  async getPublicMindMaps(): Promise<MindMap[]> {
+    return await db
+      .select()
+      .from(mindMaps)
+      .where(eq(mindMaps.isPublic, true));
+  }
+
+  async getUserMindMaps(userId: number): Promise<MindMap[]> {
+    const owned = await db
+      .select()
+      .from(mindMaps)
+      .where(eq(mindMaps.createdBy, userId));
+
+    const collaborations = await db
+      .select({ mindMapId: mindMapCollaborators.mindMapId })
+      .from(mindMapCollaborators)
+      .where(eq(mindMapCollaborators.userId, userId));
+
+    if (collaborations.length === 0) {
+      return owned;
+    }
+
+    const collabIds = collaborations.map(c => c.mindMapId);
+    const collaborativeMaps = await db
+      .select()
+      .from(mindMaps)
+      .where(inArray(mindMaps.id, collabIds));
+
+    const ownedIds = new Set(owned.map(map => map.id));
+    return [...owned, ...collaborativeMaps.filter(map => !ownedIds.has(map.id))];
+  }
+
+  async getUserPublicMindMaps(userId: number): Promise<MindMap[]> {
+    return await db
+      .select()
+      .from(mindMaps)
+      .where(
+        and(
+          eq(mindMaps.createdBy, userId),
+          eq(mindMaps.isPublic, true)
+        )
+      );
+  }
+
+  async getMindMap(id: number): Promise<MindMap | undefined> {
+    const [map] = await db
+      .select()
+      .from(mindMaps)
+      .where(eq(mindMaps.id, id));
+    return map || undefined;
+  }
+
+  async createMindMap(map: InsertMindMap): Promise<MindMap> {
+    const timestamp = new Date();
+    const [created] = await db
+      .insert(mindMaps)
+      .values({
+        ...map,
+        createdAt: map.createdAt ?? timestamp,
+        updatedAt: map.updatedAt ?? timestamp,
+      })
+      .returning();
+    return created;
+  }
+
+  async updateMindMap(id: number, map: Partial<MindMap>): Promise<MindMap> {
+    const [updated] = await db
+      .update(mindMaps)
+      .set({ ...map, updatedAt: new Date() })
+      .where(eq(mindMaps.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new Error(`Mind map with ID ${id} not found`);
+    }
+
+    return updated;
+  }
+
+  async deleteMindMap(id: number): Promise<void> {
+    await db.delete(mindMapNodes).where(eq(mindMapNodes.mindMapId, id));
+    await db.delete(mindMapConnections).where(eq(mindMapConnections.mindMapId, id));
+    await db.delete(mindMapCollaborators).where(eq(mindMapCollaborators.mindMapId, id));
+    await db.delete(mindMaps).where(eq(mindMaps.id, id));
+  }
+
+  async getMindMapNodes(mindMapId: number): Promise<MindMapNode[]> {
+    return await db
+      .select()
+      .from(mindMapNodes)
+      .where(eq(mindMapNodes.mindMapId, mindMapId));
+  }
+
+  async getMindMapNode(mindMapId: number, nodeId: string): Promise<MindMapNode | undefined> {
+    const [node] = await db
+      .select()
+      .from(mindMapNodes)
+      .where(
+        and(
+          eq(mindMapNodes.mindMapId, mindMapId),
+          eq(mindMapNodes.nodeId, nodeId)
+        )
+      );
+    return node || undefined;
+  }
+
+  async createMindMapNode(node: InsertMindMapNode): Promise<MindMapNode> {
+    const timestamp = new Date();
+    const [created] = await db
+      .insert(mindMapNodes)
+      .values({
+        ...node,
+        attributes: (node as any).attributes ?? ((node as any).description ? JSON.stringify({ description: (node as any).description }) : "{}"),
+        createdAt: (node as any).createdAt ?? timestamp,
+        updatedAt: (node as any).updatedAt ?? timestamp,
+      })
+      .returning();
+    return created;
+  }
+
+  async updateMindMapNode(mindMapId: number, nodeId: string, node: Partial<MindMapNode>): Promise<MindMapNode> {
+    const [updated] = await db
+      .update(mindMapNodes)
+      .set({ ...node, updatedAt: new Date() })
+      .where(
+        and(
+          eq(mindMapNodes.mindMapId, mindMapId),
+          eq(mindMapNodes.nodeId, nodeId)
+        )
+      )
+      .returning();
+
+    if (!updated) {
+      throw new Error(`Node with ID ${nodeId} not found in mind map ${mindMapId}`);
+    }
+
+    return updated;
+  }
+
+  async deleteMindMapNode(mindMapId: number, nodeId: string): Promise<void> {
+    await db
+      .delete(mindMapNodes)
+      .where(
+        and(
+          eq(mindMapNodes.mindMapId, mindMapId),
+          eq(mindMapNodes.nodeId, nodeId)
+        )
+      );
+
+    await db
+      .delete(mindMapConnections)
+      .where(
+        and(
+          eq(mindMapConnections.mindMapId, mindMapId),
+          eq(mindMapConnections.sourceNodeId, nodeId)
+        )
+      );
+
+    await db
+      .delete(mindMapConnections)
+      .where(
+        and(
+          eq(mindMapConnections.mindMapId, mindMapId),
+          eq(mindMapConnections.targetNodeId, nodeId)
+        )
+      );
+  }
+
+  async getMindMapConnections(mindMapId: number): Promise<MindMapConnection[]> {
+    return await db
+      .select()
+      .from(mindMapConnections)
+      .where(eq(mindMapConnections.mindMapId, mindMapId));
+  }
+
+  async getMindMapConnection(mindMapId: number, connectionId: string): Promise<MindMapConnection | undefined> {
+    const [connection] = await db
+      .select()
+      .from(mindMapConnections)
+      .where(
+        and(
+          eq(mindMapConnections.mindMapId, mindMapId),
+          eq(mindMapConnections.connectionId, connectionId)
+        )
+      );
+    return connection || undefined;
+  }
+
+  async createMindMapConnection(connection: InsertMindMapConnection): Promise<MindMapConnection> {
+    const timestamp = new Date();
+    const normalizedConnection = {
+      ...connection,
+      sourceNodeId: (connection as any).sourceId ?? (connection as any).sourceNodeId,
+      targetNodeId: (connection as any).targetId ?? (connection as any).targetNodeId,
+      createdAt: (connection as any).createdAt ?? timestamp,
+      updatedAt: (connection as any).updatedAt ?? timestamp,
+    };
+
+    const [created] = await db
+      .insert(mindMapConnections)
+      .values(normalizedConnection as InsertMindMapConnection)
+      .returning();
+    return created;
+  }
+
+  async updateMindMapConnection(
+    mindMapId: number,
+    connectionId: string,
+    connection: Partial<MindMapConnection>
+  ): Promise<MindMapConnection> {
+    const [updated] = await db
+      .update(mindMapConnections)
+      .set({ ...connection, updatedAt: new Date() })
+      .where(
+        and(
+          eq(mindMapConnections.mindMapId, mindMapId),
+          eq(mindMapConnections.connectionId, connectionId)
+        )
+      )
+      .returning();
+
+    if (!updated) {
+      throw new Error(`Connection with ID ${connectionId} not found in mind map ${mindMapId}`);
+    }
+
+    return updated;
+  }
+
+  async deleteMindMapConnection(mindMapId: number, connectionId: string): Promise<void> {
+    await db
+      .delete(mindMapConnections)
+      .where(
+        and(
+          eq(mindMapConnections.mindMapId, mindMapId),
+          eq(mindMapConnections.connectionId, connectionId)
+        )
+      );
+  }
+
+  async getMindMapTemplates(): Promise<MindMapTemplate[]> {
+    return await db.select().from(mindMapTemplates);
+  }
+
+  async getMindMapTemplate(id: number): Promise<MindMapTemplate | undefined> {
+    const [template] = await db
+      .select()
+      .from(mindMapTemplates)
+      .where(eq(mindMapTemplates.id, id));
+    return template || undefined;
   }
 }

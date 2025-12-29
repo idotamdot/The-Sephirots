@@ -266,7 +266,9 @@ export default function Membership() {
               }`}
             >
               Yearly
-              <Badge className="bg-green-100 text-green-700 text-xs">Save up to 17%</Badge>
+              <Badge className="bg-green-100 text-green-700 text-xs">
+                Save up to {Math.max(...tiers.filter(t => t.priceMonthly > 0).map(t => getYearlySavings(t.priceMonthly, t.priceYearly)))}%
+              </Badge>
             </button>
           </motion.div>
         </div>

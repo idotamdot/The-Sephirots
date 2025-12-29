@@ -3104,5 +3104,102 @@ app.post("/api/ai/perspective", async (req, res) => {
     }
   });
 
+  // ===== COURSE ROUTES =====
+  
+  // Get course progress
+  app.get("/api/course/progress", async (req, res) => {
+    try {
+      // Return sample course modules with progress
+      const modules = [
+        {
+          id: 1,
+          title: "Introduction: Finding Common Ground",
+          description: "Understanding the fundamental values that unite all living persons.",
+          orderIndex: 0,
+          estimatedMinutes: 15,
+          isRequired: true,
+          completed: false,
+          locked: false,
+        },
+        {
+          id: 2,
+          title: "Understanding Economic Systems",
+          description: "How economies affect daily life and wellbeing.",
+          orderIndex: 1,
+          estimatedMinutes: 25,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+        {
+          id: 3,
+          title: "Governance and Participation",
+          description: "How decisions are made and how we can participate.",
+          orderIndex: 2,
+          estimatedMinutes: 30,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+        {
+          id: 4,
+          title: "Social Systems and Community",
+          description: "The structures that support human connection and belonging.",
+          orderIndex: 3,
+          estimatedMinutes: 25,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+        {
+          id: 5,
+          title: "Environmental Stewardship",
+          description: "Our relationship with the natural world and future generations.",
+          orderIndex: 4,
+          estimatedMinutes: 25,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+        {
+          id: 6,
+          title: "Creating Unifying Goals",
+          description: "Synthesizing learning into actionable, unifying objectives.",
+          orderIndex: 5,
+          estimatedMinutes: 30,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+      ];
+      
+      res.json(modules);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Complete a course module
+  app.post("/api/course/modules/:id/complete", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const moduleId = parseInt(req.params.id);
+      
+      // In production, this would update the database
+      res.json({
+        success: true,
+        moduleId,
+        message: "Module marked as complete",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   return httpServer;
 }

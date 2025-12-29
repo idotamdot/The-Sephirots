@@ -27,6 +27,7 @@ import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
 import Polls from "@/pages/Polls";
 import Membership from "@/pages/Membership";
+import Course from "@/pages/Course";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -132,6 +133,7 @@ function AppContent() {
                   </Route>
                   <Route path="/polls" component={Polls} />
                   <Route path="/membership" component={Membership} />
+                  <Route path="/course" component={Course} />
                   <Route path="/moderation" component={Moderation} />
                   <Route path="/support-journey" component={SupportJourney} />
                   <Route path="/donate" component={Donate} />

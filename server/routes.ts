@@ -2809,5 +2809,397 @@ app.post("/api/ai/perspective", async (req, res) => {
     });
   }
 
+  // ===== POLLS ROUTES =====
+  
+  // Get polls with optional status filter
+  app.get("/api/polls", async (req, res) => {
+    try {
+      const status = req.query.status as string || "active";
+      // For now, return sample polls since we haven't implemented the storage methods yet
+      const samplePolls = [
+        {
+          id: 1,
+          title: "What should be our next community focus?",
+          description: "Help us decide the direction of our platform development.",
+          category: "community",
+          status: "active",
+          options: [
+            { id: 1, text: "More meditation and mindfulness features", voteCount: 45 },
+            { id: 2, text: "Enhanced collaboration tools", voteCount: 32 },
+            { id: 3, text: "AI-guided personal development", voteCount: 28 },
+            { id: 4, text: "Community events and meetups", voteCount: 19 },
+          ],
+          totalVotes: 124,
+          hasVoted: false,
+          quarterYear: "Q1-2025",
+        },
+        {
+          id: 2,
+          title: "How do you prefer to learn new concepts?",
+          description: "Understanding learning preferences to improve our content.",
+          category: "education",
+          status: "active",
+          options: [
+            { id: 5, text: "Video tutorials", voteCount: 56 },
+            { id: 6, text: "Interactive exercises", voteCount: 41 },
+            { id: 7, text: "Written guides", voteCount: 23 },
+            { id: 8, text: "Group discussions", voteCount: 18 },
+          ],
+          totalVotes: 138,
+          hasVoted: false,
+          quarterYear: "Q1-2025",
+        },
+      ].filter(poll => poll.status === status);
+      
+      res.json(samplePolls);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Get poll statistics
+  app.get("/api/polls/statistics", async (_req, res) => {
+    try {
+      // Return sample quarterly statistics
+      const statistics = [
+        {
+          quarterYear: "Q1-2025",
+          totalPolls: 8,
+          totalVotes: 542,
+          participationRate: 67,
+          topCategories: [
+            { category: "community", count: 3 },
+            { category: "education", count: 2 },
+            { category: "features", count: 2 },
+            { category: "wellbeing", count: 1 },
+          ],
+        },
+      ];
+      res.json(statistics);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Vote on a poll
+  app.post("/api/polls/:id/vote", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const pollId = parseInt(req.params.id);
+      const { optionId } = req.body;
+      
+      if (!optionId) {
+        return res.status(400).json({ error: "Option ID is required" });
+      }
+      
+      // In production, this would update the database
+      // For now, just return success
+      res.json({ 
+        success: true, 
+        message: "Vote recorded successfully",
+        pollId,
+        optionId 
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // ===== MEMBERSHIP ROUTES =====
+  
+  // Get membership tiers
+  app.get("/api/membership/tiers", async (_req, res) => {
+    try {
+      // Return default tiers
+      const tiers = [
+        {
+          id: 1,
+          name: "Free",
+          tier: "free",
+          description: "Begin your journey with basic access.",
+          priceMonthly: 0,
+          priceYearly: 0,
+          features: [
+            "Access to community discussions",
+            "Basic profile customization",
+            "3 mind maps",
+            "View public polls",
+          ],
+          lessonsAccess: false,
+          trainingAccess: false,
+          statisticsAccess: false,
+          prioritySupport: false,
+          maxMindMaps: 3,
+        },
+        {
+          id: 2,
+          name: "Seeker",
+          tier: "seeker",
+          description: "For those beginning their path of discovery.",
+          priceMonthly: 999,
+          priceYearly: 9990,
+          features: [
+            "Everything in Free",
+            "Access to lesson library",
+            "10 mind maps",
+            "Vote in all polls",
+            "Basic statistics access",
+          ],
+          lessonsAccess: true,
+          trainingAccess: false,
+          statisticsAccess: true,
+          prioritySupport: false,
+          maxMindMaps: 10,
+        },
+        {
+          id: 3,
+          name: "Adept",
+          tier: "adept",
+          description: "Enhanced access for dedicated practitioners.",
+          priceMonthly: 1999,
+          priceYearly: 19990,
+          features: [
+            "Everything in Seeker",
+            "Full training programs",
+            "Unlimited mind maps",
+            "Advanced statistics",
+            "Create community polls",
+            "Priority support",
+          ],
+          lessonsAccess: true,
+          trainingAccess: true,
+          statisticsAccess: true,
+          prioritySupport: true,
+          maxMindMaps: -1,
+        },
+        {
+          id: 4,
+          name: "Master",
+          tier: "master",
+          description: "Full access for community leaders.",
+          priceMonthly: 4999,
+          priceYearly: 49990,
+          features: [
+            "Everything in Adept",
+            "1-on-1 guidance sessions",
+            "Early access to new features",
+            "Governance participation",
+            "Custom training programs",
+            "API access",
+          ],
+          lessonsAccess: true,
+          trainingAccess: true,
+          statisticsAccess: true,
+          prioritySupport: true,
+          maxMindMaps: -1,
+        },
+      ];
+      
+      res.json(tiers);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Subscribe to a membership tier
+  app.post("/api/membership/subscribe", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { tierId, billingCycle } = req.body;
+      
+      if (!tierId) {
+        return res.status(400).json({ error: "Tier ID is required" });
+      }
+      
+      // In production, this would create a Stripe checkout session
+      // For now, return a placeholder response
+      res.json({
+        success: true,
+        message: "Subscription initiated",
+        tierId,
+        billingCycle,
+        // In production: checkoutUrl: session.url
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // ===== QUEST SYSTEM ROUTES =====
+  
+  // Get available quests for user
+  app.get("/api/quests", async (req, res) => {
+    try {
+      // Return sample quests
+      const quests = [
+        {
+          id: 1,
+          title: "First Steps",
+          description: "Complete your profile and introduce yourself to the community.",
+          type: "onboarding",
+          points: 50,
+          requirements: { profileComplete: true, firstPost: true },
+          status: "in_progress",
+          progress: { profileComplete: true, firstPost: false },
+        },
+        {
+          id: 2,
+          title: "Community Contributor",
+          description: "Create 3 discussions or proposals.",
+          type: "achievement",
+          points: 100,
+          requirements: { discussionsCount: 3 },
+          status: "not_started",
+          progress: { discussionsCount: 0 },
+        },
+        {
+          id: 3,
+          title: "Daily Reflection",
+          description: "Visit the platform and engage with content.",
+          type: "daily",
+          points: 10,
+          requirements: { pageVisit: true, reaction: true },
+          status: "not_started",
+          progress: { pageVisit: false, reaction: false },
+        },
+      ];
+      
+      res.json(quests);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Update quest progress
+  app.post("/api/quests/:id/progress", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const questId = parseInt(req.params.id);
+      const { progress } = req.body;
+      
+      // In production, this would update the database
+      res.json({
+        success: true,
+        questId,
+        progress,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // ===== COURSE ROUTES =====
+  
+  // Get course progress
+  app.get("/api/course/progress", async (req, res) => {
+    try {
+      // Return sample course modules with progress
+      const modules = [
+        {
+          id: 1,
+          title: "Introduction: Finding Common Ground",
+          description: "Understanding the fundamental values that unite all living persons.",
+          orderIndex: 0,
+          estimatedMinutes: 15,
+          isRequired: true,
+          completed: false,
+          locked: false,
+        },
+        {
+          id: 2,
+          title: "Understanding Economic Systems",
+          description: "How economies affect daily life and wellbeing.",
+          orderIndex: 1,
+          estimatedMinutes: 25,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+        {
+          id: 3,
+          title: "Governance and Participation",
+          description: "How decisions are made and how we can participate.",
+          orderIndex: 2,
+          estimatedMinutes: 30,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+        {
+          id: 4,
+          title: "Social Systems and Community",
+          description: "The structures that support human connection and belonging.",
+          orderIndex: 3,
+          estimatedMinutes: 25,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+        {
+          id: 5,
+          title: "Environmental Stewardship",
+          description: "Our relationship with the natural world and future generations.",
+          orderIndex: 4,
+          estimatedMinutes: 25,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+        {
+          id: 6,
+          title: "Creating Unifying Goals",
+          description: "Synthesizing learning into actionable, unifying objectives.",
+          orderIndex: 5,
+          estimatedMinutes: 30,
+          isRequired: true,
+          completed: false,
+          locked: true,
+        },
+      ];
+      
+      res.json(modules);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Complete a course module
+  app.post("/api/course/modules/:id/complete", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const moduleId = parseInt(req.params.id);
+      
+      // In production, this would update the database
+      res.json({
+        success: true,
+        moduleId,
+        message: "Module marked as complete",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   return httpServer;
 }

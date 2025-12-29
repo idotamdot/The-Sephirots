@@ -16,6 +16,11 @@ export const navigationItems = [
     icon: "ri-government-line"
   },
   {
+    path: "/polls",
+    label: "Community Polls",
+    icon: "ri-bar-chart-box-line"
+  },
+  {
     path: "/rights-agreement",
     label: "Rights Agreement",
     icon: "ri-user-voice-line"
@@ -64,6 +69,11 @@ export const navigationItems = [
     path: "/ai-companion",
     label: "AI Companion",
     icon: "ri-robot-line"
+  },
+  {
+    path: "/membership",
+    label: "Membership",
+    icon: "ri-vip-crown-line"
   },
   {
     path: "/donate",

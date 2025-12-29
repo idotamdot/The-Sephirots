@@ -25,6 +25,8 @@ import BadgeTest from "@/pages/BadgeTest";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
+import Polls from "@/pages/Polls";
+import Membership from "@/pages/Membership";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -38,6 +40,7 @@ import CosmicBackgroundSynchronizer from "@/components/cosmic/CosmicBackgroundSy
 import { AuthProvider } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
 import OnboardingJourney from "@/components/onboarding/OnboardingJourney";
+import { AnimatePresence } from "framer-motion";
 
 function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -99,6 +102,7 @@ function AppContent() {
               />
 
               <div className="flex-1 overflow-y-auto bg-gray-50 bg-opacity-70 backdrop-blur-md">
+                <AnimatePresence mode="wait">
                 <Switch>
                   <Route path="/" component={Home} />
                   <Route path="/login" component={Login} />
@@ -126,6 +130,8 @@ function AppContent() {
                   <Route path="/governance/:id">
                     {params => <ProposalDetail />}
                   </Route>
+                  <Route path="/polls" component={Polls} />
+                  <Route path="/membership" component={Membership} />
                   <Route path="/moderation" component={Moderation} />
                   <Route path="/support-journey" component={SupportJourney} />
                   <Route path="/donate" component={Donate} />
@@ -134,6 +140,7 @@ function AppContent() {
                   <Route path="/badge-test" component={BadgeTest} />
                   <Route component={NotFound} />
                 </Switch>
+                </AnimatePresence>
               </div>
 
               {/* Mobile Navigation */}

@@ -670,7 +670,270 @@ export type InsertMindMapCollaborator = z.infer<typeof insertMindMapCollaborator
 export type MindMapTemplate = typeof mindMapTemplates.$inferSelect;
 export type InsertMindMapTemplate = z.infer<typeof insertMindMapTemplateSchema>;
 
+// ===== MEMBERSHIP TIERS SCHEMA =====
+export const membershipTierEnum = pgEnum("membership_tier", [
+  "free",
+  "seeker",
+  "adept",
+  "master",
+  "founder"
+]);
 
+export const membershipTiers = pgTable("membership_tiers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  tier: membershipTierEnum("tier").notNull().unique(),
+  description: text("description").notNull(),
+  priceMonthly: integer("price_monthly").notNull().default(0), // in cents
+  priceYearly: integer("price_yearly").notNull().default(0), // in cents
+  features: text("features").notNull().default("[]"), // JSON array of features
+  lessonsAccess: boolean("lessons_access").notNull().default(false),
+  trainingAccess: boolean("training_access").notNull().default(false),
+  statisticsAccess: boolean("statistics_access").notNull().default(false),
+  prioritySupport: boolean("priority_support").notNull().default(false),
+  maxMindMaps: integer("max_mind_maps").notNull().default(3),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertMembershipTierSchema = createInsertSchema(membershipTiers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type MembershipTier = typeof membershipTiers.$inferSelect;
+export type InsertMembershipTier = z.infer<typeof insertMembershipTierSchema>;
+
+// User Memberships
+export const userMemberships = pgTable("user_memberships", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  tierId: integer("tier_id").notNull(),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  status: text("status").notNull().default("active"), // active, canceled, past_due
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+  courseCompleted: boolean("course_completed").notNull().default(false), // For free tier via course
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertUserMembershipSchema = createInsertSchema(userMemberships).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type UserMembership = typeof userMemberships.$inferSelect;
+export type InsertUserMembership = z.infer<typeof insertUserMembershipSchema>;
+
+// ===== FREE COURSE FOR FREE ACCOUNT =====
+export const courseModules = pgTable("course_modules", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  content: text("content").notNull(),
+  orderIndex: integer("order_index").notNull(),
+  estimatedMinutes: integer("estimated_minutes").notNull().default(30),
+  isRequired: boolean("is_required").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertCourseModuleSchema = createInsertSchema(courseModules).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type CourseModule = typeof courseModules.$inferSelect;
+export type InsertCourseModule = z.infer<typeof insertCourseModuleSchema>;
+
+// Course Progress
+export const courseProgress = pgTable("course_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  moduleId: integer("module_id").notNull(),
+  completed: boolean("completed").notNull().default(false),
+  completedAt: timestamp("completed_at"),
+  quizScore: integer("quiz_score"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertCourseProgressSchema = createInsertSchema(courseProgress).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type CourseProgress = typeof courseProgress.$inferSelect;
+export type InsertCourseProgress = z.infer<typeof insertCourseProgressSchema>;
+
+// ===== POLLS SYSTEM SCHEMA =====
+export const pollStatusEnum = pgEnum("poll_status", [
+  "draft",
+  "active",
+  "closed",
+  "archived"
+]);
+
+export const polls = pgTable("polls", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(),
+  status: pollStatusEnum("status").notNull().default("draft"),
+  createdBy: integer("created_by").notNull(),
+  allowMultipleChoices: boolean("allow_multiple_choices").notNull().default(false),
+  isAnonymous: boolean("is_anonymous").notNull().default(false),
+  startsAt: timestamp("starts_at"),
+  endsAt: timestamp("ends_at"),
+  quarterYear: text("quarter_year"), // e.g., "Q1-2025", "Q2-2025"
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertPollSchema = createInsertSchema(polls).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Poll = typeof polls.$inferSelect;
+export type InsertPoll = z.infer<typeof insertPollSchema>;
+
+// Poll Options
+export const pollOptions = pgTable("poll_options", {
+  id: serial("id").primaryKey(),
+  pollId: integer("poll_id").notNull(),
+  text: text("text").notNull(),
+  orderIndex: integer("order_index").notNull().default(0),
+  voteCount: integer("vote_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertPollOptionSchema = createInsertSchema(pollOptions).omit({
+  id: true,
+  voteCount: true,
+  createdAt: true,
+});
+
+export type PollOption = typeof pollOptions.$inferSelect;
+export type InsertPollOption = z.infer<typeof insertPollOptionSchema>;
+
+// Poll Votes
+export const pollVotes = pgTable("poll_votes", {
+  id: serial("id").primaryKey(),
+  pollId: integer("poll_id").notNull(),
+  optionId: integer("option_id").notNull(),
+  userId: integer("user_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertPollVoteSchema = createInsertSchema(pollVotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type PollVote = typeof pollVotes.$inferSelect;
+export type InsertPollVote = z.infer<typeof insertPollVoteSchema>;
+
+// Poll Statistics (aggregated quarterly)
+export const pollStatistics = pgTable("poll_statistics", {
+  id: serial("id").primaryKey(),
+  pollId: integer("poll_id").notNull(),
+  quarterYear: text("quarter_year").notNull(), // e.g., "Q1-2025"
+  totalVotes: integer("total_votes").notNull().default(0),
+  participationRate: integer("participation_rate").notNull().default(0), // percentage
+  summaryData: text("summary_data").notNull().default("{}"), // JSON with detailed stats
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertPollStatisticsSchema = createInsertSchema(pollStatistics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type PollStatistics = typeof pollStatistics.$inferSelect;
+export type InsertPollStatistics = z.infer<typeof insertPollStatisticsSchema>;
+
+// ===== USER QUEST SYSTEM =====
+export const questStatusEnum = pgEnum("quest_status", [
+  "not_started",
+  "in_progress",
+  "completed",
+  "expired"
+]);
+
+export const questTypeEnum = pgEnum("quest_type", [
+  "daily",
+  "weekly",
+  "onboarding",
+  "achievement",
+  "special"
+]);
+
+export const quests = pgTable("quests", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  type: questTypeEnum("type").notNull().default("daily"),
+  points: integer("points").notNull().default(10),
+  requirements: text("requirements").notNull().default("{}"), // JSON defining completion criteria
+  badgeReward: integer("badge_reward"), // Badge ID to award upon completion
+  isActive: boolean("is_active").notNull().default(true),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertQuestSchema = createInsertSchema(quests).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type Quest = typeof quests.$inferSelect;
+export type InsertQuest = z.infer<typeof insertQuestSchema>;
+
+// User Quest Progress
+export const userQuests = pgTable("user_quests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  questId: integer("quest_id").notNull(),
+  status: questStatusEnum("status").notNull().default("not_started"),
+  progress: text("progress").notNull().default("{}"), // JSON tracking progress
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertUserQuestSchema = createInsertSchema(userQuests).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type UserQuest = typeof userQuests.$inferSelect;
+export type InsertUserQuest = z.infer<typeof insertUserQuestSchema>;
+
+// ===== ONBOARDING STEPS TRACKING =====
+export const onboardingSteps = pgTable("onboarding_steps", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  stepId: text("step_id").notNull(), // e.g., "welcome", "profile", "first_discussion"
+  completed: boolean("completed").notNull().default(false),
+  completedAt: timestamp("completed_at"),
+  skipped: boolean("skipped").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertOnboardingStepSchema = createInsertSchema(onboardingSteps).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type OnboardingStep = typeof onboardingSteps.$inferSelect;
+export type InsertOnboardingStep = z.infer<typeof insertOnboardingStepSchema>;
 
 // We'll define relationships between tables later when needed
 // For now, this basic schema is sufficient for creating the tables

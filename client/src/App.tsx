@@ -10,6 +10,7 @@ import MysticalProgress from "@/pages/MysticalProgress";
 import MindMapExplorer from "@/pages/MindMapExplorer";
 import WisdomMarketplace from "@/pages/WisdomMarketplace";
 import Rewards from "@/pages/Rewards";
+import Quests from "@/pages/Quests";
 import QuantumInsights from "@/pages/QuantumInsights";
 import AICompanion from "@/pages/AICompanion";
 import Profile from "@/pages/Profile";
@@ -121,6 +122,7 @@ function AppContent() {
                   <Route path="/mindmap" component={MindMapExplorer} />
                   <Route path="/wisdom-marketplace" component={WisdomMarketplace} />
                   <Route path="/rewards" component={Rewards} />
+                  <Route path="/quests" component={Quests} />
                   <Route path="/quantum-insights" component={QuantumInsights} />
                   <Route path="/ai-companion" component={AICompanion} />
                   <Route path="/profile">

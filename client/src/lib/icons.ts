@@ -61,6 +61,11 @@ export const navigationItems = [
     icon: "ri-gift-2-line"
   },
   {
+    path: "/quests",
+    label: "Quests",
+    icon: "ri-trophy-line"
+  },
+  {
     path: "/quantum-insights",
     label: "Quantum Insights",
     icon: "ri-sparkling-2-line"

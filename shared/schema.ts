@@ -935,5 +935,56 @@ export const insertOnboardingStepSchema = createInsertSchema(onboardingSteps).om
 export type OnboardingStep = typeof onboardingSteps.$inferSelect;
 export type InsertOnboardingStep = z.infer<typeof insertOnboardingStepSchema>;
 
+// ===== REWARDS REDEMPTION SYSTEM =====
+export const rewardStatusEnum = pgEnum("reward_status", [
+  "pending",
+  "processing",
+  "shipped",
+  "delivered",
+  "completed",
+  "cancelled"
+]);
+
+export const rewards = pgTable("rewards", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  points: integer("points").notNull(),
+  category: text("category").notNull(), // "digital", "physical", "experiences", "community"
+  imageUrl: text("image_url"),
+  stock: integer("stock").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertRewardSchema = createInsertSchema(rewards).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type Reward = typeof rewards.$inferSelect;
+export type InsertReward = z.infer<typeof insertRewardSchema>;
+
+// User Reward Redemptions
+export const rewardRedemptions = pgTable("reward_redemptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  rewardId: integer("reward_id").notNull(),
+  pointsSpent: integer("points_spent").notNull(),
+  status: rewardStatusEnum("status").notNull().default("pending"),
+  shippingInfo: text("shipping_info"), // JSON for physical rewards
+  notes: text("notes"),
+  redeemedAt: timestamp("redeemed_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertRewardRedemptionSchema = createInsertSchema(rewardRedemptions).omit({
+  id: true,
+  redeemedAt: true,
+});
+
+export type RewardRedemption = typeof rewardRedemptions.$inferSelect;
+export type InsertRewardRedemption = z.infer<typeof insertRewardRedemptionSchema>;
+
 // We'll define relationships between tables later when needed
 // For now, this basic schema is sufficient for creating the tables

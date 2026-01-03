@@ -464,6 +464,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User badges are handled with the comprehensive endpoint below
   // in the badge routes section: "/api/users/:userId/badges"
 
+  // Get user statistics
+  app.get("/api/users/:id/statistics", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Get user's discussions
+      const allDiscussions = await storage.getDiscussions();
+      const userDiscussions = allDiscussions.filter(d => d.userId === userId);
+      
+      // Get user's comments across all discussions
+      let userCommentsCount = 0;
+      for (const discussion of allDiscussions) {
+        const comments = await storage.getCommentsByDiscussion(discussion.id);
+        userCommentsCount += comments.filter(c => c.userId === userId).length;
+      }
+      
+      // Get user's proposals
+      const allProposals = await storage.getProposals();
+      const userProposals = allProposals.filter(p => p.userId === userId);
+      
+      // Count cosmic reactions given by the user
+      // For now, we'll use a placeholder value
+      const reactionsCount = 0; // Would need to implement cosmic reactions query
+      
+      res.json({
+        discussions: userDiscussions.length,
+        comments: userCommentsCount,
+        proposals: userProposals.length,
+        reactions: reactionsCount,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // ===== DISCUSSION ROUTES =====
   
   // Get all discussions
@@ -3098,6 +3134,139 @@ app.post("/api/ai/perspective", async (req, res) => {
         questId,
         progress,
       });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Complete quest and claim reward
+  app.post("/api/quests/:id/complete", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const user = req.user as User;
+      const questId = parseInt(req.params.id);
+      
+      // In a real implementation, this would:
+      // 1. Verify the quest is actually completed
+      // 2. Mark quest as completed in database
+      // 3. Award points and badges
+      // 4. Update user quest progress
+      
+      // For now, award sample points
+      const pointsAwarded = 50; // This would come from the quest definition
+      
+      try {
+        await storage.updateUserPoints(user.id, user.points + pointsAwarded);
+      } catch (error) {
+        console.error("Error updating user points:", error);
+        // Continue even if points update fails
+      }
+      
+      res.json({
+        success: true,
+        questId,
+        pointsAwarded,
+        message: "Quest completed successfully!",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // ===== REWARDS REDEMPTION ROUTES =====
+  
+  // Get all available rewards
+  app.get("/api/rewards", async (_req, res) => {
+    try {
+      // Return hardcoded rewards for now
+      const rewards = [
+        {
+          id: 1,
+          name: "Cosmic Meditation Guide",
+          description: "A comprehensive digital guide to sephirotic meditation techniques.",
+          points: 1000,
+          category: "digital",
+          imageUrl: "https://images.unsplash.com/photo-1495727034151-8fdc73e332a8?w=500",
+          stock: 999,
+          isActive: true,
+        },
+        {
+          id: 2,
+          name: "Virtual Wisdom Session",
+          description: "One-hour personal guidance with a Sephirotic wisdom keeper.",
+          points: 2500,
+          category: "experiences",
+          imageUrl: "https://images.unsplash.com/photo-1516450360452-9312f5463357?w=500",
+          stock: 5,
+          isActive: true,
+        },
+        {
+          id: 3,
+          name: "Handcrafted Sephirot Crystal Set",
+          description: "Set of 10 crystals corresponding to each Sephirot on the Tree of Life.",
+          points: 5000,
+          category: "physical",
+          imageUrl: "https://images.unsplash.com/photo-1509994196812-897f5a6ab49c?w=500",
+          stock: 3,
+          isActive: true,
+        },
+      ];
+      
+      res.json(rewards);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Redeem a reward
+  app.post("/api/rewards/:id/redeem", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const user = req.user as User;
+      const rewardId = parseInt(req.params.id);
+      const { shippingInfo } = req.body;
+      
+      // In a real implementation:
+      // 1. Fetch reward details
+      // 2. Check if user has enough points
+      // 3. Check stock availability
+      // 4. Deduct points from user
+      // 5. Create redemption record
+      // 6. Send confirmation email
+      
+      // For now, return mock success
+      res.json({
+        success: true,
+        redemptionId: Math.floor(Math.random() * 1000),
+        message: "Reward redeemed successfully!",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Get user's redemption history
+  app.get("/api/rewards/redemptions", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const user = req.user as User;
+      
+      // In a real implementation, query database for user's redemptions
+      // For now, return empty array
+      res.json([]);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Internal server error" });

@@ -39,9 +39,20 @@ export default function Profile({ currentUser }: ProfileProps) {
     enabled: !!currentUser,
   });
   
-  // Get user discussions (mock, would need a real endpoint)
+  // Get user discussions
   const { data: allDiscussions, isLoading: discussionsLoading } = useQuery<Discussion[]>({
     queryKey: ["/api/discussions"],
+  });
+  
+  // Get user statistics
+  const { data: userStats } = useQuery<{
+    discussions: number;
+    comments: number;
+    proposals: number;
+    reactions: number;
+  }>({
+    queryKey: [`/api/users/${currentUser?.id}/statistics`],
+    enabled: !!currentUser,
   });
   
   // Filter discussions to show only those created by the current user
@@ -388,28 +399,28 @@ export default function Profile({ currentUser }: ProfileProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary-600">{userDiscussions.length}</div>
+                <div className="text-2xl font-bold text-primary-600">{userStats?.discussions ?? userDiscussions.length}</div>
                 <div className="text-sm text-gray-600">Discussions</div>
               </CardContent>
             </Card>
             
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-secondary-600">28</div>
+                <div className="text-2xl font-bold text-secondary-600">{userStats?.comments ?? 0}</div>
                 <div className="text-sm text-gray-600">Comments</div>
               </CardContent>
             </Card>
             
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-accent-600">3</div>
+                <div className="text-2xl font-bold text-accent-600">{userStats?.proposals ?? 0}</div>
                 <div className="text-sm text-gray-600">Proposals</div>
               </CardContent>
             </Card>
             
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-indigo-600">42</div>
+                <div className="text-2xl font-bold text-indigo-600">{userStats?.reactions ?? 0}</div>
                 <div className="text-sm text-gray-600">Reactions</div>
               </CardContent>
             </Card>

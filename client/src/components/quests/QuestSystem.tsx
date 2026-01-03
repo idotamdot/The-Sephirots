@@ -194,11 +194,12 @@ export default function QuestSystem({ compact = false, maxQuests = 6 }: QuestSys
       if (!response.ok) throw new Error("Failed to complete quest");
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["quests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users/me"] });
       toast({
-        title: "Quest Completed!",
-        description: "You've earned your reward!",
+        title: "Quest Completed! 🎉",
+        description: `You've earned ${data.pointsAwarded} points!`,
       });
     },
     onError: (error: Error) => {

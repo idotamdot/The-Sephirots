@@ -43,13 +43,32 @@ export default function Rewards() {
     <div className="container py-6 max-w-7xl mx-auto relative">
       <div className="relative z-10">
         {/* Page header */}
-        <div className="flex flex-col mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-br from-sephirot-purple to-amber-500 bg-clip-text text-transparent">
-            Spiritual Journey Rewards
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Exchange your earned points for meaningful spiritual tools, experiences, and resources.
-          </p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-br from-sephirot-purple to-amber-500 bg-clip-text text-transparent">
+              Spiritual Journey Rewards
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Exchange your earned points for meaningful spiritual tools, experiences, and resources.
+            </p>
+          </div>
+          
+          {/* User Points Display */}
+          {currentUser && (
+            <Card className="mt-4 md:mt-0 md:w-64">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Available Points</p>
+                    <p className="text-2xl font-bold text-amber-600">{currentUser.points}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                    <i className="ri-coins-line text-2xl text-amber-600"></i>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
         
         {/* Main content */}

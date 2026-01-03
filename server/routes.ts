@@ -3156,11 +3156,18 @@ app.post("/api/ai/perspective", async (req, res) => {
       // 3. Award points and badges
       // 4. Update user quest progress
       
-      // For now, award sample points
-      const pointsAwarded = 50; // This would come from the quest definition
+      // For now, award sample points based on quest ID
+      // Quest 1: 50 pts, Quest 2: 100 pts, Quest 3: 10 pts
+      const questPointMap: Record<number, number> = {
+        1: 50,
+        2: 100,
+        3: 10,
+      };
+      const pointsAwarded = questPointMap[questId] || 50;
       
       try {
-        await storage.updateUserPoints(user.id, user.points + pointsAwarded);
+        // updateUserPoints adds the provided points to current total
+        await storage.updateUserPoints(user.id, pointsAwarded);
       } catch (error) {
         console.error("Error updating user points:", error);
         // Continue even if points update fails

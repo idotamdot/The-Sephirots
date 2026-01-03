@@ -7,6 +7,7 @@ import { User } from "@/lib/types";
 import RewardsExchange from "@/components/rewards/RewardsExchange";
 import StarfieldBackground from "@/components/mindmap/StarfieldBackground";
 import { Clock, CheckCircle, Package, TruckIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface RewardRedemption {
   id: number;
@@ -98,14 +99,17 @@ export default function Rewards() {
                     </div>
                   ) : redemptions && redemptions.length > 0 ? (
                     <div className="space-y-4">
-                      {redemptions.map((redemption) => {
+                      {redemptions.map((redemption, index) => {
                         const config = statusConfig[redemption.status];
                         const StatusIcon = config.icon;
                         
                         return (
-                          <div
+                          <motion.div
                             key={redemption.id}
-                            className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all duration-200"
                           >
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
@@ -129,7 +133,7 @@ export default function Rewards() {
                                 {config.label}
                               </Badge>
                             </div>
-                          </div>
+                          </motion.div>
                         );
                       })}
                     </div>

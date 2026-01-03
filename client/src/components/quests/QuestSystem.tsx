@@ -143,20 +143,30 @@ function QuestCard({ quest, onComplete }: QuestCardProps) {
 
         {/* Claim button for completed quests */}
         {isComplete && quest.status !== "completed" && (
-          <Button 
-            className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-            onClick={() => onComplete?.(quest.id)}
+          <motion.div
+            initial={{ scale: 1 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <Award className="w-4 h-4 mr-2" />
-            Claim Reward
-          </Button>
+            <Button 
+              className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 transition-all duration-200"
+              onClick={() => onComplete?.(quest.id)}
+            >
+              <Award className="w-4 h-4 mr-2" />
+              Claim Reward
+            </Button>
+          </motion.div>
         )}
 
         {quest.status === "completed" && (
-          <div className="mt-4 text-center py-2 bg-green-100 rounded-lg text-green-700 font-medium">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mt-4 text-center py-2 bg-green-100 rounded-lg text-green-700 font-medium"
+          >
             <CheckCircle2 className="w-4 h-4 inline-block mr-2" />
             Completed!
-          </div>
+          </motion.div>
         )}
       </div>
     </motion.div>

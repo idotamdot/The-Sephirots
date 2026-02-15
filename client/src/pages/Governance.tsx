@@ -26,7 +26,8 @@ import {
   AlertCircle,
   Edit,
   Plus,
-  Vote as VoteIcon
+  Vote as VoteIcon,
+  Sparkles
 } from "lucide-react";
 
 // Helper function to format dates
@@ -82,6 +83,30 @@ const formatCategory = (category: ProposalCategory) => {
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');
 };
+
+const planningSuggestions = [
+  {
+    title: "Host a weekly cooperative planning circle",
+    description: "Keep decision-making light and joyful with a 25-minute standing agenda, rotating facilitators, and a clear check-in/check-out ritual.",
+    action: "Start a proposal",
+    href: "/governance/new",
+    tag: "Rhythm"
+  },
+  {
+    title: "Publish a transparent roadmap wall",
+    description: "Create a living board of upcoming priorities so members can align efforts, ask clarifying questions, and volunteer to own pieces.",
+    action: "Open community needs",
+    href: "/community-needs",
+    tag: "Visibility"
+  },
+  {
+    title: "Launch a skill-share + stewardship roster",
+    description: "Invite members to list skills, interests, and weekly availability so every initiative has a clear steward and support circle.",
+    action: "Start a discussion",
+    href: "/discussions",
+    tag: "Support"
+  }
+];
 
 // Component to display a single proposal card
 const ProposalCard = ({ proposal }: { proposal: Proposal }) => {
@@ -214,6 +239,40 @@ export default function Governance() {
       )}
 
       <Separator className="my-8" />
+
+      <div className="mb-10">
+        <div className="flex items-center mb-4">
+          <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">Friendly suggestions for cooperative planning</h2>
+            <p className="text-muted-foreground text-sm">
+              Jumpstart joyful, community-led governance with lightweight ideas you can act on today.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {planningSuggestions.map((suggestion) => (
+            <Card key={suggestion.title} className="border-primary/10 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg leading-tight">{suggestion.title}</CardTitle>
+                  <Badge variant="outline">{suggestion.tag}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground pb-2">
+                {suggestion.description}
+              </CardContent>
+              <CardFooter>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={suggestion.href}>{suggestion.action}</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
 
       <div className="bg-muted p-6 rounded-lg">
         <h2 className="text-xl font-semibold mb-4">How Governance Works</h2>

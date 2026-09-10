@@ -1,0 +1,20 @@
+{
+  "service_id": "the-sephirots",
+  "name": "The Sephirots",
+  "repo": "idotamdot/The-Sephirots",
+  "protocol_version": "1.0.0",
+  "environment": "multi",
+  "kind": "product",
+  "capabilities": ["community-governance", "quests", "memberships", "ai-companion", "polling", "ethical-collaboration"],
+  "data_classes": ["account", "community-content", "membership", "polls", "quest-progress"],
+  "dependencies": ["symbiont-protocol"],
+  "public_endpoints": [],
+  "owner": "Sigilographics Digital",
+  "authorization_boundary": "product-local",
+  "cross_product_access": "deny-by-default",
+  "operational_metrics": {
+    "contract_version": "1.0.0",
+    "sources": ["Neon", "Stripe"],
+    "status": "unavailable"
+  }
+}
